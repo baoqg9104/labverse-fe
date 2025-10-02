@@ -1,0 +1,125 @@
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.7s cubic-bezier(0.4,0,0.2,1);
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+  .animate-spin-slow {
+    animation: spin 5s linear infinite;
+  }
+  .animate-spin-reverse {
+    animation: spinReverse 7s linear infinite;
+  }
+  .animate-float-slow {
+    animation: floatY 3.5s ease-in-out infinite alternate;
+  }
+  .animate-float-slower {
+    animation: floatY 5.5s ease-in-out infinite alternate;
+  }
+  .animate-float-fast {
+    animation: floatY 2.2s ease-in-out infinite alternate;
+  }
+  .animate-code-rain {
+    animation: codeRain 1.7s linear infinite;
+  }
+  .animate-logo-bounce {
+    animation: logoBounce 1.2s cubic-bezier(0.4,0,0.2,1) infinite alternate;
+  }
+  .animate-orbit {
+    animation: orbitDot 2.2s linear infinite;
+  }
+  .animate-orbit-sm {
+    animation: orbitDotSm 1.6s linear infinite;
+  }
+  .animate-orbit-lg {
+    animation: orbitDotLg 2.8s linear infinite;
+  }
+  .animate-orbit-xl {
+    animation: orbitDotXl 3.6s linear infinite;
+  }
+  .animate-blob {
+    animation: blob 14s ease-in-out infinite;
+  }
+  .animate-sweep-slow {
+    animation: radarSweep 2.8s linear infinite;
+  }
+  .animate-dash {
+    animation: dash 3.5s linear infinite;
+  }
+  .animate-scanline {
+    animation: scanline 4s linear infinite;
+    background-size: 100% 12px;
+  }
+  .animate-neon-pulse {
+    animation: neonPulse 1.6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(32px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+@keyframes spinReverse {
+  100% { transform: rotate(-360deg); }
+}
+@keyframes floatY {
+  from { transform: translateY(0); }
+  to { transform: translateY(-18px); }
+}
+@keyframes codeRain {
+  0% { opacity: 0; transform: translateY(-40%); }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(120vh); }
+}
+@keyframes logoBounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-12px); }
+}
+@keyframes orbitDot {
+  0% { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+}
+@keyframes orbitDotSm {
+  0% { transform: rotate(0deg) translateX(36px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(36px) rotate(-360deg); }
+}
+@keyframes orbitDotLg {
+  0% { transform: rotate(0deg) translateX(80px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(80px) rotate(-360deg); }
+}
+@keyframes orbitDotXl {
+  0% { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+}
+@keyframes blob {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  25% { transform: translate(20px, -10px) scale(1.05); }
+  50% { transform: translate(-12px, 14px) scale(0.98); }
+  75% { transform: translate(14px, 6px) scale(1.03); }
+}
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes dash {
+  0% { stroke-dasharray: 0 200; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 100 100; stroke-dashoffset: -50; }
+  100% { stroke-dasharray: 0 200; stroke-dashoffset: -200; }
+}
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+@keyframes neonPulse {
+  0% { box-shadow: 0 0 10px rgba(34,211,238,0.25), 0 0 20px rgba(34,211,238,0.15); }
+  100% { box-shadow: 0 0 18px rgba(163,230,53,0.35), 0 0 36px rgba(34,211,238,0.25); }
+}
