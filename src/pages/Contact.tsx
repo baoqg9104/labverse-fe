@@ -90,7 +90,7 @@ export const Contact = () => {
   };
 
   return (
-    <div className="mt-5 min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-b from-[#f3f6fb] via-[#e7eaf7] to-[#e3c6e6] pb-20 pt-3">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-b from-[#f3f6fb] via-[#e7eaf7] to-[#e3c6e6] pb-20 pt-3">
       {/* Hero Section */}
       <div className="text-center mt-10 mb-8">
         <h1 className="text-3xl md:text-5xl font-bold text-[#1a144b] mb-3">

@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 const freeFeatures = [
   "Step-by-step tutorials",
   "Practical experience sharing",
@@ -14,8 +17,29 @@ const premiumFeatures = [
 const paymentMethods = ["MoMo", "VNPAY", "Bank Transfer"];
 
 export const Pricing = () => {
+  // Scroll to top when this page loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+  }, []);
+
+  // Highlight Premium card if navigated from Learn with a state flag
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [highlightPremium, setHighlightPremium] = useState(false);
+
+  useEffect(() => {
+    const state = (location.state as { highlight?: string } | null) || null;
+    if (state?.highlight === "premium") {
+      setHighlightPremium(true);
+      const timer = setTimeout(() => setHighlightPremium(false), 4000);
+      // Clear navigation state so highlight won't persist on refresh/back
+      navigate(location.pathname, { replace: true });
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname, location.state, navigate]);
+
   return (
-    <div className="mt-5 min-h-screen w-full flex flex-col items-center justify-start bg-gradient-to-b from-[#f3f6fb] via-[#e7eaf7] to-[#e3c6e6] pb-20 pt-10">
+    <div className="min-h-screen w-full flex flex-col items-center justify-start bg-gradient-to-b from-[#f3f6fb] via-[#e7eaf7] to-[#e3c6e6] pb-20 pt-10">
       {/* Pricing Cards Container với relative positioning */}
       <div className="relative flex flex-col md:flex-row items-center justify-center mt-0 md:pl-64">
         {/* Free Card - Đặt phía dưới */}
@@ -58,7 +82,9 @@ export const Pricing = () => {
 
         {/* Premium Card - Đặt phía trên với z-index cao hơn */}
         <div
-          className="bg-[#221d4f] rounded-3xl p-6 pt-16 w-[370px] md:w-[400px] flex flex-col gap-4 relative z-20 border-2 border-[#b6aaff] shadow-2xl transform translate-y-[15px] md:-translate-y-[20px] translate-x-0 md:-translate-x-[320px]"
+          className={`bg-[#221d4f] rounded-3xl p-6 pt-16 w-[370px] md:w-[400px] flex flex-col gap-4 relative z-20 border-2 shadow-2xl transform translate-y-[15px] md:-translate-y-[20px] translate-x-0 md:-translate-x-[320px] ${
+            highlightPremium ? "border-[#b6ff3c] premium-highlight-blink" : "border-[#b6aaff]"
+          }`}
           style={{
             boxShadow:
               "0 20px 50px 0 rgba(44, 34, 84, 0.3), 0 0 0 1px rgba(182, 170, 255, 0.5)",

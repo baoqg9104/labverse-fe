@@ -106,7 +106,7 @@ export const Navbar: React.FC = () => {
 
   // --- Render Navbar UI ---
   return (
-    <header className="flex items-center justify-between pt-5 px-4 md:pr-12 md:pl-16 bg-transparent w-full relative">
+    <header className="flex items-center justify-between pt-5 pb-5 px-4 md:pr-12 md:pl-16 bg-transparent w-full relative">
       {/* Logo */}
       <div className="font-bold text-3xl md:text-4xl tracking-wide text-white">
         Labverse

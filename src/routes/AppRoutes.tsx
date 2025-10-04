@@ -17,6 +17,7 @@ import AdminReports from "../pages/AdminReports";
 import AdminRevenue from "../pages/AdminRevenue";
 import AdminUsers from "../pages/AdminUsers";
 import AdminLabs from "../pages/AdminLabs";
+const LabDetail = lazy(() => import("../pages/LabDetail").then(m => ({ default: m.default })));
 
 export const AppRoutes = () => {
   return (
@@ -25,6 +26,11 @@ export const AppRoutes = () => {
       <Route path="/home" element={<Home />} />
       <Route path="/learn" element={<Learn />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/labs/:slug" element={
+        <Suspense fallback={<div>Loading...</div>}>
+          <LabDetail />
+        </Suspense>
+      } />
       <Route path="/contact" element={<Contact />} />
       <Route path="/email-sent" element={<EmailSent />} />
       <Route path="/verify-result" element={<VerifyResult />} />
