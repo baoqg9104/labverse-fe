@@ -84,7 +84,7 @@ export function Profile() {
   }, [userList, user?.email]);
 
   return (
-    <div className="mt-5 min-h-screen bg-gradient-to-b from-white to-blue-50 pt-8 pb-8">
+    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 pt-8 pb-8">
       <div className="max-w-6xl mx-auto">
         <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
           <ProfileHeader

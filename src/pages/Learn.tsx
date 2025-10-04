@@ -1,5 +1,9 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import type { Lab, LabLevel } from "../types/lab";
+import api from "../utils/axiosInstance";
+import { AuthContext } from "../contexts/AuthContext";
+import { ROLE } from "../components/profile/RoleUtils";
 
 const color: Record<LabLevel, string> = {
   Basic: "bg-green-400",
@@ -7,69 +11,56 @@ const color: Record<LabLevel, string> = {
   Advanced: "bg-red-500",
 };
 
-const labs: Lab[] = [
-  {
-    title: "Install Kali Linux on VirtualBox",
-    desc: "Step-by-step guide to set up Kali Linux as a VM, with optimized config files for low-spec laptops.",
-    level: "Basic",
-    type: "Rooms",
-  },
-  {
-    title: "Basic Network Scanning with Nmap",
-    desc: "Discover local network devices with just 5 commands - detailed breakdown of each parameter.",
-    level: "Basic",
-    type: "Networks",
-  },
-  {
-    title: "Build an Apache Web Server on Ubuntu",
-    desc: "Set up a home web server in 15 minutes and understand HTTP request/response handling.",
-    level: "Basic",
-    type: "Rooms",
-  },
-  {
-    title: "Exploit SQL Injection Using DVWA",
-    desc: "Hands-on practice exploiting SQL flaws in web apps, with step-by-step video demos.",
-    level: "Intermediate",
-    type: "Rooms",
-  },
-  {
-    title: "Bypass Authentication with Burp Suite",
-    desc: "Intercept and modify HTTP requests to bypass simple login pages.",
-    level: "Intermediate",
-    type: "Networks",
-  },
-  {
-    title: "Simulate Malware Distribution via Metasploit",
-    desc: "Create harmless mock malware PDFs to understand infection mechanisms (safe lab environment).",
-    level: "Intermediate",
-    type: "Networks",
-  },
-  {
-    title: "Build a DIY SIEM System",
-    desc: "Combine ELK Stack + Wazuh for home network monitoring using real-world datasets.",
-    level: "Advanced",
-    type: "Rooms",
-  },
-  {
-    title: "Malware Reverse Engineering with Ghidra",
-    desc: "Analyze safe PE malware samples and learn basic obfuscation techniques.",
-    level: "Advanced",
-    type: "Networks",
-  },
-  {
-    title: "MITM Attacks Using Raspberry Pi",
-    desc: "Turn a Pi into a network sniffer, with prevention best practices.",
-    level: "Advanced",
-    type: "Networks",
-  },
-];
+// Map backend values to UI enums
+const difficultyFromApi = (v: number | string): LabLevel => {
+  if (typeof v === "string") {
+    const s = v.toLowerCase();
+    if (s.includes("inter")) return "Intermediate";
+    if (s.includes("adv")) return "Advanced";
+    return "Basic";
+  }
+  switch (v) {
+    case 2:
+      return "Advanced";
+    case 1:
+      return "Intermediate";
+    case 0:
+    default:
+      return "Basic";
+  }
+};
+const categoryFromApi = (categoryId?: number): "Rooms" | "Networks" => {
+  if (categoryId === 2) return "Networks";
+  return "Rooms"; // default & categoryId === 1
+};
+
+type ApiLabRaw = {
+  title?: string;
+  Title?: string;
+  Name?: string;
+  description?: string;
+  Description?: string;
+  difficultyLevel?: number | string;
+  DifficultyLevel?: number | string;
+  level?: number | string;
+  Level?: number | string;
+  categoryId?: number;
+  CategoryId?: number;
+};
 
 export const Learn = () => {
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
+  const [difficultyDropdownOpen, setDifficultyDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [labs, setLabs] = useState<Lab[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -79,6 +70,75 @@ export const Learn = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!difficultyDropdownOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setDifficultyDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [difficultyDropdownOpen]);
+
+  // Fetch labs based on role/subscription
+  useEffect(() => {
+    const fetchLabs = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        const isAuthorOrAdmin = user && (user.role === ROLE.AUTHOR || user.role === ROLE.ADMIN);
+        const isUser = user && user.role === ROLE.USER;
+        const sub = (user?.subscription || "").toLowerCase();
+        const isPremium = isUser && (sub.includes("premium") || sub === "pro" || sub === "paid");
+
+        const endpoint = !user
+          ? "/labs/preview"
+          : isAuthorOrAdmin || isPremium
+          ? "/labs"
+          : "/labs/preview";
+
+        const res = await api.get(endpoint);
+        // Try to be flexible with API shape
+        const raw = res.data as unknown;
+        type WithItems = { items?: unknown };
+        const items: unknown[] = Array.isArray(raw)
+          ? (raw as unknown[])
+          : Array.isArray((raw as WithItems).items as unknown[])
+          ? ([(raw as WithItems).items] as unknown[]).flat() // ensure array
+          : [];
+        const mapped: Lab[] = items.map((rawItem) => {
+          const it = rawItem as ApiLabRaw;
+          const title = it.title ?? it.Name ?? it.Title ?? "Untitled";
+          const desc = it.description ?? it.Description ?? "";
+          const levelVal =
+            it.difficultyLevel ?? it.DifficultyLevel ?? it.level ?? it.Level;
+          const categoryVal = it.categoryId ?? it.CategoryId;
+          return {
+            title,
+            desc,
+            level: difficultyFromApi(levelVal ?? 0),
+            type: categoryFromApi(categoryVal),
+          } as Lab;
+        });
+        setLabs(mapped);
+        setPage(1);
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Failed to load labs";
+        console.error("Failed to load labs", e);
+        setLoadError(msg);
+        setLabs([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLabs();
+  }, [user]);
 
   // Filtered labs
   const filteredLabs = useMemo(() => {
@@ -90,7 +150,7 @@ export const Learn = () => {
         lab.desc.toLowerCase().includes(search.toLowerCase());
       return matchType && matchDifficulty && matchSearch;
     });
-  }, [search, filterType, difficulty]);
+  }, [labs, search, filterType, difficulty]);
 
   const totalPages = Math.max(1, Math.ceil(filteredLabs.length / itemsPerPage));
   const paginatedLabs = filteredLabs.slice(
@@ -112,6 +172,13 @@ export const Learn = () => {
   };
   const handleClearSearch = () => setSearch("");
   const handlePage = (p: number) => setPage(p);
+
+  const isFreeUser = useMemo(() => {
+    if (!user) return false; // guests handled separately
+    if (user.role !== ROLE.USER) return false;
+    const sub = (user.subscription || "").toLowerCase();
+    return !(sub.includes("premium") || sub === "pro" || sub === "paid");
+  }, [user]);
 
   return (
     <div className="min-h-screen pb-0">
@@ -182,31 +249,22 @@ export const Learn = () => {
               Networks
             </button>
           </div>
-          <div className="">
-            {/* <select
-              value={difficulty}
-              onChange={handleDifficulty}
-              className="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 font-semibold bg-white focus:border-violet-600"
-            >
-              <option value="All">Difficulty</option>
-              <option value="All">All</option>
-              <option value="Basic">Basic</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-            </select> */}
-            <div className="hs-dropdown [--auto-close:inside] relative inline-flex">
+          <div className="" /* Difficulty dropdown region */>
+            <div ref={dropdownRef} className="relative inline-flex">
               <button
-                id="hs-dropdown-default"
+                id="difficulty-dropdown"
                 type="button"
-                className="cursor-pointer hs-dropdown-toggle py-3 px-4 min-w-36 inline-flex justify-between items-center gap-x-4 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+                className="cursor-pointer py-3 px-4 min-w-36 inline-flex justify-between items-center gap-x-4 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
                 aria-haspopup="menu"
-                aria-expanded="false"
+                aria-expanded={difficultyDropdownOpen}
                 aria-label="Dropdown"
+                onClick={() => setDifficultyDropdownOpen((open) => !open)}
               >
                 {difficulty === "All" ? "Difficulty" : difficulty}
-                {/* {difficulty} */}
                 <svg
-                  className="hs-dropdown-open:rotate-180 size-4"
+                  className={
+                    difficultyDropdownOpen ? "rotate-180 size-4" : "size-4"
+                  }
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -220,34 +278,38 @@ export const Learn = () => {
                   <path d="m6 9 6 6 6-6" />
                 </svg>
               </button>
-
-              <div
-                className="pr-3 z-50 hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden bg-white shadow-md rounded-lg mt-2 after:h-4 after:absolute after:-bottom-4 after:start-0 after:w-full before:h-4 before:absolute before:-top-4 before:start-0 before:w-full"
-                role="menu"
-                aria-orientation="vertical"
-                aria-labelledby="hs-dropdown-default"
-              >
-                <div className="p-1 space-y-0.5">
-                  {["All", "Basic", "Intermediate", "Advanced"].map((level) => (
-                    <button
-                      key={level}
-                      className={`cursor-pointer flex w-full text-left items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 ${
-                        difficulty === level ? "bg-violet-100 font-bold" : ""
-                      }`}
-                      onClick={() => {
-                        // setDifficulty(level);
-                        // setPage(1);
-                        handleDifficulty({
-                          target: { value: level },
-                        } as React.ChangeEvent<HTMLSelectElement>);
-                      }}
-                      role="menuitem"
-                    >
-                      {level}
-                    </button>
-                  ))}
+              {difficultyDropdownOpen && (
+                <div
+                  className="absolute left-0 right-0 top-10 pr-3 z-50 transition-opacity duration-150 bg-white shadow-md rounded-lg mt-2"
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="difficulty-dropdown"
+                >
+                  <div className="p-1 space-y-0.5">
+                    {["All", "Basic", "Intermediate", "Advanced"].map(
+                      (level) => (
+                        <button
+                          key={level}
+                          className={`cursor-pointer flex w-full text-left items-center gap-x-3.5 py-2 px-3 rounded-lg text-sm text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 ${
+                            difficulty === level
+                              ? "bg-violet-100 font-bold"
+                              : ""
+                          }`}
+                          onClick={() => {
+                            handleDifficulty({
+                              target: { value: level },
+                            } as React.ChangeEvent<HTMLSelectElement>);
+                            setDifficultyDropdownOpen(false);
+                          }}
+                          role="menuitem"
+                        >
+                          {level}
+                        </button>
+                      )
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <div className="flex gap-3 items-center w-full md:w-auto">
@@ -279,47 +341,111 @@ export const Learn = () => {
         </div>
 
         {/* Labs Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {paginatedLabs.length === 0 ? (
-            <div className="col-span-3 text-center text-gray-500 py-10">
-              No labs found.
-            </div>
-          ) : (
-            paginatedLabs.map((lab, idx) => (
-              <div
-                key={idx}
-                className="bg-[#f7f5fa] rounded-xl shadow p-5 flex flex-col justify-between min-h-[170px] cursor-pointer"
-              >
-                <div>
-                  <div className="font-semibold text-base md:text-lg mb-2">
-                    {lab.title}
-                  </div>
-                  <div className="text-gray-600 text-sm mb-4">{lab.desc}</div>
-                </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-gray-200 p-5 animate-pulse bg-white">
+                <div className="h-5 w-3/4 bg-gray-200 rounded mb-3" />
+                <div className="h-4 w-full bg-gray-200 rounded mb-2" />
+                <div className="h-4 w-5/6 bg-gray-200 rounded mb-6" />
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-block w-3 h-3 rounded-full ${
-                        color[lab.level]
-                      }`}
-                    ></span>
-                    <span className="text-xs md:text-sm text-gray-700 font-semibold">
-                      {lab.level}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 font-semibold text-xs md:text-sm text-gray-800">
-                    View More{" "}
-                    <img
-                      src="src/assets/right-arrow.png"
-                      alt=""
-                      className="w-[11px] md:mt-1"
-                    />
-                  </div>
+                  <div className="h-4 w-24 bg-gray-200 rounded" />
+                  <div className="h-4 w-16 bg-gray-200 rounded" />
                 </div>
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        ) : loadError ? (
+          <div className="text-center text-red-600 py-10">{loadError}</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {paginatedLabs.length === 0 ? (
+              <div className="col-span-3 text-center text-gray-500 py-10">
+                No labs found.
+              </div>
+            ) : (
+              paginatedLabs.map((lab, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-gray-200 bg-white p-5 flex flex-col justify-between min-h-[180px] hover:shadow-lg hover:-translate-y-0.5 transition cursor-pointer"
+                  onClick={() => {
+                    // Guests must login before viewing details
+                    if (!user) {
+                      navigate("/login", { replace: false });
+                      return;
+                    }
+                    // Navigate to detail; requires slug. If backend not returning slug here, we can pass title-based slug later when API is integrated
+                    // For now we use title slug fallback
+                    const titleSlug = lab.title
+                      .toLowerCase()
+                      .replace(/[^a-z0-9\s-]/g, "")
+                      .trim()
+                      .replace(/\s+/g, "-");
+                    navigate(`/labs/${titleSlug}`);
+                  }}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
+                        {lab.type}
+                      </span>
+                      <span className="inline-flex items-center gap-2 text-xs md:text-sm text-gray-700 font-semibold">
+                        <span className={`inline-block w-3 h-3 rounded-full ${color[lab.level]}`}></span>
+                        {lab.level}
+                      </span>
+                    </div>
+                    <div className="font-semibold text-base md:text-lg mb-2 text-gray-900">
+                      {lab.title}
+                    </div>
+                    <div className="text-gray-600 text-sm mb-4 line-clamp-3">{lab.desc}</div>
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <div className="inline-flex items-center gap-2 font-semibold text-xs md:text-sm text-violet-700 hover:text-violet-800">
+                      View More
+                      <img src="src/assets/right-arrow.png" alt="" className="w-[11px] md:mt-1" />
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Blurred premium teaser directly below real labs for free users */}
+        {!isLoading && !loadError && isFreeUser && (
+          <div className="mt-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="relative rounded-2xl border border-gray-200 bg-white p-5 min-h-[180px] overflow-hidden cursor-pointer"
+                  onClick={() => navigate("/pricing", { state: { highlight: "premium" } })}
+                >
+                  <div className="filter blur-sm grayscale opacity-80 select-none pointer-events-none">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                        Premium
+                      </span>
+                      <span className="inline-flex items-center gap-2 text-xs md:text-sm text-gray-500 font-semibold">
+                        <span className="inline-block w-3 h-3 rounded-full bg-gray-300"></span>
+                        Advanced
+                      </span>
+                    </div>
+                    <div className="h-5 w-4/5 bg-gray-200 rounded mb-2" />
+                    <div className="h-4 w-full bg-gray-200 rounded mb-2" />
+                    <div className="h-4 w-2/3 bg-gray-200 rounded" />
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+                    <button className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow">
+                      Show More
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Pagination */}
         <div className="flex justify-center items-center gap-2 mt-10">
