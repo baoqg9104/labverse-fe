@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
+import { toast } from "react-toastify";
 
 const freeFeatures = [
   "Step-by-step tutorials",
@@ -17,6 +19,7 @@ const premiumFeatures = [
 const paymentMethods = ["MoMo", "VNPAY", "Bank Transfer"];
 
 export const Pricing = () => {
+  const { user, isAuthLoading } = useContext(AuthContext);
   // Scroll to top when this page loads
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -26,6 +29,12 @@ export const Pricing = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [highlightPremium, setHighlightPremium] = useState(false);
+  // No modal anymore; redirect to checkout page
+
+  const isPremiumUser = useMemo(() => {
+    const sub = (user?.subscription || "").toLowerCase();
+    return sub.includes("premium") || sub === "pro" || sub === "paid";
+  }, [user?.subscription]);
 
   useEffect(() => {
     const state = (location.state as { highlight?: string } | null) || null;
@@ -37,6 +46,18 @@ export const Pricing = () => {
       return () => clearTimeout(timer);
     }
   }, [location.pathname, location.state, navigate]);
+
+  const handleGetStarted = () => {
+    if (!user && !isAuthLoading) {
+      navigate("/login", { replace: true, state: { from: "/pricing" } });
+      return;
+    }
+    if (isPremiumUser) {
+      toast.info("You already have Premium.");
+      return;
+    }
+    navigate("/checkout");
+  };
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-start bg-gradient-to-b from-[#f3f6fb] via-[#e7eaf7] to-[#e3c6e6] pb-20 pt-10">
@@ -122,9 +143,18 @@ export const Pricing = () => {
               </li>
             ))}
           </ul>
-          <button className="cursor-pointer w-[220px] mt-6 px-8 py-3 rounded-full bg-[#b6ff3c] text-[#201958] font-bold shadow-lg hover:bg-[#a0e636] transition text-lg transform hover:scale-105">
-            Get started
-          </button>
+          {isPremiumUser ? (
+            <div className="mt-6 px-4 py-2 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold text-center">
+              You already have Premium
+            </div>
+          ) : (
+            <button
+              onClick={handleGetStarted}
+              className="cursor-pointer w-[220px] mt-6 px-8 py-3 rounded-full bg-[#b6ff3c] text-[#201958] font-bold shadow-lg hover:bg-[#a0e636] transition text-lg transform hover:scale-105"
+            >
+              Get started
+            </button>
+          )}
         </div>
       </div>
 
