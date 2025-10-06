@@ -21,6 +21,8 @@ import AdminReports from "../pages/AdminReports";
 import AdminRevenue from "../pages/AdminRevenue";
 import AdminUsers from "../pages/AdminUsers";
 import AdminLabs from "../pages/AdminLabs";
+import PaymentResult from "../pages/PaymentResult";
+
 const LabDetail = lazy(() =>
   import("../pages/LabDetail").then((m) => ({ default: m.default }))
 );
@@ -35,6 +37,9 @@ export const AppRoutes = () => {
       <Route path="/home" element={<Home />} />
       <Route path="/learn" element={<Learn />} />
       <Route path="/pricing" element={<Pricing />} />
+      {/* Public payment result routes to handle external redirects */}
+      <Route path="/checkout/success" element={<PaymentResult />} />
+      <Route path="/checkout/cancel" element={<PaymentResult />} />
       <Route
         path="/labs/:slug"
         element={

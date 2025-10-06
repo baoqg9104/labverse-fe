@@ -1,7 +1,9 @@
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
+import api from "../utils/axiosInstance";
+import type { CheckoutResponse } from "../types/checkout";
 
 const premiumFeatures = [
   "All Free tier content",
@@ -11,8 +13,14 @@ const premiumFeatures = [
 ];
 
 export const Checkout = () => {
-  const { user, isAuthLoading } = useContext(AuthContext);
   const navigate = useNavigate();
+  const { user, isAuthLoading } = useContext(AuthContext);
+  const [redirectLoading, setRedirectLoading] = useState(false);
+
+  // No external script needed for redirect-based flow
+
+  const RETURN_URL = `${window.location.href}/success`;
+  const CANCEL_URL = `${window.location.href}/cancel`;
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
@@ -36,8 +44,56 @@ export const Checkout = () => {
       navigate("/profile");
       return;
     }
-    // Placeholder for real payment initiation
-    toast.success("Redirecting to payment...");
+
+    createPaymentLinkHandle(redirectPaymentLink, setRedirectLoading);
+  };
+
+  const createPaymentLinkHandle = async (
+    callbackFunction: (resp: CheckoutResponse) => void | Promise<void>,
+    setLoading: (val: boolean) => void
+  ) => {
+    setLoading(true);
+    try {
+      const response = await api.post(
+        "/payments/create-embedded-payment-link",
+        {
+          productName: "Premium Subscription",
+          description: "Premium plan",
+          price: 5000,
+          returnUrl: RETURN_URL,
+          cancelUrl: CANCEL_URL,
+        }
+      );
+
+      callbackFunction(response.data);
+      setLoading(false);
+    } catch {
+      setLoading(false);
+      toast.error("Failed to create payment link. Please try again.");
+    }
+  };
+
+  const redirectPaymentLink = async function (
+    checkoutResponse: CheckoutResponse
+  ) {
+    if (checkoutResponse) {
+      const url = checkoutResponse.checkoutUrl;
+      // if (checkoutResponse.checkoutUrl.startsWith("https://dev.pay.payos.vn")) {
+      //   url = checkoutResponse.checkoutUrl.replace(
+      //     "https://dev.pay.payos.vn",
+      //     "https://next.dev.pay.payos.vn"
+      //   );
+      // }
+
+      // if (checkoutResponse.checkoutUrl.startsWith("https://pay.payos.vn")) {
+      //   url = checkoutResponse.checkoutUrl.replace(
+      //     "https://pay.payos.vn",
+      //     "https://next.pay.payos.vn"
+      //   );
+      // }
+
+      window.location.href = url;
+    }
   };
 
   return (
@@ -142,9 +198,10 @@ export const Checkout = () => {
               ) : (
                 <button
                   onClick={onConfirm}
+                  disabled={redirectLoading}
                   className="cursor-pointer w-full mt-6 px-6 py-3 rounded-full bg-[#b6ff3c] text-[#201958] font-bold shadow-lg hover:bg-[#a0e636] transition text-lg"
                 >
-                  Subscribe now
+                  {redirectLoading ? "Loading..." : "Subscribe now"}
                 </button>
               )}
 
