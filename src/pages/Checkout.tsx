@@ -59,7 +59,7 @@ export const Checkout = () => {
         {
           productName: "Premium Subscription",
           description: "Premium plan",
-          price: 5000,
+          price: 100000,
           returnUrl: RETURN_URL,
           cancelUrl: CANCEL_URL,
         }

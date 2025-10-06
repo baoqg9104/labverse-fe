@@ -1,4 +1,5 @@
 export interface Lab {
+  id: number;
   title: string;
   desc: string;
   level: LabLevel;
