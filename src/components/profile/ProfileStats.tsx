@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import type { Badge } from "../../types/badge";
 import { ROLE } from "./RoleUtils";
+import api from "../../utils/axiosInstance";
 
 type Props = {
   badges: Badge[];
@@ -16,13 +18,40 @@ export function ProfileStats({
   joinedAt,
   labsWritten = 0,
 }: Props) {
+  const [completedCount, setCompletedCount] = useState<number | null>(null);
+  const [loadingCompleted, setLoadingCompleted] = useState(false);
+
+  // Fetch completed labs (for regular users). Authors use labsWritten; Admin hides this card.
+  useEffect(() => {
+    if (role === ROLE.USER || role === undefined || role === null) {
+      setLoadingCompleted(true);
+      api
+        .get<number[]>("/user-progresses/completed")
+        .then((res) => {
+          const arr = Array.isArray(res.data) ? res.data : [];
+          setCompletedCount(arr.length);
+        })
+        .catch(() => {
+          setCompletedCount(null);
+        })
+        .finally(() => setLoadingCompleted(false));
+    } else {
+      // Reset when not applicable
+      setCompletedCount(null);
+      setLoadingCompleted(false);
+    }
+  }, [role]);
+
   return (
     <div className="w-full bg-gradient-to-r from-slate-50 to-blue-50 py-8">
       <div className="max-w-4xl mx-auto px-8">
-  <div className="flex flex-wrap justify-center items-center gap-6">
+        <div className="flex flex-wrap justify-center items-center gap-6">
           {/* Primary metric: User -> Labs Completed; Author -> Labs Written; Admin -> hidden */}
           {role !== ROLE.ADMIN && (
-            <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-blue-100 flex flex-col items-center justify-center min-w-[220px] flex-1" style={{height: '220px'}}>
+            <div
+              className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-blue-100 flex flex-col items-center justify-center min-w-[220px] flex-1"
+              style={{ height: "220px" }}
+            >
               <div className="flex items-center justify-between mb-2">
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
                   <svg
@@ -41,19 +70,23 @@ export function ProfileStats({
                 </div>
               </div>
               <div className="text-3xl font-bold text-gray-800 mb-1">
-                {role === ROLE.AUTHOR ? labsWritten : 12}
+                {role === ROLE.AUTHOR
+                  ? labsWritten
+                  : loadingCompleted
+                  ? "…"
+                  : (completedCount ?? 0)}
               </div>
               <div className="text-gray-600 font-medium">
                 {role === ROLE.AUTHOR ? "Labs Written" : "Labs Completed"}
               </div>
-              {role !== ROLE.AUTHOR && (
-                <div className="text-sm text-blue-600 mt-2">+3 this week</div>
-              )}
             </div>
           )}
 
           {/* Joined date card (shown for all roles) */}
-          <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-purple-100 flex flex-col items-center justify-center min-w-[220px] flex-1" style={{height: '220px', maxWidth: '320px'}}>
+          <div
+            className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-purple-100 flex flex-col items-center justify-center min-w-[220px] flex-1"
+            style={{ height: "220px", maxWidth: "320px" }}
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
                 <svg
@@ -81,7 +114,7 @@ export function ProfileStats({
           {role !== ROLE.ADMIN && (
             <div
               className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-emerald-100 cursor-pointer flex flex-col items-center justify-center min-w-[220px] flex-1"
-              style={{height: '220px'}}
+              style={{ height: "220px" }}
               onClick={onViewBadges}
             >
               <div className="flex items-center justify-between mb-2">
