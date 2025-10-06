@@ -29,10 +29,10 @@ const difficultyFromApi = (v: number | string): LabLevel => {
       return "Basic";
   }
 };
-const categoryFromApi = (categoryId?: number): "Rooms" | "Networks" => {
-  if (categoryId === 2) return "Networks";
-  return "Rooms"; // default & categoryId === 1
-};
+// const categoryFromApi = (categoryId?: number): "Rooms" | "Networks" => {
+//   if (categoryId === 2) return "Networks";
+//   return "Rooms"; // default & categoryId === 1
+// };
 
 type ApiLabRaw = {
   title?: string;
@@ -44,15 +44,15 @@ type ApiLabRaw = {
   DifficultyLevel?: number | string;
   level?: number | string;
   Level?: number | string;
-  categoryId?: number;
-  CategoryId?: number;
+  // categoryId?: number;
+  // CategoryId?: number;
 };
 
 export const Learn = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("All");
+  // const [filterType, setFilterType] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
@@ -92,10 +92,13 @@ export const Learn = () => {
       setIsLoading(true);
       setLoadError(null);
       try {
-        const isAuthorOrAdmin = user && (user.role === ROLE.AUTHOR || user.role === ROLE.ADMIN);
+        const isAuthorOrAdmin =
+          user && (user.role === ROLE.AUTHOR || user.role === ROLE.ADMIN);
         const isUser = user && user.role === ROLE.USER;
         const sub = (user?.subscription || "").toLowerCase();
-        const isPremium = isUser && (sub.includes("premium") || sub === "pro" || sub === "paid");
+        const isPremium =
+          isUser &&
+          (sub.includes("premium") || sub === "pro" || sub === "paid");
 
         const endpoint = !user
           ? "/labs/preview"
@@ -118,12 +121,12 @@ export const Learn = () => {
           const desc = it.description ?? it.Description ?? "";
           const levelVal =
             it.difficultyLevel ?? it.DifficultyLevel ?? it.level ?? it.Level;
-          const categoryVal = it.categoryId ?? it.CategoryId;
+          // const categoryVal = it.categoryId ?? it.CategoryId;
           return {
             title,
             desc,
             level: difficultyFromApi(levelVal ?? 0),
-            type: categoryFromApi(categoryVal),
+            // type: categoryFromApi(categoryVal),
           } as Lab;
         });
         setLabs(mapped);
@@ -143,14 +146,14 @@ export const Learn = () => {
   // Filtered labs
   const filteredLabs = useMemo(() => {
     return labs.filter((lab) => {
-      const matchType = filterType === "All" || lab.type === filterType;
+      // const matchType = filterType === "All" || lab.type === filterType;
       const matchDifficulty = difficulty === "All" || lab.level === difficulty;
       const matchSearch =
         lab.title.toLowerCase().includes(search.toLowerCase()) ||
         lab.desc.toLowerCase().includes(search.toLowerCase());
-      return matchType && matchDifficulty && matchSearch;
+      return matchDifficulty && matchSearch;
     });
-  }, [labs, search, filterType, difficulty]);
+  }, [labs, search, difficulty]);
 
   const totalPages = Math.max(1, Math.ceil(filteredLabs.length / itemsPerPage));
   const paginatedLabs = filteredLabs.slice(
@@ -158,10 +161,10 @@ export const Learn = () => {
     page * itemsPerPage
   );
 
-  const handleFilterType = (type: string) => {
-    setFilterType(type);
-    setPage(1);
-  };
+  // const handleFilterType = (type: string) => {
+  //   setFilterType(type);
+  //   setPage(1);
+  // };
   const handleDifficulty = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDifficulty(e.target.value);
     setPage(1);
@@ -217,7 +220,7 @@ export const Learn = () => {
       {/* Filter & Search */}
       <section className="bg-white px-4 md:px-16 py-16">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex gap-3">
+          {/* <div className="flex gap-3">
             <button
               onClick={() => handleFilterType("All")}
               className={`px-5 py-2 rounded-lg font-semibold cursor-pointer ${
@@ -248,7 +251,7 @@ export const Learn = () => {
             >
               Networks
             </button>
-          </div>
+          </div> */}
           <div className="" /* Difficulty dropdown region */>
             <div ref={dropdownRef} className="relative inline-flex">
               <button
@@ -344,7 +347,10 @@ export const Learn = () => {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-gray-200 p-5 animate-pulse bg-white">
+              <div
+                key={i}
+                className="rounded-xl border border-gray-200 p-5 animate-pulse bg-white"
+              >
                 <div className="h-5 w-3/4 bg-gray-200 rounded mb-3" />
                 <div className="h-4 w-full bg-gray-200 rounded mb-2" />
                 <div className="h-4 w-5/6 bg-gray-200 rounded mb-6" />
@@ -386,23 +392,33 @@ export const Learn = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
+                      {/* <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-100">
                         {lab.type}
-                      </span>
+                      </span> */}
                       <span className="inline-flex items-center gap-2 text-xs md:text-sm text-gray-700 font-semibold">
-                        <span className={`inline-block w-3 h-3 rounded-full ${color[lab.level]}`}></span>
+                        <span
+                          className={`inline-block w-3 h-3 rounded-full ${
+                            color[lab.level]
+                          }`}
+                        ></span>
                         {lab.level}
                       </span>
                     </div>
                     <div className="font-semibold text-base md:text-lg mb-2 text-gray-900">
                       {lab.title}
                     </div>
-                    <div className="text-gray-600 text-sm mb-4 line-clamp-3">{lab.desc}</div>
+                    <div className="text-gray-600 text-sm mb-4 line-clamp-3">
+                      {lab.desc}
+                    </div>
                   </div>
                   <div className="flex items-center justify-end">
                     <div className="inline-flex items-center gap-2 font-semibold text-xs md:text-sm text-violet-700 hover:text-violet-800">
                       View More
-                      <img src="src/assets/right-arrow.png" alt="" className="w-[11px] md:mt-1" />
+                      <img
+                        src="src/assets/right-arrow.png"
+                        alt=""
+                        className="w-[11px] md:mt-1"
+                      />
                     </div>
                   </div>
                 </div>
@@ -419,7 +435,9 @@ export const Learn = () => {
                 <div
                   key={i}
                   className="relative rounded-2xl border border-gray-200 bg-white p-5 min-h-[180px] overflow-hidden cursor-pointer"
-                  onClick={() => navigate("/pricing", { state: { highlight: "premium" } })}
+                  onClick={() =>
+                    navigate("/pricing", { state: { highlight: "premium" } })
+                  }
                 >
                   <div className="filter blur-sm grayscale opacity-80 select-none pointer-events-none">
                     <div className="flex items-center justify-between mb-2">
@@ -438,7 +456,15 @@ export const Learn = () => {
                   <div className="absolute inset-0 flex items-center justify-center bg-white/50">
                     <button className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow">
                       Show More
-                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18l6-6-6-6"/></svg>
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
                     </button>
                   </div>
                 </div>
