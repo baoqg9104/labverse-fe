@@ -41,6 +41,7 @@ export const AUTHOR_TABS = [
   { key: "info", label: "Profile Info", icon: "👤" },
   { key: "myLabs", label: "My Labs", icon: "🗒️" },
   { key: "createLab", label: "Create Lab", icon: "➕" },
+  { key: "createQuestion", label: "Create Question", icon: "➕" },
   { key: "activity", label: "Activity", icon: "📊" },
 ] as const;
 

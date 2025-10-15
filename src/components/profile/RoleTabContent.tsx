@@ -2,6 +2,7 @@ import BadgeList from "../BadgeList";
 import type { Badge } from "../../types/badge";
 import type { User } from "../../types/user";
 import CreateLab from "../labs/CreateLab";
+import CreateQuestions from "../questions/CreateQuestion"; // Import the new component
 import { ROLE } from "./RoleUtils";
 
 type Props = {
@@ -131,11 +132,10 @@ export function RoleTabContent({
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      i % 2
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${i % 2
                         ? "bg-gray-100 text-gray-700"
                         : "bg-emerald-100 text-emerald-700"
-                    }`}
+                      }`}
                   >
                     {i % 2 ? "Draft" : "Published"}
                   </span>
@@ -163,6 +163,10 @@ export function RoleTabContent({
 
       {activeTab === "createLab" && (
         <CreateLab />
+      )}
+
+      {activeTab === "createQuestion" && (
+        <CreateQuestions />
       )}
 
       {activeTab === "overview" && role === ROLE.ADMIN && (
@@ -247,8 +251,8 @@ export function RoleTabContent({
                         {u.role === 2
                           ? "Admin"
                           : u.role === 1
-                          ? "Author"
-                          : "User"}
+                            ? "Author"
+                            : "User"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-700">Verified</td>

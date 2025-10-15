@@ -127,8 +127,8 @@ export default function AdminConsole() {
         );
 
         setUserCounts(uCounts);
-  setLabCounts(lCounts);
-  setUserSubCounts(subCounts);
+        setLabCounts(lCounts);
+        setUserSubCounts(subCounts);
         setTotalUsers(uCounts.user + uCounts.author + uCounts.admin);
         setTotalLabs(lCounts.Basic + lCounts.Intermediate + lCounts.Advanced);
         // Fetch revenue summary (no date filter for now; backend defaults)
@@ -172,10 +172,10 @@ export default function AdminConsole() {
       revenue === null
         ? "N/A"
         : new Intl.NumberFormat("vi-VN", {
-            style: "currency",
-            currency: "VND",
-            maximumFractionDigits: 0,
-          }).format(revenue ?? 0),
+          style: "currency",
+          currency: "VND",
+          maximumFractionDigits: 0,
+        }).format(revenue ?? 0),
     [revenue]
   );
 
@@ -283,15 +283,15 @@ export default function AdminConsole() {
                 {loading ? "…" : formattedRevenue}
               </div>
               <div className="text-gray-600">Revenue (VND)</div>
-                <div className="text-xs text-gray-500 mt-2">
-                    {loading ? "" : formattedAsOf ? `As of: ${formattedAsOf}` : "As of: N/A"}
-                </div>
+              <div className="text-xs text-gray-500 mt-2">
+                {loading ? "" : formattedAsOf ? `As of: ${formattedAsOf}` : "As of: N/A"}
+              </div>
               <div className="text-xs text-gray-500">
                 {loading
                   ? ""
                   : revenueTransactions !== null
-                  ? `Transactions: ${revenueTransactions}`
-                  : "Transactions: N/A"}
+                    ? `Transactions: ${revenueTransactions}`
+                    : "Transactions: N/A"}
               </div>
             </div>
           </div>
