@@ -2,7 +2,8 @@ import BadgeList from "../BadgeList";
 import type { Badge } from "../../types/badge";
 import type { User } from "../../types/user";
 import CreateLab from "../labs/CreateLab";
-import CreateQuestions from "../questions/CreateQuestion"; // Import the new component
+import CreateQuestions from "../questions/CreateQuestion";
+import ViewQuestions from "../questions/ViewQuestions"; // Add this import
 import { ROLE } from "./RoleUtils";
 
 type Props = {
@@ -167,6 +168,10 @@ export function RoleTabContent({
 
       {activeTab === "createQuestion" && (
         <CreateQuestions />
+      )}
+
+      {activeTab === "viewQuestions" && (
+        <ViewQuestions />
       )}
 
       {activeTab === "overview" && role === ROLE.ADMIN && (
