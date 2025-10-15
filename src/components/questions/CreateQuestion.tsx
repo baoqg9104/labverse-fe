@@ -7,7 +7,7 @@ type Lab = {
   slug: string;
 };
 
-type QuestionType = 0 | 1 | 2; // 0: multiple choice, 1: text input, 2: checkbox
+type QuestionType = 0 | 1 | 2 | 3; // 0: SingleChoice, 1: MultipleChoice, 2: TrueFalse, 3: ShortText
 
 export default function CreateQuestions() {
   const [labs, setLabs] = useState<Lab[]>([]);
@@ -57,10 +57,10 @@ export default function CreateQuestions() {
 
   const handleCorrectOptionToggle = (choice: string) => {
     if (questionType === 0) {
-      // Multiple choice - single selection
+      // Single choice - single selection
       setCorrectOptions([choice]);
-    } else if (questionType === 2) {
-      // Checkbox - multiple selection
+    } else if (questionType === 1) {
+      // Multiple choice - multiple selection
       if (correctOptions.includes(choice)) {
         setCorrectOptions(correctOptions.filter(opt => opt !== choice));
       } else {
@@ -69,7 +69,6 @@ export default function CreateQuestions() {
     }
   };
 
-  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -84,7 +83,7 @@ export default function CreateQuestions() {
     }
 
     // Validate based on question type
-    if (questionType === 0 || questionType === 2) {
+    if (questionType === 0 || questionType === 1) {
       const validChoices = choices.filter(c => c.trim());
       if (validChoices.length < 2) {
         alert("Please provide at least 2 choices");
@@ -96,7 +95,7 @@ export default function CreateQuestions() {
       }
     }
 
-    if (questionType === 1 && !correctText.trim()) {
+    if (questionType === 3 && !correctText.trim()) {
       alert("Please provide the correct answer");
       return;
     }
@@ -112,18 +111,26 @@ export default function CreateQuestions() {
 
       // Add fields based on question type
       if (questionType === 0) {
-        // Multiple choice
+        // Single choice
         payload.choices = choices.filter(c => c.trim());
         payload.correctText = correctOptions[0] || "";
+        payload.correctOptions = [];
       } else if (questionType === 1) {
-        // Text input
+        // Multiple choice
+        payload.choices = choices.filter(c => c.trim());
+        payload.correctText = "";
+        payload.correctOptions = correctOptions;
+      } else if (questionType === 2) {
+        // True/False
+        payload.choices = [];
+        payload.correctText = "";
+        payload.correctOptions = [];
+        payload.correctBool = correctBool;
+      } else if (questionType === 3) {
+        // Short text
         payload.correctText = correctText;
         payload.choices = [];
         payload.correctOptions = [];
-      } else if (questionType === 2) {
-        // Checkbox
-        payload.choices = choices.filter(c => c.trim());
-        payload.correctOptions = correctOptions;
       }
 
       await api.post(`/labs/${selectedLabId}/questions`, payload);
@@ -157,7 +164,7 @@ export default function CreateQuestions() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
         {/* Lab Selection */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -167,7 +174,6 @@ export default function CreateQuestions() {
             value={selectedLabId || ""}
             onChange={(e) => setSelectedLabId(Number(e.target.value))}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            required
           >
             <option value="" disabled>Choose a lab...</option>
             {labs.map((lab) => (
@@ -189,7 +195,6 @@ export default function CreateQuestions() {
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             rows={3}
             placeholder="Enter your question here..."
-            required
           />
         </div>
 
@@ -198,7 +203,7 @@ export default function CreateQuestions() {
           <label className="block text-sm font-semibold text-gray-700 mb-2">
             Question Type *
           </label>
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
@@ -207,7 +212,7 @@ export default function CreateQuestions() {
                 onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
                 className="text-blue-600 focus:ring-blue-500"
               />
-              <span>Multiple Choice</span>
+              <span>Single Choice</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -217,7 +222,7 @@ export default function CreateQuestions() {
                 onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
                 className="text-blue-600 focus:ring-blue-500"
               />
-              <span>Text Input</span>
+              <span>Multiple Choice</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -227,13 +232,23 @@ export default function CreateQuestions() {
                 onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
                 className="text-blue-600 focus:ring-blue-500"
               />
-              <span>Checkbox (Multiple Select)</span>
+              <span>True/False</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                value={3}
+                checked={questionType === 3}
+                onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                className="text-blue-600 focus:ring-blue-500"
+              />
+              <span>Short Text</span>
             </label>
           </div>
         </div>
 
-        {/* Choices for Multiple Choice and Checkbox */}
-        {(questionType === 0 || questionType === 2) && (
+        {/* Choices for Single Choice and Multiple Choice */}
+        {(questionType === 0 || questionType === 1) && (
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Answer Choices *
@@ -284,8 +299,39 @@ export default function CreateQuestions() {
           </div>
         )}
 
-        {/* Correct Answer for Text Input */}
-        {questionType === 1 && (
+        {/* True/False Selection */}
+        {questionType === 2 && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Correct Answer *
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="trueFalse"
+                  checked={correctBool === true}
+                  onChange={() => setCorrectBool(true)}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+                <span>True</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="trueFalse"
+                  checked={correctBool === false}
+                  onChange={() => setCorrectBool(false)}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+                <span>False</span>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Correct Answer for Short Text */}
+        {questionType === 3 && (
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Correct Answer (for validation) *
@@ -296,7 +342,6 @@ export default function CreateQuestions() {
               onChange={(e) => setCorrectText(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter the correct answer"
-              required
             />
             <p className="mt-2 text-sm text-gray-500">
               This will be used to validate the student's text answer
@@ -304,23 +349,25 @@ export default function CreateQuestions() {
           </div>
         )}
 
-        {/* Correct Bool Flag */}
-        <div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={correctBool}
-              onChange={(e) => setCorrectBool(e.target.checked)}
-              className="text-blue-600 rounded focus:ring-blue-500"
-            />
-            <span className="text-sm font-semibold text-gray-700">
-              Mark this question as graded
-            </span>
-          </label>
-          <p className="mt-1 text-sm text-gray-500">
-            Uncheck if this is a practice question that shouldn't affect the score
-          </p>
-        </div>
+        {/* Correct Bool Flag - Only shown for non-TrueFalse types */}
+        {questionType !== 2 && (
+          <div>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={correctBool}
+                onChange={(e) => setCorrectBool(e.target.checked)}
+                className="text-blue-600 rounded focus:ring-blue-500"
+              />
+              <span className="text-sm font-semibold text-gray-700">
+                Mark this question as graded
+              </span>
+            </label>
+            <p className="mt-1 text-sm text-gray-500">
+              Uncheck if this is a practice question that shouldn't affect the score
+            </p>
+          </div>
+        )}
 
         {/* Submit Button */}
         <div className="pt-4 border-t border-gray-200">
@@ -340,7 +387,8 @@ export default function CreateQuestions() {
               Reset
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               disabled={isSubmitting}
               className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
@@ -348,15 +396,16 @@ export default function CreateQuestions() {
             </button>
           </div>
         </div>
-      </form>
+      </div>
 
       {/* Instructions */}
       <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
         <h4 className="font-semibold text-blue-900 mb-2">Instructions:</h4>
         <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-          <li><strong>Multiple Choice:</strong> Add choices and select one correct answer</li>
-          <li><strong>Text Input:</strong> Provide the correct answer for validation</li>
-          <li><strong>Checkbox:</strong> Add choices and select all correct answers</li>
+          <li><strong>Single Choice:</strong> Add choices and select one correct answer</li>
+          <li><strong>Multiple Choice:</strong> Add choices and select all correct answers</li>
+          <li><strong>True/False:</strong> Select whether the correct answer is True or False</li>
+          <li><strong>Short Text:</strong> Provide the correct answer for validation</li>
           <li>Questions marked as graded will contribute to the learner's score</li>
         </ul>
       </div>

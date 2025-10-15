@@ -33,7 +33,7 @@ type QuestionDto = {
   id: number;
   labId: number;
   questionText: string;
-  type: 0 | 1 | 2; // 0: multiple choice, 1: text input, 2: checkbox
+  type: 0 | 1 | 2 | 3; // 0: SingleChoice, 1: MultipleChoice, 2: TrueFalse, 3: ShortText
   choicesJson: string;
 };
 
@@ -45,25 +45,22 @@ export default function LabDetail() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // TOC state and refs
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [toc, setToc] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const [questions, setQuestions] = useState<QuestionDto[]>([]);
-  const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
+  const [answers, setAnswers] = useState<Record<number, string | string[] | boolean>>({});
 
   const baseUrl = useMemo(() => {
     if (!lab?.mdPublicUrl) return "";
-    // remove index.md or trailing file from mdPublicUrl to get folder base
     try {
       const url = new URL(lab.mdPublicUrl);
       const parts = url.pathname.split("/");
-      parts.pop(); // remove file
+      parts.pop();
       url.pathname = parts.join("/") + "/";
       return url.toString();
     } catch {
-      // fallback simple replace
       return lab.mdPublicUrl.replace(/index\.md(\?.*)?$/, "");
     }
   }, [lab?.mdPublicUrl]);
@@ -74,15 +71,13 @@ export default function LabDetail() {
       setIsLoading(true);
       setError(null);
       try {
-        // Fetch lab by slug from backend
         const res = await api.get(`/labs/slug/${encodeURIComponent(slug)}`);
         const dto = res.data as LabDto;
-
         setLab(dto);
 
         const questionsRes = await api.get(`/labs/${dto.id}/questions`);
         setQuestions(questionsRes.data as QuestionDto[]);
-        // Fetch markdown content via public URL
+        
         if (dto.mdPublicUrl) {
           const mdRes = await fetch(dto.mdPublicUrl);
           if (!mdRes.ok) throw new Error("Failed to fetch lab content");
@@ -101,7 +96,6 @@ export default function LabDetail() {
     load();
   }, [slug]);
 
-  // Build TOC from rendered headings after markdown updates
   useEffect(() => {
     const root = contentRef.current;
     if (!root) return;
@@ -116,10 +110,8 @@ export default function LabDetail() {
       }));
     setToc(items);
 
-    // Track active heading while scrolling
     const observer = new IntersectionObserver(
       (entries) => {
-        // choose the first visible heading near top
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort(
@@ -146,12 +138,12 @@ export default function LabDetail() {
     e.preventDefault();
     const el = document.getElementById(id);
     if (!el) return;
-    const yOffset = -12; // adjust if a fixed header exists
+    const yOffset = -12;
     const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
     window.scrollTo({ top: y, behavior: "smooth" });
   };
 
-  const handleAnswerChange = (questionId: number, value: string | string[]) => {
+  const handleAnswerChange = (questionId: number, value: string | string[] | boolean) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
@@ -172,10 +164,9 @@ export default function LabDetail() {
     }
 
     try {
-      // Submit each answer individually to match the API endpoint
       const submitPromises = Object.entries(answers).map(async ([questionId, answer]) => {
         const payload = {
-          answerJson: JSON.stringify(answer) // Convert answer to JSON string
+          answerJson: JSON.stringify(answer)
         };
         
         return api.post(
@@ -184,13 +175,9 @@ export default function LabDetail() {
         );
       });
 
-      // Wait for all submissions to complete
       await Promise.all(submitPromises);
       
       alert("Answers submitted successfully!");
-      
-      // Optionally clear answers after successful submission
-      // setAnswers({});
     } catch (e) {
       console.error("Submit error:", e);
       alert("Failed to submit answers. Please try again.");
@@ -207,7 +194,6 @@ export default function LabDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Back Button */}
       <div className="px-4 md:px-10 lg:px-16 py-6">
         <button
           onClick={() => navigate(-1)}
@@ -232,15 +218,12 @@ export default function LabDetail() {
           <div className="text-center text-red-600 py-10">{error}</div>
         ) : (
           <>
-            {/* Page Title and Description */}
             <div className="mb-6">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{lab?.title}</h1>
               <p className="text-gray-600">{lab?.description}</p>
             </div>
 
-            {/* Main Content Grid (Lab content + TOC) */}
             <div className="lg:grid lg:grid-cols-12 lg:gap-8 mb-12">
-              {/* Main content */}
               <div className="lg:col-span-9">
                 <div className="rounded-2xl border bg-white p-6">
                   <div ref={contentRef} className="markdown-body max-w-none">
@@ -274,7 +257,6 @@ export default function LabDetail() {
                 </div>
               </div>
 
-              {/* Table of Contents */}
               <aside className="hidden lg:block lg:col-span-3">
                 <div className="sticky top-24">
                   <div className="rounded-xl border bg-white p-4">
@@ -313,23 +295,19 @@ export default function LabDetail() {
               </aside>
             </div>
 
-            {/* Questions Section - Now outside the grid */}
             {questions.length > 0 && (
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Header */}
                 <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 sm:px-8 sm:py-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-white">
                     Lab Questions
                   </h2>
                 </div>
 
-                {/* Questions Container */}
                 <div className="p-6 sm:p-8 space-y-8">
                   {questions.map((q, idx) => {
                     const choices = parseChoices(q.choicesJson);
                     return (
                       <div key={q.id} className="space-y-4">
-                        {/* Question Header */}
                         <div className="flex flex-col sm:flex-row sm:items-start gap-2">
                           <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-sm flex-shrink-0 border border-blue-200">
                             {idx + 1}
@@ -339,9 +317,8 @@ export default function LabDetail() {
                           </p>
                         </div>
 
-                        {/* Answer Area */}
                         <div className="sm:ml-10">
-                          {/* Multiple Choice (type 0) */}
+                          {/* Single Choice (type 0) */}
                           {q.type === 0 && (
                             <div className="space-y-3">
                               {choices.map((choice, choiceIdx) => (
@@ -365,19 +342,8 @@ export default function LabDetail() {
                             </div>
                           )}
 
-                          {/* Text Input (type 1) */}
+                          {/* Multiple Choice (type 1) */}
                           {q.type === 1 && (
-                            <textarea
-                              value={(answers[q.id] as string) || ""}
-                              onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                              placeholder="Type your answer here..."
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base transition-all resize-y min-h-[100px]"
-                              rows={4}
-                            />
-                          )}
-
-                          {/* Checkbox (type 2) */}
-                          {q.type === 2 && (
                             <div className="space-y-3">
                               {choices.map((choice, choiceIdx) => (
                                 <label
@@ -397,13 +363,49 @@ export default function LabDetail() {
                               ))}
                             </div>
                           )}
+
+                          {/* True/False (type 2) */}
+                          {q.type === 2 && (
+                            <div className="flex gap-4">
+                              <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`question-${q.id}`}
+                                  checked={answers[q.id] === true}
+                                  onChange={() => handleAnswerChange(q.id, true)}
+                                  className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                />
+                                <span className="text-gray-700 text-sm sm:text-base">True</span>
+                              </label>
+                              <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`question-${q.id}`}
+                                  checked={answers[q.id] === false}
+                                  onChange={() => handleAnswerChange(q.id, false)}
+                                  className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                />
+                                <span className="text-gray-700 text-sm sm:text-base">False</span>
+                              </label>
+                            </div>
+                          )}
+
+                          {/* Short Text (type 3) */}
+                          {q.type === 3 && (
+                            <textarea
+                              value={(answers[q.id] as string) || ""}
+                              onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                              placeholder="Type your answer here..."
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base transition-all resize-y min-h-[100px]"
+                              rows={4}
+                            />
+                          )}
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Submit Button Section */}
                 <div className="bg-gray-50 px-6 py-4 sm:px-8 sm:py-6 border-t border-gray-200">
                   <div className="flex flex-col sm:flex-row gap-4 sm:justify-end">
                     <button

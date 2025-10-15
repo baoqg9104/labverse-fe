@@ -3,7 +3,7 @@ import type { Badge } from "../../types/badge";
 import type { User } from "../../types/user";
 import CreateLab from "../labs/CreateLab";
 import CreateQuestions from "../questions/CreateQuestion";
-import ViewQuestions from "../questions/ViewQuestions"; // Add this import
+import ViewQuestions from "../questions/ViewQuestions";
 import { ROLE } from "./RoleUtils";
 
 type Props = {

@@ -15,11 +15,24 @@ type Question = {
   choicesJson: string;
 };
 
+type QuestionType = 0 | 1 | 2 | 3; // 0: SingleChoice, 1: MultipleChoice, 2: TrueFalse, 3: ShortText
+
 export default function ViewQuestions() {
   const [labs, setLabs] = useState<Lab[]>([]);
   const [selectedLabId, setSelectedLabId] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Edit Modal State
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [questionText, setQuestionText] = useState("");
+  const [questionType, setQuestionType] = useState<QuestionType>(0);
+  const [choices, setChoices] = useState<string[]>([""]);
+  const [correctText, setCorrectText] = useState("");
+  const [correctOptions, setCorrectOptions] = useState<string[]>([]);
+  const [correctBool, setCorrectBool] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchLabs();
@@ -59,11 +72,13 @@ export default function ViewQuestions() {
   const getQuestionTypeLabel = (type: number) => {
     switch (type) {
       case 0:
-        return "Multiple Choice";
+        return "Single Choice";
       case 1:
-        return "Text Input";
+        return "Multiple Choice";
       case 2:
-        return "Checkbox";
+        return "True/False";
+      case 3:
+        return "Short Text";
       default:
         return "Unknown";
     }
@@ -74,9 +89,11 @@ export default function ViewQuestions() {
       case 0:
         return "⭕";
       case 1:
-        return "✏️";
-      case 2:
         return "☑️";
+      case 2:
+        return "✓✗";
+      case 3:
+        return "✏️";
       default:
         return "❓";
     }
@@ -96,7 +113,7 @@ export default function ViewQuestions() {
     }
 
     try {
-      await api.delete(`/api/labs/${selectedLabId}/questions/${questionId}`);
+      await api.delete(`/labs/${selectedLabId}/questions/${questionId}`);
       alert("Question deleted successfully!");
       if (selectedLabId) {
         fetchQuestions(selectedLabId);
@@ -104,6 +121,139 @@ export default function ViewQuestions() {
     } catch (error) {
       console.error("Failed to delete question:", error);
       alert("Failed to delete question. Please try again.");
+    }
+  };
+
+  const handleEditClick = (question: Question) => {
+    setEditingQuestion(question);
+    setQuestionText(question.questionText);
+    setQuestionType(question.type as QuestionType);
+    
+    const parsedChoices = parseChoices(question.choicesJson);
+    if (parsedChoices.length > 0) {
+      setChoices(parsedChoices);
+    } else {
+      setChoices([""]);
+    }
+    
+    setCorrectText("");
+    setCorrectOptions([]);
+    setCorrectBool(true);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+    setEditingQuestion(null);
+    setQuestionText("");
+    setQuestionType(0);
+    setChoices([""]);
+    setCorrectText("");
+    setCorrectOptions([]);
+    setCorrectBool(true);
+  };
+
+  const handleAddChoice = () => {
+    setChoices([...choices, ""]);
+  };
+
+  const handleRemoveChoice = (index: number) => {
+    const newChoices = choices.filter((_, i) => i !== index);
+    setChoices(newChoices);
+    const removedChoice = choices[index];
+    setCorrectOptions(correctOptions.filter(opt => opt !== removedChoice));
+  };
+
+  const handleChoiceChange = (index: number, value: string) => {
+    const newChoices = [...choices];
+    newChoices[index] = value;
+    setChoices(newChoices);
+  };
+
+  const handleCorrectOptionToggle = (choice: string) => {
+    if (questionType === 0) {
+      setCorrectOptions([choice]);
+    } else if (questionType === 1) {
+      if (correctOptions.includes(choice)) {
+        setCorrectOptions(correctOptions.filter(opt => opt !== choice));
+      } else {
+        setCorrectOptions([...correctOptions, choice]);
+      }
+    }
+  };
+
+  const handleUpdateQuestion = async () => {
+    if (!selectedLabId || !editingQuestion) {
+      alert("Invalid question or lab");
+      return;
+    }
+
+    if (!questionText.trim()) {
+      alert("Please enter question text");
+      return;
+    }
+
+    if (questionType === 0 || questionType === 1) {
+      const validChoices = choices.filter(c => c.trim());
+      if (validChoices.length < 2) {
+        alert("Please provide at least 2 choices");
+        return;
+      }
+      if (correctOptions.length === 0) {
+        alert("Please select correct answer(s)");
+        return;
+      }
+    }
+
+    if (questionType === 3 && !correctText.trim()) {
+      alert("Please provide the correct answer");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const payload: any = {
+        questionText,
+        type: questionType,
+        correctBool,
+      };
+
+      if (questionType === 0) {
+        // Single choice
+        payload.choices = choices.filter(c => c.trim());
+        payload.correctText = correctOptions[0] || "";
+        payload.correctOptions = [];
+      } else if (questionType === 1) {
+        // Multiple choice
+        payload.choices = choices.filter(c => c.trim());
+        payload.correctText = "";
+        payload.correctOptions = correctOptions;
+      } else if (questionType === 2) {
+        // True/False
+        payload.choices = [];
+        payload.correctText = "";
+        payload.correctOptions = [];
+        payload.correctBool = correctBool;
+      } else if (questionType === 3) {
+        // Short text
+        payload.correctText = correctText;
+        payload.choices = [];
+        payload.correctOptions = [];
+      }
+
+      console.log("Update payload:", payload);
+
+      await api.patch(`/labs/${selectedLabId}/questions/${editingQuestion.id}`, payload);
+      
+      alert("Question updated successfully!");
+      handleCloseModal();
+      fetchQuestions(selectedLabId);
+    } catch (error) {
+      console.error("Failed to update question:", error);
+      alert("Failed to update question. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -183,6 +333,12 @@ export default function ViewQuestions() {
                   </div>
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={() => handleEditClick(question)}
+                      className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
                       onClick={() => handleDeleteQuestion(question.id)}
                       className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
@@ -227,21 +383,238 @@ export default function ViewQuestions() {
               <strong>
                 {questions.filter((q) => q.type === 0).length}
               </strong>{" "}
-              Multiple Choice
+              Single Choice
               {" • "}
               <strong>
                 {questions.filter((q) => q.type === 1).length}
               </strong>{" "}
-              Text Input
+              Multiple Choice
               {" • "}
               <strong>
                 {questions.filter((q) => q.type === 2).length}
               </strong>{" "}
-              Checkbox
+              True/False
+              {" • "}
+              <strong>
+                {questions.filter((q) => q.type === 3).length}
+              </strong>{" "}
+              Short Text
             </>
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
+        <div 
+          className="fixed inset-0 flex items-center justify-center z-50 p-4" 
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+          onClick={handleCloseModal}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-800">Edit Question</h3>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Question Text *
+                </label>
+                <textarea
+                  value={questionText}
+                  onChange={(e) => setQuestionText(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
+                  placeholder="Enter your question here..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Question Type *
+                </label>
+                <div className="flex gap-4 flex-wrap">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value={0}
+                      checked={questionType === 0}
+                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Single Choice</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value={1}
+                      checked={questionType === 1}
+                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Multiple Choice</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value={2}
+                      checked={questionType === 2}
+                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>True/False</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      value={3}
+                      checked={questionType === 3}
+                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span>Short Text</span>
+                  </label>
+                </div>
+              </div>
+
+              {(questionType === 0 || questionType === 1) && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Answer Choices *
+                  </label>
+                  <div className="space-y-3">
+                    {choices.map((choice, index) => (
+                      <div key={index} className="flex gap-2 items-start">
+                        <input
+                          type={questionType === 0 ? "radio" : "checkbox"}
+                          name="correct"
+                          checked={correctOptions.includes(choice)}
+                          onChange={() => handleCorrectOptionToggle(choice)}
+                          disabled={!choice.trim()}
+                          className="mt-3 text-blue-600 focus:ring-blue-500"
+                        />
+                        <input
+                          type="text"
+                          value={choice}
+                          onChange={(e) => handleChoiceChange(index, e.target.value)}
+                          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder={`Choice ${index + 1}`}
+                        />
+                        {choices.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveChoice(index)}
+                            className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddChoice}
+                    className="mt-3 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                  >
+                    + Add Choice
+                  </button>
+                  <p className="mt-2 text-sm text-gray-500">
+                    {questionType === 0 
+                      ? "Select the radio button next to the correct answer" 
+                      : "Check all correct answers"}
+                  </p>
+                </div>
+              )}
+
+              {questionType === 2 && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Correct Answer *
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="trueFalse"
+                        checked={correctBool === true}
+                        onChange={() => setCorrectBool(true)}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>True</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="trueFalse"
+                        checked={correctBool === false}
+                        onChange={() => setCorrectBool(false)}
+                        className="text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>False</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {questionType === 3 && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Correct Answer (for validation) *
+                  </label>
+                  <input
+                    type="text"
+                    value={correctText}
+                    onChange={(e) => setCorrectText(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter the correct answer"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={correctBool}
+                    onChange={(e) => setCorrectBool(e.target.checked)}
+                    className="text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-semibold text-gray-700">
+                    Mark this question as graded
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-4">
+              <button
+                onClick={handleCloseModal}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateQuestion}
+                disabled={isSubmitting}
+                className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isSubmitting ? "Updating..." : "Update Question"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
