@@ -7,6 +7,7 @@ import BadgesModal from "../components/BadgesModal";
 import EditProfileModal from "../components/EditProfileModal";
 import { ProfileHeader } from "../components/profile/ProfileHeader";
 import { ProfileStats } from "../components/profile/ProfileStats";
+import GamificationStats from "../components/profile/GamificationStats";
 import { TabsNav } from "../components/profile/TabsNav";
 import { RoleTabContent } from "../components/profile/RoleTabContent";
 import { ROLE, USER_TABS, AUTHOR_TABS } from "../components/profile/RoleUtils";
@@ -95,6 +96,16 @@ export function Profile() {
             onViewBadges={() => setShowBadgesModal(true)}
             onBackToMe={() => user && setProfile(user)}
           />
+
+          {/* Gamification section: Points, Level, Streak (only for USER/AUTHOR) */}
+          {profile?.role !== ROLE.ADMIN && (
+            <GamificationStats
+              points={profile?.points}
+              level={profile?.level}
+              streakCurrent={profile?.streakCurrent}
+              streakBest={profile?.streakBest}
+            />
+          )}
 
           <ProfileStats
             badges={badges}

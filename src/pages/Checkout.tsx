@@ -4,6 +4,8 @@ import { AuthContext } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
 import api from "../utils/axiosInstance";
 import type { CheckoutResponse } from "../types/checkout";
+import { ROLE } from "../components/profile/RoleUtils";
+import { useTranslation } from "react-i18next";
 
 const premiumFeatures = [
   "All Free tier content",
@@ -13,6 +15,7 @@ const premiumFeatures = [
 ];
 
 export const Checkout = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthLoading } = useContext(AuthContext);
   const [redirectLoading, setRedirectLoading] = useState(false);
@@ -31,6 +34,10 @@ export const Checkout = () => {
     return sub.includes("premium") || sub === "pro" || sub === "paid";
   }, [user?.subscription]);
 
+  const isEligibleUserRole = useMemo(() => {
+    return (user?.role ?? ROLE.USER) === ROLE.USER;
+  }, [user?.role]);
+
   useEffect(() => {
     if (!isAuthLoading && !user) {
       navigate("/login", { replace: true, state: { from: "/checkout" } });
@@ -40,7 +47,13 @@ export const Checkout = () => {
   const onBackToPricing = () => navigate("/pricing");
   const onConfirm = () => {
     if (isPremiumUser) {
-      toast.info("You already have Premium.");
+      toast.info(t('toasts.alreadyPremium'));
+      navigate("/profile");
+      return;
+    }
+
+    if (!isEligibleUserRole) {
+      toast.info(t('toasts.onlyUser'));
       navigate("/profile");
       return;
     }
@@ -69,7 +82,7 @@ export const Checkout = () => {
       setLoading(false);
     } catch {
       setLoading(false);
-      toast.error("Failed to create payment link. Please try again.");
+      toast.error(t('toasts.paymentLinkFailed'));
     }
   };
 
@@ -115,7 +128,7 @@ export const Checkout = () => {
           >
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Back to Pricing
+          {t('checkout.backToPricing')}
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -124,14 +137,14 @@ export const Checkout = () => {
             <div className="flex items-start justify-between">
               <div>
                 <div className="text-2xl font-semibold text-[#1a144b]">
-                  Premium
+                  {t('checkout.plan')}
                 </div>
                 <p className="text-[#6b6a7d] mt-1">
-                  Unlock all labs, downloads and priority support
+                  {t('checkout.unlock')}
                 </p>
               </div>
               <span className="inline-flex items-center text-xs font-bold bg-[#3c3476] text-[#b6aaff] px-3 py-1 rounded-full">
-                MOST POPULAR
+                {t('checkout.mostPopular')}
               </span>
             </div>
 
@@ -139,11 +152,11 @@ export const Checkout = () => {
               <div className="text-4xl font-bold text-[#1a144b]">
                 100.000đ{" "}
                 <span className="text-base font-normal text-gray-500">
-                  /month
+                  {t('checkout.priceSuffix')}
                 </span>
               </div>
               <div className="mt-3 text-sm text-gray-600">
-                Billed monthly. Cancel anytime.
+                {t('checkout.billedMonthly')}
               </div>
             </div>
 
@@ -165,13 +178,13 @@ export const Checkout = () => {
 
             <div className="mt-8 rounded-2xl bg-[#f6f7fe] border border-[#eceffd] p-4">
               <div className="text-sm font-semibold text-[#302b63] mb-1">
-                What you’ll get
+                {t('checkout.whatYouGet')}
               </div>
               <ul className="text-sm text-[#514f6a] list-disc pl-5 space-y-1">
-                <li>Access to all Premium labs</li>
-                <li>Faster support response times</li>
-                <li>Download and keep lab resources</li>
-                <li>Support the platform development</li>
+                <li>{t('checkout.benefits.allPremium')}</li>
+                <li>{t('checkout.benefits.fasterSupport')}</li>
+                <li>{t('checkout.benefits.downloadKeep')}</li>
+                <li>{t('checkout.benefits.supportPlatform')}</li>
               </ul>
             </div>
           </div>
@@ -179,41 +192,44 @@ export const Checkout = () => {
           {/* Order summary */}
           <div className="lg:col-span-2">
             <div className="bg-[#221d4f] text-white rounded-3xl p-7 shadow-xl border-2 border-[#b6aaff]/60">
-              <div className="text-lg font-semibold">Order Summary</div>
+              <div className="text-lg font-semibold">{t('checkout.orderSummary')}</div>
               <div className="mt-4 flex items-center justify-between">
                 <div>
-                  <div className="font-medium">Premium plan</div>
-                  <div className="text-sm text-gray-300">Monthly billing</div>
+                  <div className="font-medium">{t('checkout.premiumPlan')}</div>
+                  <div className="text-sm text-gray-300">{t('checkout.monthlyBilling')}</div>
                 </div>
                 <div className="text-2xl font-bold">100.000đ</div>
               </div>
               <div className="mt-4 border-t border-white/10 pt-4 text-sm text-gray-300">
-                Taxes included where applicable.
+                {t('checkout.taxesIncluded')}
               </div>
 
               {isPremiumUser ? (
                 <div className="mt-6 px-4 py-2 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold text-center">
-                  You already have Premium
+                  {t('checkout.alreadyPremium')}
+                </div>
+              ) : !isEligibleUserRole ? (
+                <div className="mt-6 px-4 py-2 rounded-xl bg-yellow-400/20 text-yellow-100 font-semibold text-center">
+                  {t('checkout.onlyUser')}
                 </div>
               ) : (
                 <button
                   onClick={onConfirm}
-                  disabled={redirectLoading}
+                  disabled={redirectLoading || !isEligibleUserRole}
                   className="cursor-pointer w-full mt-6 px-6 py-3 rounded-full bg-[#b6ff3c] text-[#201958] font-bold shadow-lg hover:bg-[#a0e636] transition text-lg"
                 >
-                  {redirectLoading ? "Loading..." : "Subscribe now"}
+                  {redirectLoading ? t('checkout.loading') : t('checkout.subscribeNow')}
                 </button>
               )}
 
               <div className="mt-4 text-[11px] text-gray-300">
-                By subscribing, you agree to our Terms of Service and Privacy
-                Policy.
+                {t('checkout.agree')}
               </div>
             </div>
             <div className="mt-4 text-xs text-gray-500 text-center">
-              Need help?{" "}
+              {t('checkout.needHelp')}{" "}
               <a href="/contact" className="underline">
-                Contact us
+                {t('checkout.contactUs')}
               </a>
             </div>
           </div>

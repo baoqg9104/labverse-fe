@@ -1,0 +1,194 @@
+{
+  "nav": {
+    "home": "Home",
+    "learn": "Learn",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "console": "Console",
+    "users": "Users",
+    "labs": "Labs",
+    "reports": "Reports",
+    "revenue": "Revenue",
+    "login": "Log In",
+    "getStarted": "Get Started",
+    "viewProfile": "View Profile",
+    "manageAccount": "Manage Account",
+    "logout": "Log Out",
+    "admin": "Admin",
+    "profile": "Profile",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "footer": {
+    "getInTouch": "Get in touch",
+    "contactUs": "Contact us",
+    "forum": "Forum",
+    "copyright": "Labverse @ 2025"
+  },
+  "home": {
+    "heroTitle": "Learn - Practice - Conquer",
+    "heroSubtitle": "Your home, your lab",
+    "heroDesc": "The site offers cybersecurity knowledge from basic to advanced with interactive lessons, hands-on labs, and a supportive community, mainly for beginners.",
+    "ctaExplore": "Explore Free Lessons",
+    "sectionTitle": "From Zero to Hero: Real-World Cybersecurity Labs for Everyone",
+    "sectionDesc": "Master cybersecurity with hands-on labs, structured pathways, and real-world scenarios. Our platform provides affordable, engaging, and on-demand training for beginners and professionals alike.",
+    "reasonsTitle": "\"Why Choose Labverse?\"",
+    "reasonsLead": "Labverse is a hands-on cybersecurity learning platform built by students, for students. We focus on:",
+    "reasons": {
+      "blog": "Concise knowledge blogs",
+      "steps": "Step-by-step lab guides",
+      "tips": "Tips & common pitfalls",
+      "cost": "Cost-effective",
+      "viExplain": "Beginner-to-advanced knowledge with clear Vietnamese explanations",
+      "simpleLabs": "Simple yet practical labs compatible with standard hardware",
+      "community": "Support community for collaborative learning"
+    }
+  },
+  "auth": {
+    "welcomeBack": "Welcome back!",
+    "loginLead": "Log in to your account.",
+    "email": "Email",
+    "password": "Password",
+    "login": "Log in",
+    "loggingIn": "Logging in...",
+    "or": "or",
+    "continueGoogle": "Continue with Google",
+    "signup": "Sign Up",
+    "signingUp": "Signing up...",
+    "confirmPassword": "Confirm Password",
+    "username": "Username",
+    "errors": {
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Invalid email format.",
+      "passwordRequired": "Password is required.",
+      "invalidCredentials": "Invalid email or password.",
+      "loginFailed": "Login failed. Please try again.",
+      "recaptchaNotReady": "Recaptcha is not ready.",
+      "emailExists": "Email already exists.",
+      "signupFailed": "Signup failed. Please try again.",
+      "passwordAtLeast": "Password must be at least 8 characters.",
+      "passwordUpper": "Password must contain at least one uppercase letter.",
+      "passwordLower": "Password must contain at least one lowercase letter.",
+      "passwordNumber": "Password must contain at least one number.",
+      "passwordSpecial": "Password must contain at least one special character.",
+      "confirmPasswordRequired": "Please confirm your password.",
+      "passwordNotMatch": "Passwords do not match.",
+      "usernameRequired": "Username is required.",
+      "usernameAtLeast": "Username must be at least 3 characters."
+    },
+    "aria": {
+      "hidePassword": "Hide password",
+      "showPassword": "Show password"
+    }
+  },
+  "checkout": {
+    "backToPricing": "Back to Pricing",
+    "plan": "Premium",
+    "unlock": "Unlock all labs, downloads and priority support",
+    "mostPopular": "MOST POPULAR",
+    "priceSuffix": "/month",
+    "billedMonthly": "Billed monthly. Cancel anytime.",
+    "whatYouGet": "What you’ll get",
+    "benefits": {
+      "allPremium": "Access to all Premium labs",
+      "fasterSupport": "Faster support response times",
+      "downloadKeep": "Download and keep lab resources",
+      "supportPlatform": "Support the platform development"
+    },
+    "orderSummary": "Order Summary",
+    "premiumPlan": "Premium plan",
+    "monthlyBilling": "Monthly billing",
+    "taxesIncluded": "Taxes included where applicable.",
+    "alreadyPremium": "You already have Premium",
+    "onlyUser": "Premium plan is only available for User accounts",
+    "subscribeNow": "Subscribe now",
+    "loading": "Loading...",
+    "agree": "By subscribing, you agree to our Terms of Service and Privacy Policy.",
+    "needHelp": "Need help?",
+    "contactUs": "Contact us"
+  },
+  "toasts": {
+    "alreadyPremium": "You already have Premium.",
+    "onlyUser": "Only User accounts can register for Premium.",
+    "paymentLinkFailed": "Failed to create payment link. Please try again.",
+    "loggedIn": "Logged in successfully!"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We'd love to hear from you! Fill out the form below.",
+    "labels": {
+      "name": "Name",
+      "email": "Email",
+      "message": "Message"
+    },
+    "placeholders": {
+      "name": "Your name",
+      "email": "Your email",
+      "message": "Your message"
+    },
+    "actions": {
+      "send": "Send Message",
+      "sending": "Sending..."
+    },
+    "success": "Thank you! We'll get back to you soon.",
+    "errors": {
+      "nameRequired": "Name is required.",
+      "nameMin": "Name must be at least 2 characters.",
+      "emailRequired": "Email is required.",
+      "emailInvalid": "Invalid email address.",
+      "messageRequired": "Message is required.",
+      "messageMin": "Message must be at least 10 characters.",
+      "sendFailed": "Failed to send message. Please try again later."
+    }
+  },
+  "pricingPage": {
+    "free": {
+      "price": "0đ",
+      "priceSuffix": "always free",
+      "title": "Free",
+      "audience": "Beginners, students, or those exploring cybersecurity.",
+      "join": "Join now"
+    },
+    "premium": {
+      "badge": "MOST POPULAR",
+      "price": "100,000đ",
+      "priceSuffix": "/month",
+      "title": "Premium",
+      "audience": "Aspiring professionals, lab enthusiasts, and dedicated.",
+      "getStarted": "Get started",
+      "alreadyPremium": "You already have Premium"
+    },
+    "faqs": {
+      "title": "FAQs",
+      "paymentMethods": {
+        "title": "What payment methods do you offer?",
+        "methods": ["Bank Transfer"]
+      }
+    }
+  },
+  "learn": {
+    "heroTitle": "Labverse Academy",
+    "heroSubtitle": "Unlock Cyber Skills at Home",
+    "heroDesc": "Dive into practical cybersecurity labs designed for home setups. Progress from beginner to advanced with interactive guides, challenges, and real-world scenarios. No expensive gear required!",
+    "stats": { "labs": "Labs" },
+    "difficulty": {
+      "label": "Difficulty",
+      "all": "All",
+      "basic": "Basic",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "searchPlaceholder": "Search labs...",
+    "noLabs": "No labs found.",
+    "alt": { "hero": "Cybersecurity Labs" }
+  },
+  "notFound": {
+    "title": "404 - Page Not Found",
+    "desc": "The page you are looking for does not exist or has been removed. Please check the address or return to the homepage.",
+    "backHome": "Back to Homepage"
+  },
+  "common": {
+    "viewMore": "View More",
+    "showMore": "Show More"
+  }
+}

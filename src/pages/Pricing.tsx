@@ -1,7 +1,8 @@
 import { useContext, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 const freeFeatures = [
   "Step-by-step tutorials",
@@ -16,9 +17,8 @@ const premiumFeatures = [
   "Priority support",
 ];
 
-const paymentMethods = ["MoMo", "VNPAY", "Bank Transfer"];
-
 export const Pricing = () => {
+  const { t } = useTranslation();
   const { user, isAuthLoading } = useContext(AuthContext);
   // Scroll to top when this page loads
   useEffect(() => {
@@ -53,7 +53,7 @@ export const Pricing = () => {
       return;
     }
     if (isPremiumUser) {
-      toast.info("You already have Premium.");
+      toast.info(t("checkout.alreadyPremium"));
       return;
     }
     navigate("/checkout");
@@ -69,13 +69,12 @@ export const Pricing = () => {
           style={{ boxShadow: "0 8px 32px 0 rgba(44, 34, 84, 0.10)" }}
         >
           <div className="text-4xl text-[#1a144b]">
-            <span className="font-bold">0đ</span>{" "}
-            <span className="text-lg text-[#848199]">always free</span>
+            <span className="font-bold">{t("pricingPage.free.price")}</span>{" "}
+            <span className="text-lg text-[#848199]">{t("pricingPage.free.priceSuffix")}</span>
           </div>
-          <div className="text-3xl text-[#1a144b] font-medium">Free</div>
+          <div className="text-3xl text-[#1a144b] font-medium">{t("pricingPage.free.title")}</div>
           <div className="text-base text-[#848199] mb-2 font-medium w-1/2">
-            <span>🎯</span> Beginners, students, or those exploring
-            cybersecurity.
+            <span>🎯</span> {t("pricingPage.free.audience")}
           </div>
           <ul className="flex flex-col gap-3 text-gray-700 text-base mt-2">
             {freeFeatures.map((feature) => (
@@ -97,7 +96,7 @@ export const Pricing = () => {
             ))}
           </ul>
           <button className="w-[200px] mt-12 px-8 py-3 rounded-full bg-[#7c7890] text-white font-semibold shadow hover:bg-[#5c5870] transition text-lg cursor-pointer">
-            Join now
+            {t("pricingPage.free.join")}
           </button>
         </div>
 
@@ -113,16 +112,15 @@ export const Pricing = () => {
           }}
         >
           <div className="absolute top-5 right-6 bg-[#3c3476] text-[#b6aaff] text-xs font-bold px-4 py-1 rounded-full shadow">
-            MOST POPULAR
+            {t("pricingPage.premium.badge")}
           </div>
           <div className="text-4xl">
-            <span className="font-bold text-white">100.000đ </span>
-            <span className="text-base font-normal text-gray-300">/month</span>
+            <span className="font-bold text-white">{t("pricingPage.premium.price")} </span>
+            <span className="text-base font-normal text-gray-300">{t("pricingPage.premium.priceSuffix")}</span>
           </div>
-          <div className="text-3xl font-medium mb-2 text-white">Premium</div>
+          <div className="text-3xl font-medium mb-2 text-white">{t("pricingPage.premium.title")}</div>
           <div className="text-base text-gray-200 mb-2 font-medium">
-            <span className="text-yellow-400">🚀</span> Aspiring professionals,
-            lab enthusiasts, and dedicated.
+            <span className="text-yellow-400">🚀</span> {t("pricingPage.premium.audience")}
           </div>
           <ul className="flex flex-col gap-2 text-base mt-2">
             {premiumFeatures.map((feature) => (
@@ -145,14 +143,14 @@ export const Pricing = () => {
           </ul>
           {isPremiumUser ? (
             <div className="mt-6 px-4 py-2 rounded-full bg-emerald-500/20 text-emerald-200 font-semibold text-center">
-              You already have Premium
+              {t("pricingPage.premium.alreadyPremium")}
             </div>
           ) : (
             <button
               onClick={handleGetStarted}
               className="cursor-pointer w-[220px] mt-6 px-8 py-3 rounded-full bg-[#b6ff3c] text-[#201958] font-bold shadow-lg hover:bg-[#a0e636] transition text-lg transform hover:scale-105"
             >
-              Get started
+              {t("pricingPage.premium.getStarted")}
             </button>
           )}
         </div>
@@ -162,7 +160,7 @@ export const Pricing = () => {
       <div className="w-full max-w-5xl mx-auto mt-16 md:mt-24 px-4">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-2">
-            FAQs
+            {t("pricingPage.faqs.title")}
           </h2>
           <div className="w-16 h-1 mx-auto bg-[#A3EA2A] rounded-full mb-2"></div>
         </div>
@@ -200,10 +198,10 @@ export const Pricing = () => {
                   />
                 </defs>
               </svg>
-              What payment methods do you offer?
+              {t("pricingPage.faqs.paymentMethods.title")}
             </div>
             <ul className="ml-8 mt-2 flex flex-col gap-2">
-              {paymentMethods.map((method) => (
+              {(t("pricingPage.faqs.paymentMethods.methods", { returnObjects: true }) as string[]).map((method) => (
                 <li key={method} className="flex items-center gap-2">
                   <svg
                     width="20"
@@ -281,9 +279,9 @@ export const Pricing = () => {
             </div>
             <div className="ml-8 mt-2 text-gray-700 text-base">
               Your subscription can be managed from{" "}
-              <a href="/profile" className="text-violet-600 underline">
-                your profile settings
-              </a>
+              <Link to="/account" className="text-violet-600 underline">
+                your account settings
+              </Link>
               .
             </div>
           </div>

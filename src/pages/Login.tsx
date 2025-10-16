@@ -8,11 +8,14 @@ import {
 import api from "../utils/axiosInstance";
 import { AuthContext } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useGoogleSignIn } from "../hooks/useGoogleSignIn";
 
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const LoginForm = () => {
   const { login } = useContext(AuthContext);
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -29,14 +32,14 @@ const LoginForm = () => {
     setEmailError("");
     setPasswordError("");
     if (!email) {
-      setEmailError("Email is required.");
+      setEmailError(t("auth.errors.emailRequired"));
       valid = false;
     } else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-      setEmailError("Invalid email format.");
+      setEmailError(t("auth.errors.emailInvalid"));
       valid = false;
     }
     if (!password) {
-      setPasswordError("Password is required.");
+      setPasswordError(t("auth.errors.passwordRequired"));
       valid = false;
     }
     return valid;
@@ -59,7 +62,7 @@ const LoginForm = () => {
 
     try {
       if (!executeRecaptcha) {
-        toast.error("Recaptcha is not ready.");
+        toast.error(t("auth.errors.recaptchaNotReady"));
         return;
       }
       const token = await executeRecaptcha("login");
@@ -70,32 +73,33 @@ const LoginForm = () => {
       });
 
       login(response.data.accessToken);
-      toast.success("Logged in successfully!");
+      toast.success(t("toasts.loggedIn"));
       navigate("/");
-
     } catch (err: unknown) {
       if (isAxiosError(err) && err.response && err.response.data?.error) {
         const { code, message } = err.response.data.error;
         if (code === "EMAIL_NOT_VERIFIED") {
           navigate("/email-sent", { state: { email } });
         } else if (code === "INVALID_CREDENTIALS") {
-          toast.error("Invalid email or password.");
+          toast.error(t("auth.errors.invalidCredentials"));
         } else {
-          toast.error(message || "Login failed. Please try again.");
+          toast.error(message || t("auth.errors.loginFailed"));
         }
       } else {
-        toast.error("Login failed. Please try again.");
+        toast.error(t("auth.errors.loginFailed"));
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleLogin = useGoogleSignIn();
+
   return (
     <div className="flex items-center justify-center mt-20">
       <div className="bg-white rounded-xl shadow-2xl p-10 w-full max-w-md flex flex-col">
-        <p className="text-3xl font-semibold">Welcome back!</p>
-        <p className="text-[#525a6a] mt-2">Log in to your account.</p>
+        <p className="text-3xl font-semibold">{t("auth.welcomeBack")}</p>
+        <p className="text-[#525a6a] mt-2">{t("auth.loginLead")}</p>
         <form
           className="space-y-5 w-full mt-6"
           onSubmit={handleSubmit}
@@ -104,7 +108,7 @@ const LoginForm = () => {
           <div className="mb-2">
             <input
               type="email"
-              placeholder="Email"
+              placeholder={t("auth.email")}
               className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring focus:ring-lime-400 ${
                 emailError ? "border-red-400" : "border-gray-200"
               }`}
@@ -119,7 +123,7 @@ const LoginForm = () => {
           <div className="relative flex items-center mb-2">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder={t("auth.password")}
               className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring focus:ring-lime-400 pr-10 ${
                 passwordError ? "border-red-400" : "border-gray-200"
               }`}
@@ -132,7 +136,11 @@ const LoginForm = () => {
               className="absolute right-4 inset-y-0 flex items-center text-gray-400 cursor-pointer"
               onClick={() => setShowPassword((prev) => !prev)}
               tabIndex={-1}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showPassword
+                  ? t("auth.aria.hidePassword")
+                  : t("auth.aria.showPassword")
+              }
             >
               {showPassword ? (
                 // Eye icon (visible)
@@ -201,20 +209,20 @@ const LoginForm = () => {
                     d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                   ></path>
                 </svg>
-                Logging in...
+                {t("auth.loggingIn")}
               </span>
             ) : (
-              "Log in"
+              t("auth.login")
             )}
           </button>
         </form>
         <div className="flex items-center w-full my-4">
           <div className="flex-grow border-t border-gray-200"></div>
-          <span className="mx-4 text-gray-400">or</span>
+          <span className="mx-4 text-gray-400">{t("auth.or")}</span>
           <div className="flex-grow border-t border-gray-200"></div>
         </div>
         <button
-          //   onClick={handleGoogleLogin}
+          onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 py-3 rounded-lg shadow cursor-pointer hover:bg-gray-100"
         >
           <img
@@ -223,7 +231,7 @@ const LoginForm = () => {
             alt=""
           />
           <span className="font-medium text-gray-700">
-            Continue with Google
+            {t("auth.continueGoogle")}
           </span>
         </button>
       </div>

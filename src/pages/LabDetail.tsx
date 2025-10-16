@@ -259,7 +259,6 @@ export default function LabDetail() {
           <img src={previous} alt="" className="size-6" /> Back
         </button>
       </div>
-
       <div className="max-w-7xl mx-auto px-4 pb-16">
         {isLoading ? (
           <div className="space-y-4">

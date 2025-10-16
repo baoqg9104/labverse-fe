@@ -45,7 +45,14 @@ export default function UserCarousel({
                   ? "border-blue-400 bg-[#ffffff75]"
                   : "border-transparent hover:bg-[#e9e9ff]"
               }`}
-              onClick={user.onClick}
+              onClick={() => {
+                try {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                } catch {
+                  window.scrollTo(0, 0);
+                }
+                user.onClick();
+              }}
             >
               <img
                 src={user.avatarUrl || DEFAULT_AVATAR_URL}

@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import SuspenseFallback from "../components/SuspenseFallback";
 import { Home } from "../pages/Home";
 const Login = lazy(() =>
   import("../pages/Login").then((m) => ({ default: m.Login }))
@@ -43,7 +44,7 @@ export const AppRoutes = () => {
       <Route
         path="/labs/:slug"
         element={
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<SuspenseFallback />}>
             <LabDetail />
           </Suspense>
         }
@@ -56,7 +57,7 @@ export const AppRoutes = () => {
         <Route
           path="/login"
           element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<SuspenseFallback />}>
               <Login />
             </Suspense>
           }
@@ -64,7 +65,7 @@ export const AppRoutes = () => {
         <Route
           path="/signup"
           element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<SuspenseFallback />}>
               <Signup />
             </Suspense>
           }
@@ -77,7 +78,7 @@ export const AppRoutes = () => {
         <Route
           path="/checkout"
           element={
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<SuspenseFallback />}>
               <Checkout />
             </Suspense>
           }

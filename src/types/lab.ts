@@ -1,11 +1,14 @@
 export interface Lab {
   id: number;
   title: string;
+  slug: string;
+  mdPath: string;
+  mdPublicUrl: string;
   desc: string;
   level: LabLevel;
-  // type: LabType;
+  authorId: number;
+  isActive: boolean;
 }
 
 export type LabLevel = "Basic" | "Intermediate" | "Advanced";
 
-// export type LabType = "Rooms" | "Networks";

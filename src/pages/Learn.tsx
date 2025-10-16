@@ -4,6 +4,7 @@ import type { Lab, LabLevel } from "../types/lab";
 import api from "../utils/axiosInstance";
 import { AuthContext } from "../contexts/AuthContext";
 import { ROLE } from "../components/profile/RoleUtils";
+import { useTranslation } from "react-i18next";
 
 const color: Record<LabLevel, string> = {
   Basic: "bg-green-400",
@@ -35,20 +36,47 @@ const difficultyFromApi = (v: number | string): LabLevel => {
 // };
 
 type ApiLabRaw = {
+  id?: number | string;
+  Id?: number | string;
   title?: string;
   Title?: string;
   Name?: string;
+  slug?: string;
+  Slug?: string;
   description?: string;
   Description?: string;
+  desc?: string;
   difficultyLevel?: number | string;
   DifficultyLevel?: number | string;
   level?: number | string;
   Level?: number | string;
-  // categoryId?: number;
-  // CategoryId?: number;
+  mdPath?: string;
+  MdPath?: string;
+  markdownPath?: string;
+  MarkdownPath?: string;
+  mdPublicUrl?: string;
+  MdPublicUrl?: string;
+  mdPublicURL?: string;
+  authorId?: number | string;
+  AuthorId?: number | string;
+  isActive?: boolean | number | string;
+  IsActive?: boolean | number | string;
+};
+
+const slugify = (input: string): string => {
+  return input
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 };
 
 export const Learn = () => {
+  const { t } = useTranslation();
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -106,7 +134,7 @@ export const Learn = () => {
           ? "/labs"
           : "/labs/preview";
 
-        const res = await api.get(endpoint);
+  const res = await api.get(endpoint);
         // Try to be flexible with API shape
         const raw = res.data as unknown;
         type WithItems = { items?: unknown };
@@ -115,19 +143,34 @@ export const Learn = () => {
           : Array.isArray((raw as WithItems).items as unknown[])
           ? ([(raw as WithItems).items] as unknown[]).flat() // ensure array
           : [];
-        const mapped: Lab[] = items.map((rawItem) => {
+        const mapped: Lab[] = items.map((rawItem, idx) => {
           const it = rawItem as ApiLabRaw;
           const title = it.title ?? it.Name ?? it.Title ?? "Untitled";
-          const desc = it.description ?? it.Description ?? "";
+          const idRaw = (it.id ?? it.Id) as number | string | undefined;
+          const id = typeof idRaw === "string" ? parseInt(idRaw, 10) : idRaw ?? idx + 1;
+          const slugVal = it.slug ?? it.Slug ?? slugify(title);
+          const desc = it.desc ?? it.description ?? it.Description ?? "";
           const levelVal =
-            it.difficultyLevel ?? it.DifficultyLevel ?? it.level ?? it.Level;
-          // const categoryVal = it.categoryId ?? it.CategoryId;
+            it.difficultyLevel ?? it.DifficultyLevel ?? it.level ?? it.Level ?? 0;
+          const mdPath = it.mdPath ?? it.MdPath ?? it.markdownPath ?? it.MarkdownPath ?? "";
+          const mdPublicUrl = it.mdPublicUrl ?? it.MdPublicUrl ?? it.mdPublicURL ?? "";
+          const authorIdRaw = (it.authorId ?? it.AuthorId) as number | string | undefined;
+          const authorId = typeof authorIdRaw === "string" ? parseInt(authorIdRaw, 10) : authorIdRaw ?? 0;
+          const isActiveRaw = (it.isActive ?? it.IsActive) as boolean | number | string | undefined;
+          const isActive = typeof isActiveRaw === "boolean" ? isActiveRaw :
+            typeof isActiveRaw === "number" ? isActiveRaw !== 0 :
+            typeof isActiveRaw === "string" ? ["true","1","active","yes"].includes(isActiveRaw.toLowerCase()) : true;
           return {
+            id: typeof id === "number" && !Number.isNaN(id) ? id : idx + 1,
             title,
+            slug: (slugVal as string) || slugify(title),
+            mdPath,
+            mdPublicUrl,
             desc,
-            level: difficultyFromApi(levelVal ?? 0),
-            // type: categoryFromApi(categoryVal),
-          } as Lab;
+            level: difficultyFromApi(levelVal),
+            authorId: typeof authorId === "number" && !Number.isNaN(authorId) ? authorId : 0,
+            isActive,
+          } satisfies Lab;
         });
         setLabs(mapped);
         setPage(1);
@@ -190,27 +233,25 @@ export const Learn = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
-              Labverse Academy
+              {t("learn.heroTitle")}
             </h1>
             <h2 className="text-lg md:text-2xl font-medium mb-5 text-violet-100">
-              Unlock Cyber Skills at Home
+              {t("learn.heroSubtitle")}
             </h2>
             <p className="text-base text-violet-200 max-w-3xl mb-6">
-              Dive into practical cybersecurity labs designed for home setups.
-              Progress from beginner to advanced with interactive guides,
-              challenges, and real-world scenarios. No expensive gear required!
+              {t("learn.heroDesc")}
             </p>
             <div className="flex items-center gap-3 font-bold">
               <span className="bg-white text-violet-700 px-4 py-[5px] rounded-full text-2xl shadow">
                 50+
               </span>
-              <span className="text-violet-100 text-lg">Labs</span>
+              <span className="text-violet-100 text-lg">{t("learn.stats.labs")}</span>
             </div>
           </div>
           <div className="hidden md:block md:mr-34">
             <img
               src="src/assets/cyber-security (1).png"
-              alt="Cybersecurity Labs"
+              alt={t("learn.alt.hero")}
               className="size-44 object-contain drop-shadow-xl"
             />
           </div>
@@ -263,7 +304,10 @@ export const Learn = () => {
                 aria-label="Dropdown"
                 onClick={() => setDifficultyDropdownOpen((open) => !open)}
               >
-                {difficulty === "All" ? "Difficulty" : difficulty}
+                {difficulty === "All" ? t("learn.difficulty.label") :
+                  difficulty === "Basic" ? t("learn.difficulty.basic") :
+                  difficulty === "Intermediate" ? t("learn.difficulty.intermediate") :
+                  difficulty === "Advanced" ? t("learn.difficulty.advanced") : t("learn.difficulty.all")}
                 <svg
                   className={
                     difficultyDropdownOpen ? "rotate-180 size-4" : "size-4"
@@ -306,7 +350,10 @@ export const Learn = () => {
                           }}
                           role="menuitem"
                         >
-                          {level}
+                          {level === "All" ? t("learn.difficulty.all") :
+                           level === "Basic" ? t("learn.difficulty.basic") :
+                           level === "Intermediate" ? t("learn.difficulty.intermediate") :
+                           t("learn.difficulty.advanced")}
                         </button>
                       )
                     )}
@@ -328,6 +375,7 @@ export const Learn = () => {
                   type="text"
                   value={search}
                   onChange={handleSearch}
+                  placeholder={t("learn.searchPlaceholder")}
                 />
                 <button
                   className="absolute right-0 cursor-pointer pl-2 pr-1 text-gray-500 hover:text-gray-700"
@@ -367,7 +415,7 @@ export const Learn = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {paginatedLabs.length === 0 ? (
               <div className="col-span-3 text-center text-gray-500 py-10">
-                No labs found.
+                {t("learn.noLabs")}
               </div>
             ) : (
               paginatedLabs.map((lab, idx) => (
@@ -380,14 +428,8 @@ export const Learn = () => {
                       navigate("/login", { replace: false });
                       return;
                     }
-                    // Navigate to detail; requires slug. If backend not returning slug here, we can pass title-based slug later when API is integrated
-                    // For now we use title slug fallback
-                    const titleSlug = lab.title
-                      .toLowerCase()
-                      .replace(/[^a-z0-9\s-]/g, "")
-                      .trim()
-                      .replace(/\s+/g, "-");
-                    navigate(`/labs/${titleSlug}`);
+                    // Navigate using lab.slug (fallback already handled during mapping)
+                    navigate(`/labs/${lab.slug}`);
                   }}
                 >
                   <div>
@@ -413,7 +455,7 @@ export const Learn = () => {
                   </div>
                   <div className="flex items-center justify-end">
                     <div className="inline-flex items-center gap-2 font-semibold text-xs md:text-sm text-violet-700 hover:text-violet-800">
-                      View More
+                        {t("common.viewMore", "View More")}
                       <img
                         src="src/assets/right-arrow.png"
                         alt=""
@@ -442,11 +484,11 @@ export const Learn = () => {
                   <div className="filter blur-sm grayscale opacity-80 select-none pointer-events-none">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200">
-                        Premium
+                        {t("pricingPage.premium.title")}
                       </span>
                       <span className="inline-flex items-center gap-2 text-xs md:text-sm text-gray-500 font-semibold">
                         <span className="inline-block w-3 h-3 rounded-full bg-gray-300"></span>
-                        Advanced
+                        {t("learn.difficulty.advanced")}
                       </span>
                     </div>
                     <div className="h-5 w-4/5 bg-gray-200 rounded mb-2" />
@@ -455,7 +497,7 @@ export const Learn = () => {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center bg-white/50">
                     <button className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold shadow">
-                      Show More
+                      {t("common.showMore", "Show More")}
                       <svg
                         className="size-4"
                         viewBox="0 0 24 24"
