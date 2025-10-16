@@ -12,7 +12,9 @@ export default function AdminConsole() {
   const [totalLabs, setTotalLabs] = useState<number | null>(null);
   const [revenue, setRevenue] = useState<number | null>(null);
   const [revenueTo, setRevenueTo] = useState<Date | null>(null);
-  const [revenueTransactions, setRevenueTransactions] = useState<number | null>(null);
+  const [revenueTransactions, setRevenueTransactions] = useState<number | null>(
+    null
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [userCounts, setUserCounts] = useState<{
     user: number;
@@ -24,9 +26,15 @@ export default function AdminConsole() {
     Intermediate: number;
     Advanced: number;
   }>({ Basic: 0, Intermediate: 0, Advanced: 0 });
-  const [userSubCounts, setUserSubCounts] = useState<{ free: number; premium: number }>({ free: 0, premium: 0 });
+  const [userSubCounts, setUserSubCounts] = useState<{
+    free: number;
+    premium: number;
+  }>({ free: 0, premium: 0 });
 
-  type ApiUser = { role?: number | string | null | undefined; subscription?: string | null | undefined };
+  type ApiUser = {
+    role?: number | string | null | undefined;
+    subscription?: string | null | undefined;
+  };
   type ApiLab = { difficultyLevel?: string | number | null | undefined };
   type RevenueSummaryDto = {
     from: string;
@@ -102,14 +110,21 @@ export default function AdminConsole() {
         );
 
         // Free vs Premium among normal users
-        const subCounts = users.reduce<{ free: number; premium: number }>((acc, it) => {
-          const r = normalizeRole(it.role as unknown);
-          if (r === ROLE.USER) {
-            const sub = (it.subscription ?? "").toString().trim().toLowerCase();
-            if (sub === "premium") acc.premium += 1; else acc.free += 1;
-          }
-          return acc;
-        }, { free: 0, premium: 0 });
+        const subCounts = users.reduce<{ free: number; premium: number }>(
+          (acc, it) => {
+            const r = normalizeRole(it.role as unknown);
+            if (r === ROLE.USER) {
+              const sub = (it.subscription ?? "")
+                .toString()
+                .trim()
+                .toLowerCase();
+              if (sub === "premium") acc.premium += 1;
+              else acc.free += 1;
+            }
+            return acc;
+          },
+          { free: 0, premium: 0 }
+        );
 
         const lCounts = labs.reduce<{
           Basic: number;
@@ -127,8 +142,8 @@ export default function AdminConsole() {
         );
 
         setUserCounts(uCounts);
-  setLabCounts(lCounts);
-  setUserSubCounts(subCounts);
+        setLabCounts(lCounts);
+        setUserSubCounts(subCounts);
         setTotalUsers(uCounts.user + uCounts.author + uCounts.admin);
         setTotalLabs(lCounts.Basic + lCounts.Intermediate + lCounts.Advanced);
         // Fetch revenue summary (no date filter for now; backend defaults)
@@ -189,8 +204,34 @@ export default function AdminConsole() {
     return fmt.format(revenueTo);
   }, [revenueTo]);
 
+  // Premium vs Free percentages among regular users
+  const { premiumPct, freePct } = useMemo(() => {
+    const total = (userSubCounts.premium ?? 0) + (userSubCounts.free ?? 0);
+    const prem =
+      total > 0 ? Math.round((userSubCounts.premium / total) * 100) : 0;
+    const free = 100 - prem;
+    return { premiumPct: prem, freePct: free };
+  }, [userSubCounts]);
+
+  // Total regular users (role = USER)
+  const totalRegular = useMemo(
+    () => (userSubCounts.premium ?? 0) + (userSubCounts.free ?? 0),
+    [userSubCounts]
+  );
+
+  // Donut chart metrics
+  const donut = useMemo(() => {
+    const size = 140; // svg size
+    const stroke = 14; // ring thickness
+    const r = (size - stroke) / 2; // radius
+    const c = 2 * Math.PI * r; // circumference
+    const premFrac = Math.max(0, Math.min(1, (premiumPct || 0) / 100));
+    const dashoffset = c * (1 - premFrac);
+    return { size, stroke, r, c, dashoffset };
+  }, [premiumPct]);
+
   return (
-    <div className="mt-5 min-h-screen bg-gradient-to-b from-white to-blue-50 pt-8 pb-8">
+    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 pt-8 pb-8">
       <div className="max-w-6xl mx-auto">
         <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white p-8">
           <div className="flex items-center justify-between mb-6">
@@ -218,12 +259,108 @@ export default function AdminConsole() {
                 {loading ? "…" : totalUsers ?? 0}
               </div>
               <div className="text-gray-600">Total Users</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {loading
-                  ? ""
-                  : `Premium: ${userSubCounts.premium} • Free: ${userSubCounts.free}`}
+
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                {/* Donut chart */}
+                <div className="flex justify-center">
+                  {loading ? (
+                    <div
+                      className="w-[140px] h-[140px] rounded-full bg-gray-100 animate-pulse"
+                      aria-hidden="true"
+                    />
+                  ) : (
+                    <svg
+                      width={donut.size}
+                      height={donut.size}
+                      viewBox={`0 0 ${donut.size} ${donut.size}`}
+                      role="img"
+                      aria-label={`Premium ${premiumPct}% và Free ${freePct}%`}
+                    >
+                      <g
+                        transform={`translate(${donut.size / 2}, ${
+                          donut.size / 2
+                        }) rotate(-90)`}
+                      >
+                        {/* Track (Free) */}
+                        <circle
+                          r={donut.r}
+                          cx={0}
+                          cy={0}
+                          fill="transparent"
+                          stroke="#E5E7EB" /* gray-200 */
+                          strokeWidth={donut.stroke}
+                        />
+                        {/* Premium arc */}
+                        <circle
+                          r={donut.r}
+                          cx={0}
+                          cy={0}
+                          fill="transparent"
+                          stroke="#10B981" /* emerald-500 */
+                          strokeLinecap="round"
+                          strokeWidth={donut.stroke}
+                          strokeDasharray={`${donut.c} ${donut.c}`}
+                          strokeDashoffset={donut.dashoffset}
+                          style={{ transition: "stroke-dashoffset 900ms ease" }}
+                        />
+                      </g>
+                      {/* Center label (number only) */}
+                      <g
+                        transform={`translate(${donut.size / 2}, ${
+                          donut.size / 2
+                        })`}
+                      >
+                        <text
+                          x={0}
+                          y={-4}
+                          textAnchor="middle"
+                          className="fill-gray-900"
+                          style={{ fontSize: 22, fontWeight: 700 }}
+                        >
+                          {totalRegular}
+                        </text>
+                      </g>
+                    </svg>
+                  )}
+                </div>
+                {/* Stats */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"
+                        aria-hidden="true"
+                      />
+                      <span className="text-gray-800 text-sm font-medium">
+                        Premium
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-700 font-semibold">
+                      {loading
+                        ? "…"
+                        : `${userSubCounts.premium} (${premiumPct}%)`}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-block w-2.5 h-2.5 rounded-full bg-gray-300"
+                        aria-hidden="true"
+                      />
+                      <span className="text-gray-800 text-sm font-medium">
+                        Free
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-700 font-semibold">
+                      {loading ? "…" : `${userSubCounts.free} (${freePct}%)`}
+                    </div>
+                  </div>
+                  {/* Explanatory caption removed as requested */}
+                </div>
               </div>
-              <div className="mt-2 flex flex-wrap gap-2 text-sm">
+
+              {/* Role breakdown */}
+              <div className="mt-4 flex flex-wrap gap-2 text-sm">
                 <span className="px-2 py-0.5 rounded-full bg-blue-100 border border-blue-300 text-blue-900 flex items-center gap-1">
                   <span role="img" aria-label="User">
                     🧑
@@ -283,9 +420,13 @@ export default function AdminConsole() {
                 {loading ? "…" : formattedRevenue}
               </div>
               <div className="text-gray-600">Revenue (VND)</div>
-                <div className="text-xs text-gray-500 mt-2">
-                    {loading ? "" : formattedAsOf ? `As of: ${formattedAsOf}` : "As of: N/A"}
-                </div>
+              <div className="text-xs text-gray-500 mt-2">
+                {loading
+                  ? ""
+                  : formattedAsOf
+                  ? `As of: ${formattedAsOf}`
+                  : "As of: N/A"}
+              </div>
               <div className="text-xs text-gray-500">
                 {loading
                   ? ""

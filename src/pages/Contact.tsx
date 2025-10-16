@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import api from "../utils/axiosInstance";
 import { isAxiosError } from "axios";
+import { useTranslation } from "react-i18next";
 
 interface ContactForm {
   name: string;
@@ -9,6 +10,7 @@ interface ContactForm {
 }
 
 export const Contact = () => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<ContactForm>({
     name: "",
     email: "",
@@ -27,18 +29,18 @@ export const Contact = () => {
   // Validate a single field
   const validateField = (name: string, value: string) => {
     if (name === "name") {
-      if (!value.trim()) return "Name is required.";
-      if (value.length < 2) return "Name must be at least 2 characters.";
+      if (!value.trim()) return t("contact.errors.nameRequired");
+      if (value.length < 2) return t("contact.errors.nameMin");
     }
     if (name === "email") {
-      if (!value.trim()) return "Email is required.";
+      if (!value.trim()) return t("contact.errors.emailRequired");
       // Simple email regex
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-        return "Invalid email address.";
+        return t("contact.errors.emailInvalid");
     }
     if (name === "message") {
-      if (!value.trim()) return "Message is required.";
-      if (value.length < 10) return "Message must be at least 10 characters.";
+      if (!value.trim()) return t("contact.errors.messageRequired");
+      if (value.length < 10) return t("contact.errors.messageMin");
     }
     return "";
   };
@@ -82,7 +84,7 @@ export const Contact = () => {
       if (isAxiosError(err) && err.response?.data?.message) {
         setError(err.response.data.message);
       } else {
-        setError("Failed to send message. Please try again later.");
+        setError(t("contact.errors.sendFailed"));
       }
     } finally {
       setLoading(false);
@@ -94,17 +96,17 @@ export const Contact = () => {
       {/* Hero Section */}
       <div className="text-center mt-10 mb-8">
         <h1 className="text-3xl md:text-5xl font-bold text-[#1a144b] mb-3">
-          Contact Us
+          {t("contact.title")}
         </h1>
         <p className="text-lg md:text-xl text-[#848199]">
-          We'd love to hear from you! Fill out the form below.
+          {t("contact.subtitle")}
         </p>
       </div>
       <div className="w-full max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl p-8 md:p-12">
         {/* Contact Form */}
         <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-[#1a144b]">Name</label>
+            <label className="font-semibold text-[#1a144b]">{t("contact.labels.name")}</label>
             <input
               type="text"
               name="name"
@@ -113,12 +115,12 @@ export const Contact = () => {
               className={`px-4 py-2 rounded-lg border focus:border-violet-600 outline-none bg-[#f3f6fb] ${
                 fieldErrors.name ? "border-red-400" : "border-gray-300"
               }`}
-              placeholder="Your name"
+              placeholder={t("contact.placeholders.name")}
             />
             <div className="text-red-500 text-sm">{fieldErrors.name}</div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-[#1a144b]">Email</label>
+            <label className="font-semibold text-[#1a144b]">{t("contact.labels.email")}</label>
             <input
               type="email"
               name="email"
@@ -127,12 +129,12 @@ export const Contact = () => {
               className={`px-4 py-2 rounded-lg border focus:border-violet-600 outline-none bg-[#f3f6fb] ${
                 fieldErrors.email ? "border-red-400" : "border-gray-300"
               }`}
-              placeholder="Your email"
+              placeholder={t("contact.placeholders.email")}
             />
             <div className="text-red-500 text-sm">{fieldErrors.email}</div>
           </div>
           <div className="flex flex-col gap-1">
-            <label className="font-semibold text-[#1a144b]">Message</label>
+            <label className="font-semibold text-[#1a144b]">{t("contact.labels.message")}</label>
             <textarea
               name="message"
               value={form.message}
@@ -141,7 +143,7 @@ export const Contact = () => {
               className={`px-4 py-2 rounded-lg border focus:border-violet-600 outline-none bg-[#f3f6fb] resize-none ${
                 fieldErrors.message ? "border-red-400" : "border-gray-300"
               }`}
-              placeholder="Your message"
+              placeholder={t("contact.placeholders.message")}
             />
             <div className="text-red-500 text-sm">{fieldErrors.message}</div>
           </div>
@@ -150,14 +152,14 @@ export const Contact = () => {
             className="mt-2 px-8 py-3 rounded-full bg-[#7c7890] text-white font-semibold shadow hover:bg-[#5c5870] transition text-lg cursor-pointer disabled:opacity-60"
             disabled={loading}
           >
-            {loading ? "Sending..." : "Send Message"}
+            {loading ? t("contact.actions.sending") : t("contact.actions.send")}
           </button>
           {error && (
             <div className="text-red-500 font-semibold mt-2">{error}</div>
           )}
           {submitted && (
             <div className="text-green-600 font-semibold mt-2">
-              Thank you! We'll get back to you soon.
+              {t("contact.success")}
             </div>
           )}
         </form>

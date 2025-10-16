@@ -7,10 +7,13 @@ import {
   useGoogleReCaptcha,
 } from "react-google-recaptcha-v3";
 import { isAxiosError } from "axios";
+import { useTranslation } from "react-i18next";
+import { useGoogleSignIn } from "../hooks/useGoogleSignIn";
 
 const SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 const SignupForm = () => {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [email, setEmail] = useState<string>("");
@@ -29,32 +32,29 @@ const SignupForm = () => {
 
   // Validation helpers
   const validateEmail = (value: string) => {
-    if (!value) return "Email is required.";
+    if (!value) return t("auth.errors.emailRequired");
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!re.test(value)) return "Invalid email address.";
+    if (!re.test(value)) return t("auth.errors.emailInvalid");
     return "";
   };
   const validatePassword = (value: string) => {
-    if (!value) return "Password is required.";
-    if (value.length < 8) return "Password must be at least 8 characters.";
-    if (!/[A-Z]/.test(value))
-      return "Password must contain at least one uppercase letter.";
-    if (!/[a-z]/.test(value))
-      return "Password must contain at least one lowercase letter.";
-    if (!/[0-9]/.test(value))
-      return "Password must contain at least one number.";
+    if (!value) return t("auth.errors.passwordRequired");
+    if (value.length < 8) return t("auth.errors.passwordAtLeast");
+    if (!/[A-Z]/.test(value)) return t("auth.errors.passwordUpper");
+    if (!/[a-z]/.test(value)) return t("auth.errors.passwordLower");
+    if (!/[0-9]/.test(value)) return t("auth.errors.passwordNumber");
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(value))
-      return "Password must contain at least one special character.";
+      return t("auth.errors.passwordSpecial");
     return "";
   };
   const validateConfirmPassword = (value: string, password: string) => {
-    if (!value) return "Please confirm your password.";
-    if (value !== password) return "Passwords do not match.";
+    if (!value) return t("auth.errors.confirmPasswordRequired");
+    if (value !== password) return t("auth.errors.passwordNotMatch");
     return "";
   };
   const validateUsername = (value: string) => {
-    if (!value) return "Username is required.";
-    if (value.length < 3) return "Username must be at least 3 characters.";
+    if (!value) return t("auth.errors.usernameRequired");
+    if (value.length < 3) return t("auth.errors.usernameAtLeast");
     return "";
   };
 
@@ -78,7 +78,7 @@ const SignupForm = () => {
 
     try {
       if (!executeRecaptcha) {
-        toast.error("Recaptcha is not ready.");
+        toast.error(t("auth.errors.recaptchaNotReady"));
         return;
       }
       const recaptchaToken = await executeRecaptcha("signup");
@@ -96,23 +96,27 @@ const SignupForm = () => {
         if (code === "EMAIL_EXISTS") {
           setErrors((prev) => ({ ...prev, email: message }));
         } else {
-          toast.error(message || "Signup failed. Please try again.");
+          toast.error(message || t("auth.errors.signupFailed"));
         }
       } else {
-        toast.error("Signup failed. Please try again.");
+        toast.error(t("auth.errors.signupFailed"));
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleLogin = useGoogleSignIn();
+
   return (
     <div className="flex items-center justify-center mt-20">
       <div className="bg-white rounded-xl shadow-lg p-10 w-full max-w-md">
-        <h2 className="text-3xl font-semibold mb-6 text-gray-900">Sign Up</h2>
+        <h2 className="text-3xl font-semibold mb-6 text-gray-900">
+          {t("auth.signup")}
+        </h2>
         <form className="space-y-2" onSubmit={handleSubmit}>
           <input
-            placeholder="Email"
+            placeholder={t("auth.email")}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring focus:ring-lime-400 ${
               errors.email ? "border-red-400" : "border-gray-200"
             }`}
@@ -128,7 +132,7 @@ const SignupForm = () => {
           <div className="relative flex items-center">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder={t("auth.password")}
               className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring focus:ring-lime-400 pr-10 ${
                 errors.password ? "border-red-400" : "border-gray-200"
               }`}
@@ -143,7 +147,11 @@ const SignupForm = () => {
               className="absolute right-4 inset-y-0 flex items-center text-gray-400 cursor-pointer"
               onClick={() => setShowPassword((prev) => !prev)}
               tabIndex={-1}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={
+                showPassword
+                  ? t("auth.aria.hidePassword")
+                  : t("auth.aria.showPassword")
+              }
             >
               {showPassword ? (
                 // Eye icon (visible)
@@ -189,7 +197,7 @@ const SignupForm = () => {
           <div className="relative flex items-center">
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Confirm Password"
+              placeholder={t("auth.confirmPassword")}
               className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring focus:ring-lime-400 pr-10 ${
                 errors.confirmPassword ? "border-red-400" : "border-gray-200"
               }`}
@@ -205,7 +213,9 @@ const SignupForm = () => {
               onClick={() => setShowConfirmPassword((prev) => !prev)}
               tabIndex={-1}
               aria-label={
-                showConfirmPassword ? "Hide password" : "Show password"
+                showConfirmPassword
+                  ? t("auth.aria.hidePassword")
+                  : t("auth.aria.showPassword")
               }
             >
               {showConfirmPassword ? (
@@ -249,7 +259,7 @@ const SignupForm = () => {
           )}
           <input
             type="text"
-            placeholder="Username"
+            placeholder={t("auth.username")}
             className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring focus:ring-lime-400 ${
               errors.username ? "border-red-400" : "border-gray-200"
             }`}
@@ -289,20 +299,20 @@ const SignupForm = () => {
                     d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                   ></path>
                 </svg>
-                Signing up...
+                {t("auth.signingUp")}
               </span>
             ) : (
-              "Sign up"
+              t("auth.signup")
             )}
           </button>
         </form>
         <div className="flex items-center w-full my-4">
           <div className="flex-grow border-t border-gray-200"></div>
-          <span className="mx-4 text-gray-400">or</span>
+          <span className="mx-4 text-gray-400">{t("auth.or")}</span>
           <div className="flex-grow border-t border-gray-200"></div>
         </div>{" "}
         <button
-          //   onClick={handleGoogleLogin}
+          onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 py-3 rounded-lg shadow cursor-pointer hover:bg-gray-100"
         >
           <img
@@ -311,7 +321,7 @@ const SignupForm = () => {
             alt=""
           />
           <span className="font-medium text-gray-700">
-            Continue with Google
+            {t("auth.continueGoogle")}
           </span>
         </button>
       </div>

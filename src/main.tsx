@@ -11,6 +11,7 @@ import 'datatables.net';
 import 'dropzone/dist/dropzone-min.js';
 import * as VanillaCalendarPro from 'vanilla-calendar-pro';
 import { ToastContainer } from "react-toastify";
+import './i18n';
 
 window._ = _;
 window.$ = $;

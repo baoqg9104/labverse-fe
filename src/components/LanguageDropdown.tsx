@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import i18n from "../i18n";
 
 const languages = [
   { code: "en", name: "English", flag: "/src/assets/en.png" },
@@ -7,7 +8,28 @@ const languages = [
 
 export const LanguageDropdown: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(languages[0]);
+  const current = i18n.language || "en";
+  const [selected, setSelected] = useState(languages.find(l => l.code === current) || languages[0]);
+
+  useEffect(() => {
+    const handler = (lng: string) => {
+      const found = languages.find(l => l.code === lng) || languages[0];
+      setSelected(found);
+    };
+    handler(i18n.language || 'en');
+    i18n.on('languageChanged', handler);
+    return () => {
+      i18n.off('languageChanged', handler);
+    };
+  }, []);
+
+  const onSelect = (langCode: string) => {
+    const found = languages.find(l => l.code === langCode) || languages[0];
+    setSelected(found);
+    i18n.changeLanguage(found.code);
+  try { localStorage.setItem('lang', found.code); } catch { /* ignore */ }
+    setOpen(false);
+  };
 
   return (
     <div className="relative w-40 text-sm">
@@ -26,7 +48,7 @@ export const LanguageDropdown: React.FC = () => {
             <li
               key={lang.code}
               className={`flex items-center px-3 py-2 cursor-pointer hover:bg-gray-100 ${selected.code === lang.code ? 'bg-gray-100' : ''}`}
-              onClick={() => { setSelected(lang); setOpen(false); }}
+              onClick={() => onSelect(lang.code)}
             >
               <img src={lang.flag} alt={lang.name} className="w-5 h-5 mr-2" />
               <span className="text-gray-900">{lang.name}</span>

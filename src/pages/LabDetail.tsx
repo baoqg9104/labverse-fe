@@ -146,7 +146,7 @@ export default function LabDetail() {
           <img src={previous} alt="" className="size-6" /> Back
         </button>
       </div>
-      <div className="max-w-6xl mx-auto px-4 pb-16">
+      <div className="max-w-7xl mx-auto px-4 pb-16">
         {isLoading ? (
           <div className="space-y-4">
             <div className="h-8 w-2/3 bg-gray-200 rounded animate-pulse" />

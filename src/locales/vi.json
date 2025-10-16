@@ -1,0 +1,194 @@
+{
+  "nav": {
+    "home": "Trang chủ",
+    "learn": "Học",
+    "pricing": "Giá",
+    "contact": "Liên hệ",
+    "console": "Bảng điều khiển",
+    "users": "Người dùng",
+    "labs": "Phòng lab",
+    "reports": "Báo cáo",
+    "revenue": "Doanh thu",
+    "login": "Đăng nhập",
+    "getStarted": "Bắt đầu",
+    "viewProfile": "Xem hồ sơ",
+    "manageAccount": "Quản lý tài khoản",
+    "logout": "Đăng xuất",
+    "admin": "Quản trị",
+    "profile": "Hồ sơ",
+    "openMenu": "Mở menu",
+    "closeMenu": "Đóng menu"
+  },
+  "footer": {
+    "getInTouch": "Kết nối với chúng tôi",
+    "contactUs": "Liên hệ",
+    "forum": "Diễn đàn",
+    "copyright": "Labverse @ 2025"
+  },
+  "home": {
+    "heroTitle": "Học - Thực hành - Chinh phục",
+    "heroSubtitle": "Ngôi nhà của bạn, phòng lab của bạn",
+    "heroDesc": "Nền tảng cung cấp kiến thức an toàn thông tin từ cơ bản đến nâng cao với bài học tương tác, phòng lab thực hành và cộng đồng hỗ trợ, đặc biệt phù hợp cho người mới bắt đầu.",
+    "ctaExplore": "Khám phá bài học miễn phí",
+    "sectionTitle": "Từ số 0 đến chuyên gia: Phòng lab an toàn thông tin cho mọi người",
+    "sectionDesc": "Nâng cao kỹ năng an toàn thông tin qua các bài lab thực hành, lộ trình bài bản và tình huống thực tế. Nền tảng mang đến trải nghiệm học tập thú vị, chi phí hợp lý cho cả người mới và người đi làm.",
+    "reasonsTitle": "\"Vì sao chọn Labverse?\"",
+    "reasonsLead": "Labverse là nền tảng học an toàn thông tin thực hành do sinh viên xây dựng cho cộng đồng sinh viên. Chúng tôi tập trung vào:",
+    "reasons": {
+      "blog": "Bài viết kiến thức cô đọng",
+      "steps": "Hướng dẫn lab từng bước",
+      "tips": "Mẹo và lỗi thường gặp",
+      "cost": "Tiết kiệm chi phí",
+      "viExplain": "Kiến thức từ cơ bản đến nâng cao với giải thích tiếng Việt dễ hiểu",
+      "simpleLabs": "Lab đơn giản nhưng thực tiễn, phù hợp phần cứng phổ thông",
+      "community": "Cộng đồng hỗ trợ học tập"
+    }
+  },
+  "auth": {
+    "welcomeBack": "Chào mừng trở lại!",
+    "loginLead": "Đăng nhập vào tài khoản của bạn.",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "login": "Đăng nhập",
+    "loggingIn": "Đang đăng nhập...",
+    "or": "hoặc",
+    "continueGoogle": "Tiếp tục với Google",
+    "signup": "Đăng ký",
+    "signingUp": "Đang đăng ký...",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "username": "Tên người dùng",
+    "errors": {
+      "emailRequired": "Vui lòng nhập email.",
+      "emailInvalid": "Định dạng email không hợp lệ.",
+      "passwordRequired": "Vui lòng nhập mật khẩu.",
+      "invalidCredentials": "Email hoặc mật khẩu không đúng.",
+      "loginFailed": "Đăng nhập thất bại. Vui lòng thử lại.",
+      "recaptchaNotReady": "Recaptcha chưa sẵn sàng.",
+      "emailExists": "Email đã tồn tại.",
+      "signupFailed": "Đăng ký thất bại. Vui lòng thử lại.",
+      "passwordAtLeast": "Mật khẩu phải có ít nhất 8 ký tự.",
+      "passwordUpper": "Mật khẩu phải có ít nhất 1 chữ hoa.",
+      "passwordLower": "Mật khẩu phải có ít nhất 1 chữ thường.",
+      "passwordNumber": "Mật khẩu phải có ít nhất 1 chữ số.",
+      "passwordSpecial": "Mật khẩu phải có ít nhất 1 ký tự đặc biệt.",
+      "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu.",
+      "passwordNotMatch": "Mật khẩu nhập lại không khớp.",
+      "usernameRequired": "Vui lòng nhập tên người dùng.",
+      "usernameAtLeast": "Tên người dùng phải có ít nhất 3 ký tự."
+    },
+    "aria": {
+      "hidePassword": "Ẩn mật khẩu",
+      "showPassword": "Hiện mật khẩu"
+    }
+  },
+  "checkout": {
+    "backToPricing": "Quay lại bảng giá",
+    "plan": "Premium",
+    "unlock": "Mở khóa tất cả lab, tải tài nguyên và hỗ trợ ưu tiên",
+    "mostPopular": "PHỔ BIẾN NHẤT",
+    "priceSuffix": "/tháng",
+    "billedMonthly": "Thanh toán theo tháng. Hủy bất cứ lúc nào.",
+    "whatYouGet": "Bạn sẽ nhận được",
+    "benefits": {
+      "allPremium": "Truy cập toàn bộ lab Premium",
+      "fasterSupport": "Hỗ trợ phản hồi nhanh hơn",
+      "downloadKeep": "Tải và lưu tài nguyên lab",
+      "supportPlatform": "Đóng góp phát triển nền tảng"
+    },
+    "orderSummary": "Tóm tắt đơn hàng",
+    "premiumPlan": "Gói Premium",
+    "monthlyBilling": "Thanh toán hàng tháng",
+    "taxesIncluded": "Đã bao gồm thuế nếu có.",
+    "alreadyPremium": "Bạn đã là Premium",
+    "onlyUser": "Gói Premium chỉ áp dụng cho tài khoản Người dùng",
+    "subscribeNow": "Đăng ký ngay",
+    "loading": "Đang tải...",
+    "agree": "Khi đăng ký, bạn đồng ý với Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.",
+    "needHelp": "Cần hỗ trợ?",
+    "contactUs": "Liên hệ"
+  },
+  "toasts": {
+    "alreadyPremium": "Bạn đã có Premium.",
+    "onlyUser": "Chỉ tài khoản Người dùng mới có thể đăng ký Premium.",
+    "paymentLinkFailed": "Tạo liên kết thanh toán thất bại. Vui lòng thử lại.",
+    "loggedIn": "Đăng nhập thành công!"
+  },
+  "contact": {
+    "title": "Liên hệ",
+    "subtitle": "Chúng tôi rất mong nhận được phản hồi từ bạn! Hãy điền biểu mẫu bên dưới.",
+    "labels": {
+      "name": "Họ và tên",
+      "email": "Email",
+      "message": "Nội dung"
+    },
+    "placeholders": {
+      "name": "Tên của bạn",
+      "email": "Email của bạn",
+      "message": "Lời nhắn của bạn"
+    },
+    "actions": {
+      "send": "Gửi tin nhắn",
+      "sending": "Đang gửi..."
+    },
+    "success": "Cảm ơn bạn! Chúng tôi sẽ phản hồi sớm nhất.",
+    "errors": {
+      "nameRequired": "Vui lòng nhập họ và tên.",
+      "nameMin": "Họ và tên phải có ít nhất 2 ký tự.",
+      "emailRequired": "Vui lòng nhập email.",
+      "emailInvalid": "Email không hợp lệ.",
+      "messageRequired": "Vui lòng nhập nội dung.",
+      "messageMin": "Nội dung phải có ít nhất 10 ký tự.",
+      "sendFailed": "Gửi tin nhắn thất bại. Vui lòng thử lại sau."
+    }
+  },
+  "pricingPage": {
+    "free": {
+      "price": "0đ",
+      "priceSuffix": "luôn miễn phí",
+      "title": "Free",
+      "audience": "Phù hợp cho người mới, sinh viên hoặc người muốn khám phá an toàn thông tin.",
+      "join": "Tham gia ngay"
+    },
+    "premium": {
+      "badge": "PHỔ BIẾN NHẤT",
+      "price": "100.000đ",
+      "priceSuffix": "/tháng",
+      "title": "Premium",
+      "audience": "Dành cho người định hướng chuyên nghiệp, đam mê lab và nghiêm túc học tập.",
+      "getStarted": "Bắt đầu",
+      "alreadyPremium": "Bạn đã là Premium"
+    },
+    "faqs": {
+      "title": "Câu hỏi thường gặp",
+      "paymentMethods": {
+        "title": "Bạn hỗ trợ phương thức thanh toán nào?",
+        "methods": ["MoMo", "VNPAY", "Chuyển khoản ngân hàng"]
+      }
+    }
+  },
+  "learn": {
+    "heroTitle": "Labverse Academy",
+    "heroSubtitle": "Nâng tầm kỹ năng an toàn thông tin tại nhà",
+    "heroDesc": "Khám phá các phòng lab bảo mật thực tiễn ngay tại nhà. Tiến bộ từ cơ bản đến nâng cao với hướng dẫn tương tác, thử thách và tình huống thực tế. Không cần thiết bị đắt tiền!",
+    "stats": { "labs": "Phòng lab" },
+    "difficulty": {
+      "label": "Độ khó",
+      "all": "Tất cả",
+      "basic": "Cơ bản",
+      "intermediate": "Trung cấp",
+      "advanced": "Nâng cao"
+    },
+    "searchPlaceholder": "Tìm kiếm lab...",
+    "noLabs": "Không tìm thấy lab nào.",
+    "alt": { "hero": "Phòng lab an toàn thông tin" }
+  },
+  "notFound": {
+    "title": "404 - Không tìm thấy trang",
+    "desc": "Trang bạn tìm kiếm không tồn tại hoặc đã bị xóa. Vui lòng kiểm tra lại địa chỉ hoặc quay về trang chủ.",
+    "backHome": "Về trang chủ"
+  },
+  "common": {
+    "viewMore": "Xem thêm",
+    "showMore": "Hiển thị thêm"
+  }
+}

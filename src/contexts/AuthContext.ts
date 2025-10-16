@@ -6,6 +6,9 @@ export interface AuthContextType {
   login: (token: string) => void;
   logout: () => void;
   isAuthLoading: boolean;
+  // Daily login reward UI control
+  dailyReward: { visible: boolean; points: number; message?: string } | null;
+  dismissDailyReward: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType>({
@@ -13,4 +16,6 @@ export const AuthContext = createContext<AuthContextType>({
   login: () => {},
   logout: () => {},
   isAuthLoading: true,
+  dailyReward: null,
+  dismissDailyReward: () => {},
 });

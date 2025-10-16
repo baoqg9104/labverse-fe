@@ -23,6 +23,8 @@ const style = {
   p: { xs: 2, sm: 4 },
   minWidth: 320,
   maxWidth: "90vw",
+  maxHeight: "90vh",
+  overflowY: "auto",
   outline: "none",
 };
 

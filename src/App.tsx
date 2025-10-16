@@ -6,14 +6,20 @@ import { Footer } from "./components/Footer";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import SplashScreen from "./components/SplashScreen";
+import ChatWidget from "./components/chat/ChatWidget";
+import DailyLoginRewardOverlay from "./components/DailyLoginRewardOverlay";
+import { useContext } from "react";
+import { AuthContext } from "./contexts/AuthContext";
 
 async function loadPreline() {
   return import("preline/dist/index.js");
 }
 
-function App() {
+function AppContent() {
   const location = useLocation();
   const [showSplash, setShowSplash] = useState(true);
+  const { dailyReward, dismissDailyReward, user, isAuthLoading } =
+    useContext(AuthContext);
 
   useEffect(() => {
     const initPreline = async () => {
@@ -32,7 +38,7 @@ function App() {
   const handleSplashFinish = () => setShowSplash(false);
 
   return (
-    <AuthProvider>
+    <>
       {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
       <div
         className="flex flex-col min-h-screen"
@@ -44,8 +50,23 @@ function App() {
         <main className="flex-grow">
           <AppRoutes />
         </main>
+        {!isAuthLoading && user && user.role !== 2 && <ChatWidget />}
       </div>
+      <DailyLoginRewardOverlay
+        visible={Boolean(dailyReward?.visible)}
+        points={dailyReward?.points ?? 0}
+        message={dailyReward?.message}
+        onClose={dismissDailyReward}
+      />
       <Footer />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
     </AuthProvider>
   );
 }
