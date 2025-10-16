@@ -29,6 +29,14 @@ type LabDto = {
 
 type TocItem = { id: string; text: string; level: 1 | 2 | 3 };
 
+type QuestionDto = {
+  id: number;
+  labId: number;
+  questionText: string;
+  type: 0 | 1 | 2 | 3; // 0: SingleChoice, 1: MultipleChoice, 2: TrueFalse, 3: ShortText
+  choicesJson: string;
+};
+
 export default function LabDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -42,9 +50,15 @@ export default function LabDetail() {
   const [toc, setToc] = useState<TocItem[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  const [questions, setQuestions] = useState<QuestionDto[]>([]);
+  const [answers, setAnswers] = useState<Record<number, string | string[] | boolean>>({});
+  
+  // UserProgress tracking
+  const [hasStartedProgress, setHasStartedProgress] = useState(false);
+  const [progressStatus, setProgressStatus] = useState<0 | 1 | 2>(0); // 0: NotStarted, 1: InProgress, 2: Completed
+
   const baseUrl = useMemo(() => {
     if (!lab?.mdPublicUrl) return "";
-    // remove index.md or trailing file from mdPublicUrl to get folder base
     try {
       const url = new URL(lab.mdPublicUrl);
       const parts = url.pathname.split("/");
@@ -52,7 +66,6 @@ export default function LabDetail() {
       url.pathname = parts.join("/") + "/";
       return url.toString();
     } catch {
-      // fallback simple replace
       return lab.mdPublicUrl.replace(/index\.md(\?.*)?$/, "");
     }
   }, [lab?.mdPublicUrl]);
@@ -66,7 +79,22 @@ export default function LabDetail() {
         // Fetch lab by slug from backend
         const res = await api.get(`/labs/slug/${encodeURIComponent(slug)}`);
         const dto = res.data as LabDto;
+
         setLab(dto);
+
+        const questionsRes = await api.get(`/labs/${dto.id}/questions`);
+        setQuestions(questionsRes.data as QuestionDto[]);
+        
+        // Fetch current progress status
+        try {
+          const statusRes = await api.get(`/user-progresses/status/${dto.id}`);
+          setProgressStatus(statusRes.data); // 0, 1, or 2
+          setHasStartedProgress(statusRes.data > 0); // Already started if InProgress or Completed
+        } catch (error) {
+          console.log("No progress found yet, starting fresh");
+          setProgressStatus(0); // NotStarted
+        }
+        
         // Fetch markdown content via public URL
         if (dto.mdPublicUrl) {
           const mdRes = await fetch(dto.mdPublicUrl);
@@ -104,7 +132,6 @@ export default function LabDetail() {
     // Track active heading while scrolling
     const observer = new IntersectionObserver(
       (entries) => {
-        // choose the first visible heading near top
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort(
@@ -131,17 +158,103 @@ export default function LabDetail() {
     e.preventDefault();
     const el = document.getElementById(id);
     if (!el) return;
-    const yOffset = -12; // adjust if a fixed header exists
+    const yOffset = -12;
     const y = el.getBoundingClientRect().top + window.scrollY + yOffset;
     window.scrollTo({ top: y, behavior: "smooth" });
   };
 
+  // Start lab progress - called on first interaction with any question
+  const startLabProgress = async () => {
+    if (!lab?.id || hasStartedProgress) return;
+    
+    try {
+      await api.post(`/user-progresses/start/${lab.id}`);
+      setHasStartedProgress(true);
+      setProgressStatus(1); // InProgress
+      console.log("Lab progress started - status set to InProgress");
+    } catch (error) {
+      console.error("Failed to start progress:", error);
+      // Don't block user interaction if this fails
+    }
+  };
+
+  const handleAnswerChange = (questionId: number, value: string | string[] | boolean) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    // Start progress on first interaction
+    startLabProgress();
+  };
+
+  const handleCheckboxChange = (questionId: number, choice: string, checked: boolean) => {
+    setAnswers((prev) => {
+      const current = (prev[questionId] as string[]) || [];
+      const updated = checked
+        ? [...current, choice]
+        : current.filter((c) => c !== choice);
+      return { ...prev, [questionId]: updated };
+    });
+    // Start progress on first interaction
+    startLabProgress();
+  };
+
+  const handleSubmitAnswers = async () => {
+    if (!lab?.id) {
+      alert("Lab ID not found");
+      return;
+    }
+
+    try {
+      // Submit each answer individually to match the API endpoint
+      const submitPromises = Object.entries(answers).map(async ([questionId, answer]) => {
+        const payload = {
+          answerJson: JSON.stringify(answer)
+        };
+        
+        return api.post(
+          `/labs/${lab.id}/questions/${questionId}/answers`,
+          payload
+        );
+      });
+
+      // Wait for all submissions to complete
+      await Promise.all(submitPromises);
+      
+      // Fetch updated progress status after submission
+      try {
+        const statusRes = await api.get(`/user-progresses/status/${lab.id}`);
+        setProgressStatus(statusRes.data);
+        
+        if (statusRes.data === 2) {
+          alert("🎉 Congratulations! You've completed this lab successfully!");
+        } else {
+          alert("Answers submitted! Keep working to complete the lab.");
+        }
+      } catch (error) {
+        alert("Answers submitted successfully!");
+      }
+      
+      // Note: Backend will automatically update progress to Completed if all answers are correct
+      // through the SubmitAnswerAsync logic
+    } catch (e) {
+      console.error("Submit error:", e);
+      alert("Failed to submit answers. Please try again.");
+    }
+  };
+
+  const parseChoices = (choicesJson: string): string[] => {
+    try {
+      return JSON.parse(choicesJson);
+    } catch {
+      return [];
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Back Button */}
       <div className="px-4 md:px-10 lg:px-16 py-6">
         <button
           onClick={() => navigate(-1)}
-          className="cursor-pointer inline-flex items-center gap-2 text-xl text-gray-600 hover:text-gray-800"
+          className="cursor-pointer inline-flex items-center gap-2 text-xl text-gray-600 hover:text-gray-800 transition-colors"
         >
           <img src={previous} alt="" className="size-6" /> Back
         </button>
@@ -161,11 +274,16 @@ export default function LabDetail() {
           <div className="text-center text-red-600 py-10">{error}</div>
         ) : (
           <>
-            <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+            {/* Page Title and Description */}
+            <div className="mb-6">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{lab?.title}</h1>
+              <p className="text-gray-600">{lab?.description}</p>
+            </div>
+
+            {/* Main Content Grid (Lab content + TOC) */}
+            <div className="lg:grid lg:grid-cols-12 lg:gap-8 mb-12">
               {/* Main content */}
               <div className="lg:col-span-9">
-                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{lab?.title}</h1>
-                <p className="text-gray-600 mb-6">{lab?.description}</p>
                 <div className="rounded-2xl border bg-white p-6">
                   <div ref={contentRef} className="markdown-body max-w-none">
                     <ReactMarkdown
@@ -236,6 +354,165 @@ export default function LabDetail() {
                 </div>
               </aside>
             </div>
+
+            {/* Questions Section */}
+            {questions.length > 0 && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                {/* Header with Progress Status */}
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 sm:px-8 sm:py-6">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl sm:text-2xl font-bold text-white">
+                      Lab Questions
+                    </h2>
+                    {/* Progress Status Badge */}
+                    {progressStatus === 0 && (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 rounded-lg">
+                        <span className="text-white text-sm font-semibold">📋 Not Started</span>
+                      </div>
+                    )}
+                    {progressStatus === 1 && (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-yellow-400 bg-opacity-90 rounded-lg">
+                        <span className="text-yellow-900 text-sm font-semibold">⏳ In Progress</span>
+                      </div>
+                    )}
+                    {progressStatus === 2 && (
+                      <div className="flex items-center gap-2 px-4 py-2 bg-green-400 bg-opacity-90 rounded-lg">
+                        <span className="text-green-900 text-sm font-semibold">✅ Completed</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Questions Container */}
+                <div className="p-6 sm:p-8 space-y-8">
+                  {questions.map((q, idx) => {
+                    const choices = parseChoices(q.choicesJson);
+                    return (
+                      <div key={q.id} className="space-y-4">
+                        {/* Question Header */}
+                        <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-sm flex-shrink-0 border border-blue-200">
+                            {idx + 1}
+                          </span>
+                          <p className="text-gray-900 font-medium text-base sm:text-lg flex-1">
+                            {q.questionText}
+                          </p>
+                        </div>
+
+                        {/* Answer Area */}
+                        <div className="sm:ml-10">
+                          {/* Single Choice (type 0) */}
+                          {q.type === 0 && (
+                            <div className="space-y-3">
+                              {choices.map((choice, choiceIdx) => (
+                                <label
+                                  key={choiceIdx}
+                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors group"
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`question-${q.id}`}
+                                    value={choice}
+                                    checked={answers[q.id] === choice}
+                                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                                    className="w-4 h-4 mt-1 text-blue-600 focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+                                  />
+                                  <span className="text-gray-700 group-hover:text-gray-900 text-sm sm:text-base">
+                                    {choice}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Multiple Choice (type 1) */}
+                          {q.type === 1 && (
+                            <div className="space-y-3">
+                              {choices.map((choice, choiceIdx) => (
+                                <label
+                                  key={choiceIdx}
+                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors group"
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={((answers[q.id] as string[]) || []).includes(choice)}
+                                    onChange={(e) => handleCheckboxChange(q.id, choice, e.target.checked)}
+                                    className="w-4 h-4 mt-1 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+                                  />
+                                  <span className="text-gray-700 group-hover:text-gray-900 text-sm sm:text-base">
+                                    {choice}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* True/False (type 2) */}
+                          {q.type === 2 && (
+                            <div className="flex gap-4">
+                              <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`question-${q.id}`}
+                                  checked={answers[q.id] === true}
+                                  onChange={() => handleAnswerChange(q.id, true)}
+                                  className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                />
+                                <span className="text-gray-700 text-sm sm:text-base">True</span>
+                              </label>
+                              <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                                <input
+                                  type="radio"
+                                  name={`question-${q.id}`}
+                                  checked={answers[q.id] === false}
+                                  onChange={() => handleAnswerChange(q.id, false)}
+                                  className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                />
+                                <span className="text-gray-700 text-sm sm:text-base">False</span>
+                              </label>
+                            </div>
+                          )}
+
+                          {/* Short Text (type 3) */}
+                          {q.type === 3 && (
+                            <textarea
+                              value={(answers[q.id] as string) || ""}
+                              onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                              placeholder="Type your answer here..."
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base transition-all resize-y min-h-[100px]"
+                              rows={4}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Submit Button Section */}
+                <div className="bg-gray-50 px-6 py-4 sm:px-8 sm:py-6 border-t border-gray-200">
+                  {progressStatus === 2 ? (
+                    <div className="flex items-center justify-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <span className="text-2xl">🎉</span>
+                      <div>
+                        <p className="text-green-800 font-semibold">Lab Completed!</p>
+                        <p className="text-green-600 text-sm">You've successfully answered all questions correctly.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col sm:flex-row gap-4 sm:justify-end">
+                      <button
+                        onClick={handleSubmitAnswers}
+                        disabled={Object.keys(answers).length === 0}
+                        className="w-full sm:w-auto px-8 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg"
+                      >
+                        Submit Answers
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>

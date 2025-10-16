@@ -187,10 +187,10 @@ export default function AdminConsole() {
       revenue === null
         ? "N/A"
         : new Intl.NumberFormat("vi-VN", {
-            style: "currency",
-            currency: "VND",
-            maximumFractionDigits: 0,
-          }).format(revenue ?? 0),
+          style: "currency",
+          currency: "VND",
+          maximumFractionDigits: 0,
+        }).format(revenue ?? 0),
     [revenue]
   );
 
@@ -431,8 +431,8 @@ export default function AdminConsole() {
                 {loading
                   ? ""
                   : revenueTransactions !== null
-                  ? `Transactions: ${revenueTransactions}`
-                  : "Transactions: N/A"}
+                    ? `Transactions: ${revenueTransactions}`
+                    : "Transactions: N/A"}
               </div>
             </div>
           </div>
