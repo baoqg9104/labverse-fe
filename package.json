@@ -21,6 +21,7 @@
     "axios": "^1.12.2",
     "file-selector": "^2.1.2",
     "firebase": "^12.4.0",
+    "framer-motion": "^11.18.2",
     "github-markdown-css": "^5.8.1",
     "highlight.js": "^11.11.1",
     "html-to-image": "^1.11.13",

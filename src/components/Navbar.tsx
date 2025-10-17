@@ -13,6 +13,7 @@ import ReportIssueModal from "./ReportIssueModal";
 const navLinks = [
   { nameKey: "nav.home", path: "/" },
   { nameKey: "nav.learn", path: "/learn" },
+  { nameKey: "nav.ranking", path: "/ranking" },
   { nameKey: "nav.pricing", path: "/pricing" },
   { nameKey: "nav.contact", path: "/contact" },
 ];

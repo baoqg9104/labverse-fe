@@ -52,7 +52,7 @@ export default function GamificationStats({ points, level, streakCurrent, streak
             </div>
             <div className="text-3xl font-bold text-gray-800 mb-1">{p.toLocaleString()}</div>
             <div className="text-gray-600 font-medium">Points</div>
-            <div className="text-xs text-gray-500 mt-2">Earn XP by learning and contributing</div>
+            <div className="text-xs text-gray-500 mt-2 text-center">Earn XP by learning and contributing</div>
           </div>
 
           {/* Level with progress */}

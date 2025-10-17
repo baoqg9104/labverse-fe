@@ -2,6 +2,7 @@
   "nav": {
     "home": "Home",
     "learn": "Learn",
+    "ranking": "Ranking",
     "pricing": "Pricing",
     "contact": "Contact",
     "console": "Console",
@@ -190,5 +191,27 @@
   "common": {
     "viewMore": "View More",
     "showMore": "Show More"
+  },
+  "ranking": {
+    "title": "Ranking",
+    "showBy": "Show by",
+    "tabs": {
+      "users": "Users",
+      "authors": "Authors"
+    },
+    "criteria": {
+      "label": "Criteria",
+      "points": "Points",
+      "streak": "Streak",
+      "badges": "Badges"
+    },
+    "units": {
+      "points": "pts",
+      "streak": "streak",
+      "badges": "badges"
+    },
+    "error": "Unable to load rankings",
+    "empty": "No data",
+    "id": "ID"
   }
 }

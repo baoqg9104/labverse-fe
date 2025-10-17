@@ -11,6 +11,10 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import previous from "../assets/previous.png";
+import { toast } from "react-toastify";
+import { FiCheckCircle, FiClock, FiClipboard } from "react-icons/fi";
+import { QuestionContainer } from "../components/quiz/QuestionContainer";
+import type { Question as UiQuestion, QuestionType } from "../types/quiz";
 
 type LabDto = {
   id: number;
@@ -51,10 +55,8 @@ export default function LabDetail() {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const [questions, setQuestions] = useState<QuestionDto[]>([]);
-  const [answers, setAnswers] = useState<Record<number, string | string[] | boolean>>({});
-  
+
   // UserProgress tracking
-  const [hasStartedProgress, setHasStartedProgress] = useState(false);
   const [progressStatus, setProgressStatus] = useState<0 | 1 | 2>(0); // 0: NotStarted, 1: InProgress, 2: Completed
 
   const baseUrl = useMemo(() => {
@@ -70,6 +72,11 @@ export default function LabDetail() {
     }
   }, [lab?.mdPublicUrl]);
 
+  // Scroll to top on initial load and when slug changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [slug]);
+
   useEffect(() => {
     const load = async () => {
       if (!slug) return;
@@ -84,17 +91,16 @@ export default function LabDetail() {
 
         const questionsRes = await api.get(`/labs/${dto.id}/questions`);
         setQuestions(questionsRes.data as QuestionDto[]);
-        
+
         // Fetch current progress status
         try {
           const statusRes = await api.get(`/user-progresses/status/${dto.id}`);
           setProgressStatus(statusRes.data); // 0, 1, or 2
-          setHasStartedProgress(statusRes.data > 0); // Already started if InProgress or Completed
-        } catch (error) {
-          console.log("No progress found yet, starting fresh");
+        } catch {
+          toast.error("Failed to fetch user progress status.");
           setProgressStatus(0); // NotStarted
         }
-        
+
         // Fetch markdown content via public URL
         if (dto.mdPublicUrl) {
           const mdRes = await fetch(dto.mdPublicUrl);
@@ -119,7 +125,9 @@ export default function LabDetail() {
     const root = contentRef.current;
     if (!root) return;
 
-    const headings = Array.from(root.querySelectorAll("h1, h2, h3")) as HTMLHeadingElement[];
+    const headings = Array.from(
+      root.querySelectorAll("h1, h2, h3")
+    ) as HTMLHeadingElement[];
     const items: TocItem[] = headings
       .filter((h) => !!h.id && !!h.textContent)
       .map((h) => ({
@@ -163,80 +171,36 @@ export default function LabDetail() {
     window.scrollTo({ top: y, behavior: "smooth" });
   };
 
-  // Start lab progress - called on first interaction with any question
-  const startLabProgress = async () => {
-    if (!lab?.id || hasStartedProgress) return;
-    
+  // Start lab progress previously triggered on first interaction.
+  // New flow can start it from QuestionContainer in the future if needed.
+
+  // handleAnswerChange removed; now handled by QuestionContainer
+
+  // Submit a single answer and provide feedback
+  const submitSingleAnswer = async (
+    q: QuestionDto,
+    answer: string | string[] | boolean
+  ) => {
+    if (!lab?.id) return { isCorrect: false, awardedXp: 0 };
     try {
-      await api.post(`/user-progresses/start/${lab.id}`);
-      setHasStartedProgress(true);
-      setProgressStatus(1); // InProgress
-      console.log("Lab progress started - status set to InProgress");
-    } catch (error) {
-      console.error("Failed to start progress:", error);
-      // Don't block user interaction if this fails
-    }
-  };
-
-  const handleAnswerChange = (questionId: number, value: string | string[] | boolean) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-    // Start progress on first interaction
-    startLabProgress();
-  };
-
-  const handleCheckboxChange = (questionId: number, choice: string, checked: boolean) => {
-    setAnswers((prev) => {
-      const current = (prev[questionId] as string[]) || [];
-      const updated = checked
-        ? [...current, choice]
-        : current.filter((c) => c !== choice);
-      return { ...prev, [questionId]: updated };
-    });
-    // Start progress on first interaction
-    startLabProgress();
-  };
-
-  const handleSubmitAnswers = async () => {
-    if (!lab?.id) {
-      alert("Lab ID not found");
-      return;
-    }
-
-    try {
-      // Submit each answer individually to match the API endpoint
-      const submitPromises = Object.entries(answers).map(async ([questionId, answer]) => {
-        const payload = {
-          answerJson: JSON.stringify(answer)
-        };
-        
-        return api.post(
-          `/labs/${lab.id}/questions/${questionId}/answers`,
-          payload
-        );
-      });
-
-      // Wait for all submissions to complete
-      await Promise.all(submitPromises);
-      
-      // Fetch updated progress status after submission
-      try {
-        const statusRes = await api.get(`/user-progresses/status/${lab.id}`);
-        setProgressStatus(statusRes.data);
-        
-        if (statusRes.data === 2) {
-          alert("🎉 Congratulations! You've completed this lab successfully!");
-        } else {
-          alert("Answers submitted! Keep working to complete the lab.");
-        }
-      } catch (error) {
-        alert("Answers submitted successfully!");
-      }
-      
-      // Note: Backend will automatically update progress to Completed if all answers are correct
-      // through the SubmitAnswerAsync logic
+      const payload = { answerJson: JSON.stringify(answer) };
+      const res = await api.post(
+        `/labs/${lab.id}/questions/${q.id}/answers`,
+        payload
+      );
+      const data = res.data as {
+        isCorrect: boolean;
+        awardedXp: number;
+        labCompleted: boolean;
+        totalUserXp?: number;
+        newLevel?: number;
+      };
+      if (data.labCompleted) setProgressStatus(2);
+      return { isCorrect: data.isCorrect, awardedXp: data.awardedXp };
     } catch (e) {
-      console.error("Submit error:", e);
-      alert("Failed to submit answers. Please try again.");
+      console.error(e);
+      toast.error("Failed to submit answer. Please try again.");
+      return { isCorrect: false, awardedXp: 0 };
     }
   };
 
@@ -259,7 +223,7 @@ export default function LabDetail() {
           <img src={previous} alt="" className="size-6" /> Back
         </button>
       </div>
-      <div className="max-w-7xl mx-auto px-4 pb-16">
+      <div className="max-w-7xl mx-auto pb-16">
         {isLoading ? (
           <div className="space-y-4">
             <div className="h-8 w-2/3 bg-gray-200 rounded animate-pulse" />
@@ -274,16 +238,21 @@ export default function LabDetail() {
           <div className="text-center text-red-600 py-10">{error}</div>
         ) : (
           <>
-            {/* Page Title and Description */}
+            {/* Page Title and Description with Status Badge */}
             <div className="mb-6">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">{lab?.title}</h1>
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+                  {lab?.title}
+                </h1>
+                <LabStatusChip status={progressStatus} />
+              </div>
               <p className="text-gray-600">{lab?.description}</p>
             </div>
 
             {/* Main Content Grid (Lab content + TOC) */}
-            <div className="lg:grid lg:grid-cols-12 lg:gap-8 mb-12">
+            <div className="lg:grid lg:grid-cols-12 lg:gap-4 mb-12">
               {/* Main content */}
-              <div className="lg:col-span-9">
+              <div className="lg:col-span-10">
                 <div className="rounded-2xl border bg-white p-6">
                   <div ref={contentRef} className="markdown-body max-w-none">
                     <ReactMarkdown
@@ -298,7 +267,9 @@ export default function LabDetail() {
                         img({ ...props }) {
                           const raw = (props.src || "").toString();
                           const isAbsolute = /^https?:\/\//i.test(raw);
-                          const src = isAbsolute ? raw : (baseUrl || "") + raw.replace(/^\/?/, "");
+                          const src = isAbsolute
+                            ? raw
+                            : (baseUrl || "") + raw.replace(/^\/?/, "");
                           return (
                             <img
                               {...props}
@@ -317,17 +288,26 @@ export default function LabDetail() {
               </div>
 
               {/* Table of Contents */}
-              <aside className="hidden lg:block lg:col-span-3">
+              <aside className="hidden lg:block lg:col-span-2">
                 <div className="sticky top-24">
-                  <div className="rounded-xl border bg-white p-4">
-                    <div className="text-sm font-semibold text-gray-700 mb-3">Contents</div>
+                  <div className="rounded-xl border bg-white p-3">
+                    <div className="text-sm font-semibold text-gray-700 mb-3">
+                      Contents
+                    </div>
                     {toc.length === 0 ? (
-                      <div className="text-xs text-gray-400">No headings found</div>
+                      <div className="text-xs text-gray-400">
+                        No headings found
+                      </div>
                     ) : (
                       <nav className="text-sm">
                         <ul className="space-y-1">
                           {toc.map((h) => {
-                            const indent = h.level === 1 ? "" : h.level === 2 ? "pl-3" : "pl-6";
+                            const indent =
+                              h.level === 1
+                                ? ""
+                                : h.level === 2
+                                ? "pl-3"
+                                : "pl-6";
                             const isActive = activeId === h.id;
                             return (
                               <li key={h.id} className={indent}>
@@ -355,163 +335,29 @@ export default function LabDetail() {
               </aside>
             </div>
 
-            {/* Questions Section */}
-            {questions.length > 0 && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                {/* Header with Progress Status */}
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4 sm:px-8 sm:py-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white">
-                      Lab Questions
-                    </h2>
-                    {/* Progress Status Badge */}
-                    {progressStatus === 0 && (
-                      <div className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 rounded-lg">
-                        <span className="text-white text-sm font-semibold">📋 Not Started</span>
-                      </div>
-                    )}
-                    {progressStatus === 1 && (
-                      <div className="flex items-center gap-2 px-4 py-2 bg-yellow-400 bg-opacity-90 rounded-lg">
-                        <span className="text-yellow-900 text-sm font-semibold">⏳ In Progress</span>
-                      </div>
-                    )}
-                    {progressStatus === 2 && (
-                      <div className="flex items-center gap-2 px-4 py-2 bg-green-400 bg-opacity-90 rounded-lg">
-                        <span className="text-green-900 text-sm font-semibold">✅ Completed</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Questions Container */}
-                <div className="p-6 sm:p-8 space-y-8">
-                  {questions.map((q, idx) => {
-                    const choices = parseChoices(q.choicesJson);
-                    return (
-                      <div key={q.id} className="space-y-4">
-                        {/* Question Header */}
-                        <div className="flex flex-col sm:flex-row sm:items-start gap-2">
-                          <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-sm flex-shrink-0 border border-blue-200">
-                            {idx + 1}
-                          </span>
-                          <p className="text-gray-900 font-medium text-base sm:text-lg flex-1">
-                            {q.questionText}
-                          </p>
-                        </div>
-
-                        {/* Answer Area */}
-                        <div className="sm:ml-10">
-                          {/* Single Choice (type 0) */}
-                          {q.type === 0 && (
-                            <div className="space-y-3">
-                              {choices.map((choice, choiceIdx) => (
-                                <label
-                                  key={choiceIdx}
-                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors group"
-                                >
-                                  <input
-                                    type="radio"
-                                    name={`question-${q.id}`}
-                                    value={choice}
-                                    checked={answers[q.id] === choice}
-                                    onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                                    className="w-4 h-4 mt-1 text-blue-600 focus:ring-2 focus:ring-blue-500 flex-shrink-0"
-                                  />
-                                  <span className="text-gray-700 group-hover:text-gray-900 text-sm sm:text-base">
-                                    {choice}
-                                  </span>
-                                </label>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Multiple Choice (type 1) */}
-                          {q.type === 1 && (
-                            <div className="space-y-3">
-                              {choices.map((choice, choiceIdx) => (
-                                <label
-                                  key={choiceIdx}
-                                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors group"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={((answers[q.id] as string[]) || []).includes(choice)}
-                                    onChange={(e) => handleCheckboxChange(q.id, choice, e.target.checked)}
-                                    className="w-4 h-4 mt-1 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 flex-shrink-0"
-                                  />
-                                  <span className="text-gray-700 group-hover:text-gray-900 text-sm sm:text-base">
-                                    {choice}
-                                  </span>
-                                </label>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* True/False (type 2) */}
-                          {q.type === 2 && (
-                            <div className="flex gap-4">
-                              <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                                <input
-                                  type="radio"
-                                  name={`question-${q.id}`}
-                                  checked={answers[q.id] === true}
-                                  onChange={() => handleAnswerChange(q.id, true)}
-                                  className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                                />
-                                <span className="text-gray-700 text-sm sm:text-base">True</span>
-                              </label>
-                              <label className="flex items-center gap-2 p-3 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                                <input
-                                  type="radio"
-                                  name={`question-${q.id}`}
-                                  checked={answers[q.id] === false}
-                                  onChange={() => handleAnswerChange(q.id, false)}
-                                  className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
-                                />
-                                <span className="text-gray-700 text-sm sm:text-base">False</span>
-                              </label>
-                            </div>
-                          )}
-
-                          {/* Short Text (type 3) */}
-                          {q.type === 3 && (
-                            <textarea
-                              value={(answers[q.id] as string) || ""}
-                              onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                              placeholder="Type your answer here..."
-                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base transition-all resize-y min-h-[100px]"
-                              rows={4}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Submit Button Section */}
-                <div className="bg-gray-50 px-6 py-4 sm:px-8 sm:py-6 border-t border-gray-200">
-                  {progressStatus === 2 ? (
-                    <div className="flex items-center justify-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                      <span className="text-2xl">🎉</span>
-                      <div>
-                        <p className="text-green-800 font-semibold">Lab Completed!</p>
-                        <p className="text-green-600 text-sm">You've successfully answered all questions correctly.</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col sm:flex-row gap-4 sm:justify-end">
-                      <button
-                        onClick={handleSubmitAnswers}
-                        disabled={Object.keys(answers).length === 0}
-                        className="w-full sm:w-auto px-8 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg"
-                      >
-                        Submit Answers
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Questions Section (interactive) */}
+            {questions.length > 0 && lab?.id && (
+              <QuestionContainer
+                questions={questions.map<UiQuestion>((q) => ({
+                  id: q.id,
+                  text: q.questionText,
+                  type: q.type as QuestionType,
+                  choices: parseChoices(q.choicesJson),
+                }))}
+                durationSec={30}
+                onSubmitAnswer={async (question, answer) =>
+                  submitSingleAnswer(
+                    {
+                      id: question.id,
+                      labId: lab.id!,
+                      questionText: question.text,
+                      type: question.type as 0 | 1 | 2 | 3,
+                      choicesJson: JSON.stringify(question.choices ?? []),
+                    },
+                    answer as string | string[] | boolean
+                  )
+                }
+              />
             )}
           </>
         )}
@@ -519,3 +365,58 @@ export default function LabDetail() {
     </div>
   );
 }
+
+// Small presentational chip to show lab status prominently
+function LabStatusChip({
+  status,
+  variant = "default",
+}: {
+  status: 0 | 1 | 2;
+  variant?: "default" | "on-dark";
+}) {
+  if (status === 0) {
+    return (
+      <span
+        className={
+          variant === "on-dark"
+            ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 text-white text-sm font-semibold"
+            : "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-sm font-semibold"
+        }
+        title="Not Started"
+      >
+        <FiClipboard />
+        Not Started
+      </span>
+    );
+  }
+  if (status === 1) {
+    return (
+      <span
+        className={
+          variant === "on-dark"
+            ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-400/90 text-yellow-900 text-sm font-semibold"
+            : "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm font-semibold"
+        }
+        title="In Progress"
+      >
+        <FiClock />
+        In Progress
+      </span>
+    );
+  }
+  return (
+    <span
+      className={
+        variant === "on-dark"
+          ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-400/90 text-green-900 text-sm font-semibold"
+          : "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200 text-sm font-semibold"
+      }
+      title="Completed"
+    >
+      <FiCheckCircle />
+      Completed
+    </span>
+  );
+}
+
+// (TimerRing removed; using QuestionContainer's TimerBar instead)
