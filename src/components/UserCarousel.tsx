@@ -43,7 +43,7 @@ export default function UserCarousel({
               className={`flex flex-col items-center min-w-[120px] cursor-pointer rounded-xl p-3 transition border-2 ${
                 isActive
                   ? "border-blue-400 bg-[#ffffff75]"
-                  : "border-transparent hover:bg-[#e9e9ff]"
+                  : "border-blue-100 hover:bg-[#e9e9ff"
               }`}
               onClick={() => {
                 try {

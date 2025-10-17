@@ -2,6 +2,7 @@
   "nav": {
     "home": "Trang chủ",
     "learn": "Học",
+    "ranking": "Bảng xếp hạng",
     "pricing": "Giá",
     "contact": "Liên hệ",
     "console": "Bảng điều khiển",
@@ -190,5 +191,27 @@
   "common": {
     "viewMore": "Xem thêm",
     "showMore": "Hiển thị thêm"
+  },
+  "ranking": {
+    "title": "Bảng xếp hạng",
+    "showBy": "Hiển thị theo tiêu chí",
+    "tabs": {
+      "users": "Người dùng",
+      "authors": "Tác giả"
+    },
+    "criteria": {
+      "label": "Tiêu chí",
+      "points": "Điểm",
+      "streak": "Chuỗi ngày",
+      "badges": "Huy hiệu"
+    },
+    "units": {
+      "points": "điểm",
+      "streak": "chuỗi",
+      "badges": "huy hiệu"
+    },
+    "error": "Không thể tải bảng xếp hạng",
+    "empty": "Không có dữ liệu",
+    "id": "ID"
   }
 }

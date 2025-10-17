@@ -64,7 +64,7 @@ export function RoleTabContent({
             </p>
           </div>
           <div className="space-y-4">
-            {[
+            {/* {[
               {
                 type: "lab",
                 title: "Completed lab 'SQL Injection'",
@@ -96,7 +96,7 @@ export function RoleTabContent({
                   <div className="text-sm text-gray-600">{activity.date}</div>
                 </div>
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
       )}
@@ -133,10 +133,11 @@ export function RoleTabContent({
                     </div>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${i % 2
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      i % 2
                         ? "bg-gray-100 text-gray-700"
                         : "bg-emerald-100 text-emerald-700"
-                      }`}
+                    }`}
                   >
                     {i % 2 ? "Draft" : "Published"}
                   </span>
@@ -162,17 +163,11 @@ export function RoleTabContent({
         </div>
       )}
 
-      {activeTab === "createLab" && (
-        <CreateLab />
-      )}
+      {activeTab === "createLab" && <CreateLab />}
 
-      {activeTab === "createQuestion" && (
-        <CreateQuestions />
-      )}
+      {activeTab === "createQuestion" && <CreateQuestions />}
 
-      {activeTab === "viewQuestions" && (
-        <ViewQuestions />
-      )}
+      {activeTab === "viewQuestions" && <ViewQuestions />}
 
       {activeTab === "overview" && role === ROLE.ADMIN && (
         <div className="max-w-6xl mx-auto">
@@ -256,8 +251,8 @@ export function RoleTabContent({
                         {u.role === 2
                           ? "Admin"
                           : u.role === 1
-                            ? "Author"
-                            : "User"}
+                          ? "Author"
+                          : "User"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-700">Verified</td>

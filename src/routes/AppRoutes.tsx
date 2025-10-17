@@ -30,6 +30,9 @@ const LabDetail = lazy(() =>
 const Checkout = lazy(() =>
   import("../pages/Checkout").then((m) => ({ default: m.default }))
 );
+const Ranking = lazy(() =>
+  import("../pages/Ranking").then((m) => ({ default: m.default }))
+);
 
 export const AppRoutes = () => {
   return (
@@ -38,6 +41,14 @@ export const AppRoutes = () => {
       <Route path="/home" element={<Home />} />
       <Route path="/learn" element={<Learn />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route
+        path="/ranking"
+        element={
+          <Suspense fallback={<SuspenseFallback />}>
+            <Ranking />
+          </Suspense>
+        }
+      />
       {/* Public payment result routes to handle external redirects */}
       <Route path="/checkout/success" element={<PaymentResult />} />
       <Route path="/checkout/cancel" element={<PaymentResult />} />
