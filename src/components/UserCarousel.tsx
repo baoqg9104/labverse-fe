@@ -40,10 +40,10 @@ export default function UserCarousel({
         return (
           <SwiperSlide key={user.username + idx}>
             <div
-              className={`flex flex-col items-center min-w-[120px] cursor-pointer rounded-xl p-3 transition border-2 ${
+              className={`group relative flex min-h-[150px] min-w-[140px] flex-col items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 text-center text-slate-900 transition-all duration-300 hover:-translate-y-1 hover:border-sky-200 hover:bg-sky-50 hover:shadow-xl ${
                 isActive
-                  ? "border-blue-400 bg-[#ffffff75]"
-                  : "border-blue-100 hover:bg-[#e9e9ff"
+                  ? "border-transparent bg-gradient-to-br from-sky-100 via-indigo-100 to-purple-100 shadow-[0_20px_50px_-18px_rgba(80,140,255,0.4)]"
+                  : ""
               }`}
               onClick={() => {
                 try {
@@ -57,11 +57,19 @@ export default function UserCarousel({
               <img
                 src={user.avatarUrl || DEFAULT_AVATAR_URL}
                 alt={user.username}
-                className="w-16 h-16 rounded-full object-cover border-2 border-white mb-2"
+                className={`h-16 w-16 rounded-full border-2 border-white object-cover shadow-lg transition-transform duration-300 ${
+                  isActive ? "scale-105" : "group-hover:scale-105"
+                }`}
               />
-              <span className="font-semibold text-[#1a144b] text-sm">
+              <span className="text-sm font-semibold uppercase tracking-wide">
                 {user.username}
               </span>
+              <span className="text-xs text-slate-500">{user.email}</span>
+              {isActive && (
+                <span className="absolute -top-1 -right-2 rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-700 shadow">
+                  ⭐
+                </span>
+              )}
             </div>
           </SwiperSlide>
         );
