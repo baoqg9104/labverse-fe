@@ -5,6 +5,9 @@ import api from "../utils/axiosInstance";
 import { AuthContext } from "../contexts/AuthContext";
 import { ROLE } from "../components/profile/RoleUtils";
 import { useTranslation } from "react-i18next";
+import heroCyberImg from "../assets/cyber-security (1).png";
+import loupeImg from "../assets/loupe.png";
+import rightArrowImg from "../assets/right-arrow.png";
 
 const color: Record<LabLevel, string> = {
   Basic: "bg-green-400",
@@ -250,7 +253,7 @@ export const Learn = () => {
           </div>
           <div className="hidden md:block md:mr-34">
             <img
-              src="src/assets/cyber-security (1).png"
+              src={heroCyberImg}
               alt={t("learn.alt.hero")}
               className="size-44 object-contain drop-shadow-xl"
             />
@@ -366,7 +369,7 @@ export const Learn = () => {
             <div className="relative w-full md:w-72">
               <div className="flex items-center w-full">
                 <img
-                  src="src/assets/loupe.png"
+                  src={loupeImg}
                   alt="Search"
                   className="w-4 absolute left-1"
                 />
@@ -457,7 +460,7 @@ export const Learn = () => {
                     <div className="inline-flex items-center gap-2 font-semibold text-xs md:text-sm text-violet-700 hover:text-violet-800">
                         {t("common.viewMore", "View More")}
                       <img
-                        src="src/assets/right-arrow.png"
+                        src={rightArrowImg}
                         alt=""
                         className="w-[11px] md:mt-1"
                       />

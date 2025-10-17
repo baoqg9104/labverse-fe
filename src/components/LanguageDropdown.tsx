@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import i18n from "../i18n";
+import flagEn from "../assets/en.png";
+import flagVi from "../assets/vi.png";
 
 const languages = [
-  { code: "en", name: "English", flag: "/src/assets/en.png" },
-  { code: "vi", name: "Vietnamese", flag: "/src/assets/vi.png" },
+  { code: "en", name: "English", flag: flagEn },
+  { code: "vi", name: "Vietnamese", flag: flagVi },
 ];
 
 export const LanguageDropdown: React.FC = () => {
