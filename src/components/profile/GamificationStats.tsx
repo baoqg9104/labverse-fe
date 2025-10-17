@@ -1,4 +1,6 @@
 import CircularProgress from "@mui/material/CircularProgress";
+import { useTranslation } from "react-i18next";
+import { FiStar, FiZap } from "react-icons/fi";
 
 interface Props {
   points: number | undefined;
@@ -30,10 +32,24 @@ function getLevelProgress(points: number) {
   const span = Math.max(1, next - min);
   const clamped = Math.max(min, Math.min(points, next));
   const progress = (clamped - min) / span;
-  return { level: lvl, min, next, progress: Math.max(0, Math.min(progress, 1)) };
+  return {
+    level: lvl,
+    min,
+    next,
+    progress: Math.max(0, Math.min(progress, 1)),
+  };
 }
 
-export default function GamificationStats({ points, level, streakCurrent, streakBest }: Props) {
+const cardBase =
+  "group relative flex h-full flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg";
+
+export default function GamificationStats({
+  points,
+  level,
+  streakCurrent,
+  streakBest,
+}: Props) {
+  const { t } = useTranslation();
   const p = Math.max(0, points ?? 0);
   const derived = getLevelProgress(p);
   const lvl = derived.level || Math.max(1, level ?? 1);
@@ -41,40 +57,126 @@ export default function GamificationStats({ points, level, streakCurrent, streak
   const next = derived.next;
   const remaining = Math.max(0, next - p);
 
+  const streakNow = Math.max(0, streakCurrent ?? 0);
+  const streakBestSafe = Math.max(0, streakBest ?? 0);
+
   return (
-    <div className="w-full bg-gradient-to-r from-sky-50 to-indigo-50 pt-8">
-      <div className="max-w-4xl mx-auto px-8">
-        <div className="flex flex-wrap justify-center items-stretch gap-6">
-          {/* Points */}
-          <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-sky-100 flex flex-col items-center justify-center min-w-[200px] flex-1" style={{ height: 220 }}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-3 bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl">🏆</div>
+    <div className="px-8 pt-6">
+      <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-3">
+        <div className={`${cardBase} items-start`}>
+          <div className="flex w-full items-start justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                {t("profile.gamification.points", "Points")}
+              </div>
+              <div className="mt-4 text-3xl font-semibold text-slate-900">
+                {p.toLocaleString()}
+              </div>
             </div>
-            <div className="text-3xl font-bold text-gray-800 mb-1">{p.toLocaleString()}</div>
-            <div className="text-gray-600 font-medium">Points</div>
-            <div className="text-xs text-gray-500 mt-2 text-center">Earn XP by learning and contributing</div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-500 to-purple-500 text-xl">
+              <FiZap className="text-white" />
+            </div>
           </div>
+          <p className="text-sm text-slate-500">
+            {t(
+              "profile.gamification.pointsHint",
+              "Earn XP by completing labs, maintaining streaks, and contributing back."
+            )}
+          </p>
+        </div>
 
-          {/* Level with progress */}
-          <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-indigo-100 flex flex-col items-center justify-center min-w-[220px] flex-1" style={{ height: 220 }}>
-            <div className="relative mb-2" style={{ width: 92, height: 92 }}>
-              <CircularProgress variant="determinate" value={100} size={92} thickness={4} sx={{ color: "#E5E7EB" }} />
-              <CircularProgress variant="determinate" value={pct} size={92} thickness={4} sx={{ position: "absolute", left: 0, top: 0 }} />
-              <div className="absolute inset-0 flex items-center justify-center font-bold text-gray-800">Lv {lvl}</div>
+        <div className={`${cardBase} items-center text-center`}>
+          <div className="flex w-full items-start justify-between">
+            <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
+              {t("profile.gamification.level", "Level")}
             </div>
-            <div className="text-gray-600 font-medium">Level</div>
-            <div className="text-xs text-gray-500 mt-1">Next at {next.toLocaleString()} XP • {remaining.toLocaleString()} XP to go</div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 via-indigo-500 to-sky-500 text-xl">
+              <FiStar className="text-white" />
+            </div>
           </div>
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <div className="relative mb-3" style={{ width: 96, height: 96 }}>
+              <CircularProgress
+                variant="determinate"
+                value={100}
+                size={96}
+                thickness={4}
+                sx={{ color: "rgba(148, 163, 184, 0.25)" }}
+              />
+              <CircularProgress
+                variant="determinate"
+                value={pct}
+                size={96}
+                thickness={4}
+                sx={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  "& .MuiCircularProgress-circle": {
+                    stroke: "url(#levelGradient)",
+                  },
+                }}
+              />
+              <svg width="0" height="0">
+                <defs>
+                  <linearGradient
+                    id="levelGradient"
+                    x1="1"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop offset="0%" stopColor="#6EE7FF" />
+                    <stop offset="50%" stopColor="#818CF8" />
+                    <stop offset="100%" stopColor="#C084FC" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-slate-900">
+                Lv {lvl}
+              </div>
+            </div>
+            <div className="text-sm text-slate-600">
+              {t("profile.gamification.nextLevel", "Next level at {{xp}} XP", {
+                xp: next.toLocaleString(),
+              })}
+            </div>
+            <div className="text-xs text-slate-500">
+              {t("profile.gamification.remaining", "{{xp}} XP to go", {
+                xp: remaining.toLocaleString(),
+              })}
+            </div>
+          </div>
+        </div>
 
-          {/* Streak */}
-          <div className="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-amber-100 flex flex-col items-center justify-center min-w-[220px] flex-1" style={{ height: 220 }}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl">🔥</div>
+        <div className={`${cardBase} items-start`}>
+          <div className="flex w-full items-start justify-between">
+            <div>
+              <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                {t("profile.gamification.streak", "Current streak")}
+              </div>
+              <div className="mt-4 text-3xl font-semibold text-slate-900">
+                {streakNow}
+                <span className="ml-2 text-sm text-slate-500">
+                  {t("profile.gamification.days", "days")}
+                </span>
+              </div>
             </div>
-            <div className="text-3xl font-bold text-gray-800 mb-1">{Math.max(0, streakCurrent ?? 0)}</div>
-            <div className="text-gray-600 font-medium">Current Streak (days)</div>
-            <div className="text-sm text-amber-700 mt-2">Best: {Math.max(0, streakBest ?? 0)} days</div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 via-orange-400 to-rose-400 text-xl">
+              🔥
+            </div>
           </div>
+          <p className="text-sm text-slate-500">
+            {t("profile.gamification.best", "Best streak: {{days}} days", {
+              days: streakBestSafe,
+            })}
+          </p>
+          <p className="text-xs text-slate-500">
+            {t(
+              "profile.gamification.streakHint",
+              "Log in daily to keep the flame alive and unlock streak rewards."
+            )}
+          </p>
         </div>
       </div>
     </div>

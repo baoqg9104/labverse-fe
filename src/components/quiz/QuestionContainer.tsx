@@ -9,7 +9,7 @@ import { FiCheckCircle, FiAlertTriangle, FiXCircle } from "react-icons/fi";
 
 export function QuestionContainer({
   questions,
-  durationSec = 30,
+  durationSec = 20,
   onSubmitAnswer,
 }: {
   questions: Question[];
@@ -78,6 +78,24 @@ export function QuestionContainer({
 
   const current = questions[idx];
   const finished = started && idx >= questions.length;
+
+  const restartQuiz = () => {
+    // Clear any running timer
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    // Reset all quiz states
+    setStarted(false);
+    setIdx(0);
+    setAnswers({});
+    setFeedback(undefined);
+    setSubmitting(false);
+    setScore(0);
+    setCorrectCount(0);
+    setRemaining(durationSec);
+    setNotice(null);
+  };
 
   const submit = async (value: AnswerValue) => {
     if (!current) return;
@@ -154,6 +172,7 @@ export function QuestionContainer({
             total={questions.length}
             correct={correctCount}
             score={score}
+            onRestart={restartQuiz}
           />
         ) : (
           <AnimatePresence mode="wait">

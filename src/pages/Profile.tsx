@@ -13,6 +13,7 @@ import { RoleTabContent } from "../components/profile/RoleTabContent";
 import { ROLE, USER_TABS, AUTHOR_TABS } from "../components/profile/RoleUtils";
 import { Link } from "react-router-dom";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { ActivitySection } from "../components/profile/ActivitySection";
 
 export function Profile() {
   const { user } = useContext(AuthContext);
@@ -85,76 +86,84 @@ export function Profile() {
   }, [userList, user?.email]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 pt-8 pb-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white">
-          <ProfileHeader
-            profile={profile}
-            plan={plan}
-            isMyProfile={isMyProfile}
-            onEdit={() => setShowEditModal(true)}
-            onViewBadges={() => setShowBadgesModal(true)}
-            onBackToMe={() => user && setProfile(user)}
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-sky-50 text-slate-900">
+      <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-sky-100/70 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-[-180px] right-[-120px] h-[480px] w-[480px] rounded-full bg-indigo-100/60 blur-3xl" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(79,124,255,0.08),_transparent_65%)]" />
+
+      <div className="relative z-10 mx-auto flex max-w-6xl flex-col gap-8 px-6 py-12">
+        <ProfileHeader
+          profile={profile}
+          plan={plan}
+          isMyProfile={isMyProfile}
+          onEdit={() => setShowEditModal(true)}
+          onViewBadges={() => setShowBadgesModal(true)}
+          onBackToMe={() => user && setProfile(user)}
+        />
+
+        {profile?.role !== ROLE.ADMIN && (
+          <GamificationStats
+            points={profile?.points}
+            level={profile?.level}
+            streakCurrent={profile?.streakCurrent}
+            streakBest={profile?.streakBest}
           />
+        )}
 
-          {/* Gamification section: Points, Level, Streak (only for USER/AUTHOR) */}
-          {profile?.role !== ROLE.ADMIN && (
-            <GamificationStats
-              points={profile?.points}
-              level={profile?.level}
-              streakCurrent={profile?.streakCurrent}
-              streakBest={profile?.streakBest}
-            />
-          )}
+        <ProfileStats
+          badges={badges}
+          onViewBadges={() => setShowBadgesModal(true)}
+          role={profile?.role}
+          joinedAt={profile?.createdAt || null}
+          labsWritten={profile?.role === ROLE.AUTHOR ? 7 : undefined}
+        />
 
-          <ProfileStats
-            badges={badges}
-            onViewBadges={() => setShowBadgesModal(true)}
-            role={profile?.role}
-            joinedAt={profile?.createdAt || null}
-            labsWritten={profile?.role === ROLE.AUTHOR ? 7 : undefined}
-          />
-
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white pb-10 shadow-[0_30px_80px_-45px_rgba(79,124,255,0.25)]">
           <TabsNav tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
-
           <RoleTabContent
             activeTab={activeTab}
             badges={badges}
             profile={profile}
             userList={userList}
           />
-
-          {profile?.role === ROLE.ADMIN && isMyProfile && (
-            <div className="px-8 pb-6">
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-center justify-between">
-                <div>
-                  <div className="font-semibold text-amber-900">
-                    Looking for Admin tools?
-                  </div>
-                  <div className="text-amber-800/90">
-                    Use the dedicated Admin Console to manage users, labs,
-                    reports and revenue.
-                  </div>
-                </div>
-                <Link
-                  to="/admin"
-                  className="cursor-pointer px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold shadow"
-                >
-                  Open Admin Console
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
 
+        <ActivitySection
+          username={profile?.username || undefined}
+          className="w-full"
+        />
+
+        {profile?.role === ROLE.ADMIN && isMyProfile && (
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 px-8 py-6 text-amber-900 shadow-md">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="text-sm uppercase tracking-[0.3em] text-amber-500">
+                  Looking for Admin tools?
+                </div>
+                <div className="text-lg font-semibold">
+                  Use the dedicated console to manage users, labs, reports, and
+                  revenue.
+                </div>
+              </div>
+              <Link
+                to="/admin"
+                className="cursor-pointer rounded-2xl bg-amber-500 px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-amber-400"
+              >
+                Open Admin Console
+              </Link>
+            </div>
+          </div>
+        )}
+
         {profile?.role === ROLE.USER && (
-          <div className="mt-12 pb-12">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                Explore Other Users
-              </h2>
-              <p className="text-gray-600">
-                Discover profiles of other community members
+          <div className="mb-6 mt-4 rounded-3xl border border-slate-200 bg-white px-6 py-8 text-slate-900 shadow-md">
+            <div className="mb-6 text-center">
+              <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                Discover
+              </div>
+              <h2 className="text-3xl font-semibold">Explore Other Learners</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Dive into community profiles and follow their learning path.
               </p>
             </div>
             <UserCarousel

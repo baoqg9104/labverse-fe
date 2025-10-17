@@ -19,14 +19,14 @@ export function getRoleMeta(role?: number): {
         name: "ADMIN",
         label: "Admin",
         badgeClass:
-          "bg-gradient-to-r from-rose-500 to-orange-500 text-white border border-white/30",
+          "bg-gradient-to-r from-rose-400 to-orange-400 text-white shadow",
       };
     case ROLE.USER:
     default:
       return {
         name: "USER",
         label: "User",
-        badgeClass: "bg-white/20 text-white border border-white/30",
+        badgeClass: "bg-slate-100 text-slate-700 border border-slate-300",
       };
   }
 }
