@@ -30,7 +30,6 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "lodash": "^4.17.21",
-    "lucide-react": "^0.546.0",
     "payos-checkout": "^1.0.9",
     "preline": "^3.2.3",
     "react": "^19.1.1",
