@@ -22,21 +22,24 @@ export function useSound(url?: string, opts: Options = {}) {
   const play = useMemo(
     () => (overrideUrl?: string) => {
       try {
-        if (overrideUrl) {
-          const a = new Audio(overrideUrl);
-          a.volume = volume;
-          a.play();
-          return;
-        }
-        if (audioRef.current) {
-          audioRef.current.currentTime = 0;
-        }
-        audioRef.current?.play();
-      } catch {
-        // noop
+        const src = overrideUrl ?? url;
+        if (!src) return;
+        // Use a fresh Audio instance for each playback. Reusing the same
+        // element can cause playback to silently fail on some browsers or
+        // with certain formats (mp3/wav). Creating a new Audio is more
+        // reliable for short UI sounds.
+        const a = new Audio(src);
+        a.volume = volume;
+        // fire-and-forget; allow browser to handle autoplay policies
+        void a.play().catch((err) => {
+          // log for debugging if playback is blocked
+          console.debug("sound play failed", src, err);
+        });
+      } catch (e) {
+        console.debug("sound play error", e);
       }
     },
-    [volume]
+    [volume, url]
   );
 
   return play;

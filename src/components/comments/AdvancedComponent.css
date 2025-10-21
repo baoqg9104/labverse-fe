@@ -1,0 +1,16 @@
+.infoStyle {
+  margin-left: 60px;
+}
+
+.replyBtn {
+  margin-left: 20px !important;
+}
+
+.imgdefault {
+  cursor: default;
+}
+
+.userLink .imgdefault {
+  width: 35px !important;
+  height: 35px !important;
+}

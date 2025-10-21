@@ -11,10 +11,12 @@ export function QuestionContainer({
   questions,
   durationSec = 20,
   onSubmitAnswer,
+  labId,
 }: {
   questions: Question[];
   durationSec?: number;
   onSubmitAnswer: SubmitAnswerFn;
+  labId: number;
 }) {
   const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
@@ -33,9 +35,9 @@ export function QuestionContainer({
   } | null>(null);
 
   // sounds (optional local files in public folder; user can replace later)
-  const playCorrect = useSound("/sounds/correct.mp3", { volume: 0.6 });
+  const playCorrect = useSound("/sounds/correct.wav", { volume: 0.6 });
   const playWrong = useSound("/sounds/wrong.mp3", { volume: 0.7 });
-  const playTick = useSound("/sounds/tick.mp3", { volume: 0.4 });
+  const playTick = useSound("/sounds/tick.wav", { volume: 0.4 });
 
   useEffect(() => {
     if (!started) return;
@@ -173,6 +175,7 @@ export function QuestionContainer({
             correct={correctCount}
             score={score}
             onRestart={restartQuiz}
+            labId={labId}
           />
         ) : (
           <AnimatePresence mode="wait">

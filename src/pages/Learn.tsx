@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Lab, LabLevel } from "../types/lab";
 import api from "../utils/axiosInstance";
+import { labsApi } from "../libs/labsApi";
 import { AuthContext } from "../contexts/AuthContext";
 import { ROLE } from "../components/profile/RoleUtils";
 import { useTranslation } from "react-i18next";
@@ -15,67 +16,12 @@ const color: Record<LabLevel, string> = {
   Advanced: "bg-red-500",
 };
 
-// Map backend values to UI enums
-const difficultyFromApi = (v: number | string): LabLevel => {
-  if (typeof v === "string") {
-    const s = v.toLowerCase();
-    if (s.includes("inter")) return "Intermediate";
-    if (s.includes("adv")) return "Advanced";
-    return "Basic";
-  }
-  switch (v) {
-    case 2:
-      return "Advanced";
-    case 1:
-      return "Intermediate";
-    case 0:
-    default:
-      return "Basic";
-  }
-};
-// const categoryFromApi = (categoryId?: number): "Rooms" | "Networks" => {
-//   if (categoryId === 2) return "Networks";
-//   return "Rooms"; // default & categoryId === 1
-// };
-
-type ApiLabRaw = {
-  id?: number | string;
-  Id?: number | string;
-  title?: string;
-  Title?: string;
-  Name?: string;
-  slug?: string;
-  Slug?: string;
-  description?: string;
-  Description?: string;
-  desc?: string;
-  difficultyLevel?: number | string;
-  DifficultyLevel?: number | string;
-  level?: number | string;
-  Level?: number | string;
-  mdPath?: string;
-  MdPath?: string;
-  markdownPath?: string;
-  MarkdownPath?: string;
-  mdPublicUrl?: string;
-  MdPublicUrl?: string;
-  mdPublicURL?: string;
-  authorId?: number | string;
-  AuthorId?: number | string;
-  isActive?: boolean | number | string;
-  IsActive?: boolean | number | string;
-};
-
-const slugify = (input: string): string => {
-  return input
-    .toString()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+// map difficulty levels to lab levels
+const mapDifficultyToLabLevel = (difficulty: number): LabLevel => {
+  if (difficulty === 0) return "Basic";
+  if (difficulty === 1) return "Intermediate";
+  if (difficulty === 2) return "Advanced";
+  return "Basic"; // default fallback
 };
 
 export const Learn = () => {
@@ -83,7 +29,6 @@ export const Learn = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  // const [filterType, setFilterType] = useState("All");
   const [difficulty, setDifficulty] = useState("All");
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(9);
@@ -137,45 +82,9 @@ export const Learn = () => {
           ? "/labs"
           : "/labs/preview";
 
-  const res = await api.get(endpoint);
-        // Try to be flexible with API shape
-        const raw = res.data as unknown;
-        type WithItems = { items?: unknown };
-        const items: unknown[] = Array.isArray(raw)
-          ? (raw as unknown[])
-          : Array.isArray((raw as WithItems).items as unknown[])
-          ? ([(raw as WithItems).items] as unknown[]).flat() // ensure array
-          : [];
-        const mapped: Lab[] = items.map((rawItem, idx) => {
-          const it = rawItem as ApiLabRaw;
-          const title = it.title ?? it.Name ?? it.Title ?? "Untitled";
-          const idRaw = (it.id ?? it.Id) as number | string | undefined;
-          const id = typeof idRaw === "string" ? parseInt(idRaw, 10) : idRaw ?? idx + 1;
-          const slugVal = it.slug ?? it.Slug ?? slugify(title);
-          const desc = it.desc ?? it.description ?? it.Description ?? "";
-          const levelVal =
-            it.difficultyLevel ?? it.DifficultyLevel ?? it.level ?? it.Level ?? 0;
-          const mdPath = it.mdPath ?? it.MdPath ?? it.markdownPath ?? it.MarkdownPath ?? "";
-          const mdPublicUrl = it.mdPublicUrl ?? it.MdPublicUrl ?? it.mdPublicURL ?? "";
-          const authorIdRaw = (it.authorId ?? it.AuthorId) as number | string | undefined;
-          const authorId = typeof authorIdRaw === "string" ? parseInt(authorIdRaw, 10) : authorIdRaw ?? 0;
-          const isActiveRaw = (it.isActive ?? it.IsActive) as boolean | number | string | undefined;
-          const isActive = typeof isActiveRaw === "boolean" ? isActiveRaw :
-            typeof isActiveRaw === "number" ? isActiveRaw !== 0 :
-            typeof isActiveRaw === "string" ? ["true","1","active","yes"].includes(isActiveRaw.toLowerCase()) : true;
-          return {
-            id: typeof id === "number" && !Number.isNaN(id) ? id : idx + 1,
-            title,
-            slug: (slugVal as string) || slugify(title),
-            mdPath,
-            mdPublicUrl,
-            desc,
-            level: difficultyFromApi(levelVal),
-            authorId: typeof authorId === "number" && !Number.isNaN(authorId) ? authorId : 0,
-            isActive,
-          } satisfies Lab;
-        });
-        setLabs(mapped);
+        const res = await api.get(endpoint);
+
+        setLabs(res.data);
         setPage(1);
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Failed to load labs";
@@ -193,10 +102,12 @@ export const Learn = () => {
   const filteredLabs = useMemo(() => {
     return labs.filter((lab) => {
       // const matchType = filterType === "All" || lab.type === filterType;
-      const matchDifficulty = difficulty === "All" || lab.level === difficulty;
+      const matchDifficulty =
+        difficulty === "All" ||
+        mapDifficultyToLabLevel(lab.difficultyLevel) === difficulty;
       const matchSearch =
         lab.title.toLowerCase().includes(search.toLowerCase()) ||
-        lab.desc.toLowerCase().includes(search.toLowerCase());
+        lab.description.toLowerCase().includes(search.toLowerCase());
       return matchDifficulty && matchSearch;
     });
   }, [labs, search, difficulty]);
@@ -207,10 +118,6 @@ export const Learn = () => {
     page * itemsPerPage
   );
 
-  // const handleFilterType = (type: string) => {
-  //   setFilterType(type);
-  //   setPage(1);
-  // };
   const handleDifficulty = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setDifficulty(e.target.value);
     setPage(1);
@@ -248,7 +155,9 @@ export const Learn = () => {
               <span className="bg-white text-violet-700 px-4 py-[5px] rounded-full text-2xl shadow">
                 50+
               </span>
-              <span className="text-violet-100 text-lg">{t("learn.stats.labs")}</span>
+              <span className="text-violet-100 text-lg">
+                {t("learn.stats.labs")}
+              </span>
             </div>
           </div>
           <div className="hidden md:block md:mr-34">
@@ -264,38 +173,6 @@ export const Learn = () => {
       {/* Filter & Search */}
       <section className="bg-white px-4 md:px-16 py-16">
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* <div className="flex gap-3">
-            <button
-              onClick={() => handleFilterType("All")}
-              className={`px-5 py-2 rounded-lg font-semibold cursor-pointer ${
-                filterType === "All"
-                  ? "bg-violet-100 text-violet-700"
-                  : "bg-white text-gray-700 border border-gray-200"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => handleFilterType("Rooms")}
-              className={`px-5 py-2 rounded-lg font-semibold cursor-pointer ${
-                filterType === "Rooms"
-                  ? "bg-violet-100 text-violet-700"
-                  : "bg-white text-gray-700 border border-gray-200"
-              }`}
-            >
-              Rooms
-            </button>
-            <button
-              onClick={() => handleFilterType("Networks")}
-              className={`px-5 py-2 rounded-lg font-semibold cursor-pointer ${
-                filterType === "Networks"
-                  ? "bg-violet-100 text-violet-700"
-                  : "bg-white text-gray-700 border border-gray-200"
-              }`}
-            >
-              Networks
-            </button>
-          </div> */}
           <div className="" /* Difficulty dropdown region */>
             <div ref={dropdownRef} className="relative inline-flex">
               <button
@@ -307,10 +184,15 @@ export const Learn = () => {
                 aria-label="Dropdown"
                 onClick={() => setDifficultyDropdownOpen((open) => !open)}
               >
-                {difficulty === "All" ? t("learn.difficulty.label") :
-                  difficulty === "Basic" ? t("learn.difficulty.basic") :
-                  difficulty === "Intermediate" ? t("learn.difficulty.intermediate") :
-                  difficulty === "Advanced" ? t("learn.difficulty.advanced") : t("learn.difficulty.all")}
+                {difficulty === "All"
+                  ? t("learn.difficulty.label")
+                  : difficulty === "Basic"
+                  ? t("learn.difficulty.basic")
+                  : difficulty === "Intermediate"
+                  ? t("learn.difficulty.intermediate")
+                  : difficulty === "Advanced"
+                  ? t("learn.difficulty.advanced")
+                  : t("learn.difficulty.all")}
                 <svg
                   className={
                     difficultyDropdownOpen ? "rotate-180 size-4" : "size-4"
@@ -353,10 +235,13 @@ export const Learn = () => {
                           }}
                           role="menuitem"
                         >
-                          {level === "All" ? t("learn.difficulty.all") :
-                           level === "Basic" ? t("learn.difficulty.basic") :
-                           level === "Intermediate" ? t("learn.difficulty.intermediate") :
-                           t("learn.difficulty.advanced")}
+                          {level === "All"
+                            ? t("learn.difficulty.all")
+                            : level === "Basic"
+                            ? t("learn.difficulty.basic")
+                            : level === "Intermediate"
+                            ? t("learn.difficulty.intermediate")
+                            : t("learn.difficulty.advanced")}
                         </button>
                       )
                     )}
@@ -425,11 +310,19 @@ export const Learn = () => {
                 <div
                   key={idx}
                   className="rounded-2xl border border-gray-200 bg-white p-5 flex flex-col justify-between min-h-[180px] hover:shadow-lg hover:-translate-y-0.5 transition cursor-pointer"
-                  onClick={() => {
+                  onClick={async () => {
                     // Guests must login before viewing details
                     if (!user) {
                       navigate("/login", { replace: false });
                       return;
+                    }
+                    // Only track view for real users (role user)
+                    if (user.role === ROLE.USER) {
+                      try {
+                        await labsApi.trackView(lab.id);
+                      } catch {
+                        // ignore error, still navigate
+                      }
                     }
                     // Navigate using lab.slug (fallback already handled during mapping)
                     navigate(`/labs/${lab.slug}`);
@@ -443,22 +336,41 @@ export const Learn = () => {
                       <span className="inline-flex items-center gap-2 text-xs md:text-sm text-gray-700 font-semibold">
                         <span
                           className={`inline-block w-3 h-3 rounded-full ${
-                            color[lab.level]
+                            color[mapDifficultyToLabLevel(lab.difficultyLevel)]
                           }`}
                         ></span>
-                        {lab.level}
+                        {mapDifficultyToLabLevel(lab.difficultyLevel)}
                       </span>
                     </div>
                     <div className="font-semibold text-base md:text-lg mb-2 text-gray-900">
                       {lab.title}
                     </div>
                     <div className="text-gray-600 text-sm mb-4 line-clamp-3">
-                      {lab.desc}
+                      {lab.description}
                     </div>
                   </div>
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="inline-flex items-center gap-3">
+                        <span>
+                          ⭐{" "}
+                          {typeof lab.ratingAverage === "number"
+                            ? lab.ratingAverage.toFixed(1)
+                            : "0.0"}
+                        </span>
+                        <span>
+                          👀 {typeof lab.views === "number" ? lab.views : 0}
+                        </span>
+                        <span>
+                          📝{" "}
+                          {typeof lab.ratingCount === "number"
+                            ? lab.ratingCount
+                            : 0}
+                        </span>
+                      </div>
+                    </div>
                     <div className="inline-flex items-center gap-2 font-semibold text-xs md:text-sm text-violet-700 hover:text-violet-800">
-                        {t("common.viewMore", "View More")}
+                      {t("common.viewMore", "View More")}
                       <img
                         src={rightArrowImg}
                         alt=""

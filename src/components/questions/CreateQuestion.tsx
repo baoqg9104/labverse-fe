@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../../utils/axiosInstance";
+import { toast } from "react-toastify";
 
 type Lab = {
   id: number;
@@ -46,7 +47,7 @@ export default function CreateQuestions() {
     setChoices(newChoices);
     // Remove from correct options if it was selected
     const removedChoice = choices[index];
-    setCorrectOptions(correctOptions.filter(opt => opt !== removedChoice));
+    setCorrectOptions(correctOptions.filter((opt) => opt !== removedChoice));
   };
 
   const handleChoiceChange = (index: number, value: string) => {
@@ -62,7 +63,7 @@ export default function CreateQuestions() {
     } else if (questionType === 1) {
       // Multiple choice - multiple selection
       if (correctOptions.includes(choice)) {
-        setCorrectOptions(correctOptions.filter(opt => opt !== choice));
+        setCorrectOptions(correctOptions.filter((opt) => opt !== choice));
       } else {
         setCorrectOptions([...correctOptions, choice]);
       }
@@ -71,53 +72,75 @@ export default function CreateQuestions() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedLabId) {
-      alert("Please select a lab");
+      toast.warn("Please select a lab");
       return;
     }
 
     if (!questionText.trim()) {
-      alert("Please enter question text");
+      toast.warn("Please enter question text");
       return;
     }
 
     // Validate based on question type
     if (questionType === 0 || questionType === 1) {
-      const validChoices = choices.filter(c => c.trim());
+      const validChoices = choices.filter((c) => c.trim());
       if (validChoices.length < 2) {
-        alert("Please provide at least 2 choices");
+        toast.warn("Please provide at least 2 choices");
         return;
       }
       if (correctOptions.length === 0) {
-        alert("Please select correct answer(s)");
+        toast.warn("Please select correct answer(s)");
         return;
       }
     }
 
     if (questionType === 3 && !correctText.trim()) {
-      alert("Please provide the correct answer");
+      toast.warn("Please provide the correct answer");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const payload: any = {
+      type BasePayload = {
+        questionText: string;
+        type: QuestionType;
+        correctBool: boolean;
+      };
+      type ChoicePayload = BasePayload & {
+        choices: string[];
+        correctText: string;
+        correctOptions: string[];
+      };
+      type TrueFalsePayload = BasePayload & {
+        choices: string[];
+        correctText: string;
+        correctOptions: string[];
+      };
+
+      const base: BasePayload = {
         questionText,
         type: questionType,
         correctBool,
+      };
+      const payload: ChoicePayload | TrueFalsePayload = {
+        ...base,
+        choices: [],
+        correctText: "",
+        correctOptions: [],
       };
 
       // Add fields based on question type
       if (questionType === 0) {
         // Single choice
-        payload.choices = choices.filter(c => c.trim());
+        payload.choices = choices.filter((c) => c.trim());
         payload.correctText = correctOptions[0] || "";
         payload.correctOptions = [];
       } else if (questionType === 1) {
         // Multiple choice
-        payload.choices = choices.filter(c => c.trim());
+        payload.choices = choices.filter((c) => c.trim());
         payload.correctText = "";
         payload.correctOptions = correctOptions;
       } else if (questionType === 2) {
@@ -125,7 +148,7 @@ export default function CreateQuestions() {
         payload.choices = [];
         payload.correctText = "";
         payload.correctOptions = [];
-        payload.correctBool = correctBool;
+        // payload.correctBool already set in base as the true/false answer
       } else if (questionType === 3) {
         // Short text
         payload.correctText = correctText;
@@ -134,9 +157,9 @@ export default function CreateQuestions() {
       }
 
       await api.post(`/labs/${selectedLabId}/questions`, payload);
-      
-      alert("Question added successfully!");
-      
+
+      toast.success("Question added successfully!");
+
       // Reset form
       setQuestionText("");
       setQuestionType(0);
@@ -146,7 +169,7 @@ export default function CreateQuestions() {
       setCorrectBool(true);
     } catch (error) {
       console.error("Failed to add question:", error);
-      alert("Failed to add question. Please try again.");
+      toast.error("Failed to add question. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -175,7 +198,9 @@ export default function CreateQuestions() {
             onChange={(e) => setSelectedLabId(Number(e.target.value))}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="" disabled>Choose a lab...</option>
+            <option value="" disabled>
+              Choose a lab...
+            </option>
             {labs.map((lab) => (
               <option key={lab.id} value={lab.id}>
                 {lab.title}
@@ -209,7 +234,9 @@ export default function CreateQuestions() {
                 type="radio"
                 value={0}
                 checked={questionType === 0}
-                onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                onChange={(e) =>
+                  setQuestionType(Number(e.target.value) as QuestionType)
+                }
                 className="text-blue-600 focus:ring-blue-500"
               />
               <span>Single Choice</span>
@@ -219,7 +246,9 @@ export default function CreateQuestions() {
                 type="radio"
                 value={1}
                 checked={questionType === 1}
-                onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                onChange={(e) =>
+                  setQuestionType(Number(e.target.value) as QuestionType)
+                }
                 className="text-blue-600 focus:ring-blue-500"
               />
               <span>Multiple Choice</span>
@@ -229,7 +258,9 @@ export default function CreateQuestions() {
                 type="radio"
                 value={2}
                 checked={questionType === 2}
-                onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                onChange={(e) =>
+                  setQuestionType(Number(e.target.value) as QuestionType)
+                }
                 className="text-blue-600 focus:ring-blue-500"
               />
               <span>True/False</span>
@@ -239,7 +270,9 @@ export default function CreateQuestions() {
                 type="radio"
                 value={3}
                 checked={questionType === 3}
-                onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                onChange={(e) =>
+                  setQuestionType(Number(e.target.value) as QuestionType)
+                }
                 className="text-blue-600 focus:ring-blue-500"
               />
               <span>Short Text</span>
@@ -263,7 +296,11 @@ export default function CreateQuestions() {
                     onChange={() => handleCorrectOptionToggle(choice)}
                     disabled={!choice.trim()}
                     className="mt-3 text-blue-600 focus:ring-blue-500"
-                    title={questionType === 0 ? "Select correct answer" : "Select correct answers"}
+                    title={
+                      questionType === 0
+                        ? "Select correct answer"
+                        : "Select correct answers"
+                    }
                   />
                   <input
                     type="text"
@@ -292,8 +329,8 @@ export default function CreateQuestions() {
               + Add Choice
             </button>
             <p className="mt-2 text-sm text-gray-500">
-              {questionType === 0 
-                ? "Select the radio button next to the correct answer" 
+              {questionType === 0
+                ? "Select the radio button next to the correct answer"
                 : "Check all correct answers"}
             </p>
           </div>
@@ -364,7 +401,8 @@ export default function CreateQuestions() {
               </span>
             </label>
             <p className="mt-1 text-sm text-gray-500">
-              Uncheck if this is a practice question that shouldn't affect the score
+              Uncheck if this is a practice question that shouldn't affect the
+              score
             </p>
           </div>
         )}
@@ -402,11 +440,25 @@ export default function CreateQuestions() {
       <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-200">
         <h4 className="font-semibold text-blue-900 mb-2">Instructions:</h4>
         <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-          <li><strong>Single Choice:</strong> Add choices and select one correct answer</li>
-          <li><strong>Multiple Choice:</strong> Add choices and select all correct answers</li>
-          <li><strong>True/False:</strong> Select whether the correct answer is True or False</li>
-          <li><strong>Short Text:</strong> Provide the correct answer for validation</li>
-          <li>Questions marked as graded will contribute to the learner's score</li>
+          <li>
+            <strong>Single Choice:</strong> Add choices and select one correct
+            answer
+          </li>
+          <li>
+            <strong>Multiple Choice:</strong> Add choices and select all correct
+            answers
+          </li>
+          <li>
+            <strong>True/False:</strong> Select whether the correct answer is
+            True or False
+          </li>
+          <li>
+            <strong>Short Text:</strong> Provide the correct answer for
+            validation
+          </li>
+          <li>
+            Questions marked as graded will contribute to the learner's score
+          </li>
         </ul>
       </div>
     </div>
