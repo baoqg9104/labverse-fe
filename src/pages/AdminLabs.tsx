@@ -3,14 +3,14 @@ import api from "../utils/axiosInstance";
 import { handleAxiosError } from "../utils/handleAxiosError";
 import type { Lab, LabLevel } from "../types/lab";
 import {
-  BarChart3,
-  Eye,
-  Star,
-  Users,
-  Search,
-  ArrowUpDown,
-  Loader2,
-} from "lucide-react";
+  FiBarChart2,
+  FiEye,
+  FiStar,
+  FiUsers,
+  FiSearch,
+  FiLoader,
+} from "react-icons/fi";
+import { BiSortAlt2 } from "react-icons/bi";
 
 // map difficulty levels to lab levels
 const mapDifficultyToLabLevel = (difficulty: number): LabLevel => {
@@ -181,25 +181,25 @@ export default function AdminLabs() {
           </h1>
           <div className="flex flex-wrap gap-3">
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
-              <BarChart3 size={18} className="text-blue-500" />
+              <FiBarChart2 size={18} className="text-blue-500" />
               <span className="text-sm text-gray-700">
                 Total: <strong>{headerStats.total}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
-              <Star size={18} className="text-yellow-500" />
+              <FiStar size={18} className="text-yellow-500" />
               <span className="text-sm text-gray-700">
                 Avg: <strong>{headerStats.avgRating.toFixed(1)}★</strong>
               </span>
             </div>
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
-              <Eye size={18} className="text-emerald-500" />
+              <FiEye size={18} className="text-emerald-500" />
               <span className="text-sm text-gray-700">
                 Views: <strong>{headerStats.totalViews}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
-              <Users size={18} className="text-indigo-500" />
+              <FiUsers size={18} className="text-indigo-500" />
               <span className="text-sm text-gray-700">
                 Unique: <strong>{headerStats.totalUnique}</strong>
               </span>
@@ -210,7 +210,7 @@ export default function AdminLabs() {
         {/* Filters */}
         <div className="bg-white p-5 rounded-xl border shadow-sm flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[200px]">
-            <Search
+            <FiSearch
               size={16}
               className="absolute left-3 top-3 text-gray-400 pointer-events-none"
             />
@@ -264,7 +264,7 @@ export default function AdminLabs() {
             ))}
           </select>
           <div className="flex items-center gap-2">
-            <ArrowUpDown
+            <BiSortAlt2
               size={18}
               className="text-gray-500 cursor-pointer"
               onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
@@ -290,7 +290,7 @@ export default function AdminLabs() {
         {/* Labs List */}
         {loading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin text-blue-500" size={40} />
+            <FiLoader className="animate-spin text-blue-500" size={40} />
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -329,15 +329,15 @@ export default function AdminLabs() {
                       {mapDifficultyToLabLevel(r.difficultyLevel)}
                     </span>
                     <span className="flex items-center gap-1 bg-gray-50 border rounded px-2 py-1">
-                      <Star size={12} className="text-yellow-500" />
+                      <FiStar size={12} className="text-yellow-500" />
                       {r.ratingAverage?.toFixed(1) ?? "-"}
                     </span>
                     <span className="flex items-center gap-1 bg-gray-50 border rounded px-2 py-1">
-                      <Eye size={12} />
+                      <FiEye size={12} />
                       {r.views ?? 0}
                     </span>
                     <span className="flex items-center gap-1 bg-gray-50 border rounded px-2 py-1">
-                      <Users size={12} />
+                      <FiUsers size={12} />
                       {r.uniqueUserViews ?? 0}
                     </span>
                   </div>
