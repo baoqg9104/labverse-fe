@@ -11,6 +11,8 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import type { LabLevel } from "../../types/lab";
 import { toast } from "react-toastify";
+import MetaForm from "./create/MetaForm";
+import UserMarkdownEditor from "./create/UserMarkdownEditor";
 
 type FolderItem = { file: File; path: string };
 
@@ -548,181 +550,36 @@ export default function CreateLab() {
   }, [folderPayload]);
 
   const EditorPreview = (
-    <div
-      className="grid grid-cols-1 md:grid-cols-2 gap-4"
-      onDragOver={onEditorAreaDragOver}
-      onDrop={onEditorAreaDrop}
-    >
-      <textarea
-        ref={editorTextRef}
-        onDragOver={onEditorDragOver}
-        onDragLeave={onEditorDragLeave}
-        onDrop={onEditorDrop}
-        onPaste={onEditorPaste}
-        className={`w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 min-h-[60vh] ${
-          isEditorDragging
-            ? "border-blue-400 bg-blue-50 focus:ring-blue-400"
-            : "border-gray-300 focus:ring-blue-400"
-        }`}
-        value={markdown}
-        onChange={(e) => setMarkdown(e.target.value)}
-      />
-      <div className="rounded-xl border bg-gray-50 p-3 overflow-auto min-h-[60vh]">
-        <div className="text-xs text-gray-500 mb-2">Preview</div>
-        <div className="markdown-body max-w-none">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm, remarkBreaks]}
-            rehypePlugins={[
-              rehypeRaw,
-              rehypeSlug,
-              [rehypeAutolinkHeadings, { behavior: "wrap" }],
-              rehypeHighlight,
-            ]}
-            components={{
-              code({
-                inline,
-                className,
-                children,
-              }: {
-                inline?: boolean;
-                className?: string;
-                children?: ReactNode;
-              }) {
-                const cls = className || "";
-                const match = /language-(\w+)/.exec(cls);
-                return !inline ? (
-                  <pre className={cls}>
-                    <code className="">{children}</code>
-                  </pre>
-                ) : (
-                  <code
-                    className={match ? `hljs language-${match[1]}` : "hljs"}
-                  >
-                    {children}
-                  </code>
-                );
-              },
-              img({ ...props }) {
-                const srcRaw = (props.src || "").toString();
-                const normalized = srcRaw
-                  .replace(/^\.\{1,2\}\//, "")
-                  .replace(/^\//, "");
-                const nameOnly = normalized.startsWith("images/")
-                  ? normalized.slice(7)
-                  : normalized;
-                const local = images.find(
-                  (f) =>
-                    `images/${f.name}` === normalized || f.name === nameOnly
-                );
-                if (local) {
-                  const url = URL.createObjectURL(local);
-                  return (
-                    <img
-                      src={url}
-                      alt={props.alt as string}
-                      onLoad={() => URL.revokeObjectURL(url)}
-                      className="max-w-full rounded"
-                    />
-                  );
-                }
-                return <img {...props} className="max-w-full rounded" />;
-              },
-            }}
-          >
-            {markdown}
-          </ReactMarkdown>
-        </div>
-      </div>
-    </div>
+    <UserMarkdownEditor
+      markdown={markdown}
+      setMarkdown={setMarkdown}
+      images={images}
+      editorTextRef={editorTextRef}
+      isEditorDragging={isEditorDragging}
+      onEditorAreaDragOver={onEditorAreaDragOver}
+      onEditorAreaDrop={onEditorAreaDrop}
+      onEditorDragOver={onEditorDragOver}
+      onEditorDragLeave={onEditorDragLeave}
+      onEditorDrop={onEditorDrop}
+      onEditorPaste={onEditorPaste}
+    />
   );
 
   return (
     <div className="max-w-6xl mx-auto">
       {/* Meta fields */}
-      <div className="p-6 rounded-2xl bg-white border border-gray-200 mb-6">
-        <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span>🗒️</span>New Lab Details
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title
-            </label>
-            <input
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter lab title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <div className="flex items-center justify-between">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Slug
-              </label>
-              <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input
-                  type="checkbox"
-                  className="cursor-pointer"
-                  checked={autoSlug}
-                  onChange={(e) => setAutoSlug(e.target.checked)}
-                />
-                Auto-generate from Title
-              </label>
-            </div>
-            <input
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 disabled:bg-gray-50"
-              placeholder="lab-title"
-              value={slug}
-              disabled={autoSlug}
-              onChange={(e) => setSlug(slugify(e.target.value))}
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              rows={4}
-              placeholder="Short description of the lab"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text sm font-medium text-gray-700 mb-1">
-              Difficulty
-            </label>
-            <select
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={level}
-              onChange={(e) => setLevel(e.target.value as LabLevel)}
-            >
-              <option value="Basic">Basic</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
-            </select>
-          </div>
-          {/* <div>
-            <label className="block text sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={category}
-              onChange={(e) => setCategory(e.target.value as LabType)}
-            >
-              <option value="">Select a category</option>
-              <option value="Rooms">Rooms</option>
-              <option value="Networks">Networks</option>
-            </select>
-          </div> */}
-        </div>
-      </div>
+      <MetaForm
+        title={title}
+        slug={slug}
+        autoSlug={autoSlug}
+        description={description}
+        level={level}
+        onChangeTitle={setTitle}
+        onChangeSlug={(v) => setSlug(slugify(v))}
+        onToggleAutoSlug={setAutoSlug}
+        onChangeDescription={setDescription}
+        onChangeLevel={(v) => setLevel(v)}
+      />
 
       {/* Tabs */}
       <div className="mb-4">
@@ -1087,96 +944,19 @@ export default function CreateLab() {
                       ✕ Close
                     </button>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <textarea
-                      ref={editorTextRef}
-                      onDragOver={onEditorDragOver}
-                      onDragLeave={onEditorDragLeave}
-                      onDrop={onEditorDrop}
-                      onPaste={onEditorPaste}
-                      className={`w-full rounded-xl border px-4 py-3 focus:outline-none focus:ring-2 h-[70vh] ${
-                        isEditorDragging
-                          ? "border-blue-400 bg-blue-50 focus:ring-blue-400"
-                          : "border-gray-300 focus:ring-blue-400"
-                      }`}
-                      value={markdown}
-                      onChange={(e) => setMarkdown(e.target.value)}
-                    />
-                    <div className="rounded-xl border bg-gray-50 p-3 overflow-auto h-[70vh]">
-                      <div className="text-xs text-gray-500 mb-2">Preview</div>
-                      <div className="markdown-body max-w-none">
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm, remarkBreaks]}
-                          rehypePlugins={[
-                            rehypeRaw,
-                            rehypeSlug,
-                            [rehypeAutolinkHeadings, { behavior: "wrap" }],
-                            rehypeHighlight,
-                          ]}
-                          components={{
-                            code({
-                              inline,
-                              className,
-                              children,
-                            }: {
-                              inline?: boolean;
-                              className?: string;
-                              children?: ReactNode;
-                            }) {
-                              const cls = className || "";
-                              const match = /language-(\w+)/.exec(cls);
-                              return !inline ? (
-                                <pre className={cls}>
-                                  <code className="">{children}</code>
-                                </pre>
-                              ) : (
-                                <code
-                                  className={
-                                    match ? `hljs language-${match[1]}` : "hljs"
-                                  }
-                                >
-                                  {children}
-                                </code>
-                              );
-                            },
-                            img({ ...props }) {
-                              const srcRaw = (props.src || "").toString();
-                              const normalized = srcRaw
-                                .replace(/^\.\{1,2\}\//, "")
-                                .replace(/^\//, "");
-                              const nameOnly = normalized.startsWith("images/")
-                                ? normalized.slice(7)
-                                : normalized;
-                              const local = images.find(
-                                (f) =>
-                                  `images/${f.name}` === normalized ||
-                                  f.name === nameOnly
-                              );
-                              if (local) {
-                                const url = URL.createObjectURL(local);
-                                return (
-                                  <img
-                                    src={url}
-                                    alt={props.alt as string}
-                                    onLoad={() => URL.revokeObjectURL(url)}
-                                    className="max-w-full rounded"
-                                  />
-                                );
-                              }
-                              return (
-                                <img
-                                  {...props}
-                                  className="max-w-full rounded"
-                                />
-                              );
-                            },
-                          }}
-                        >
-                          {markdown}
-                        </ReactMarkdown>
-                      </div>
-                    </div>
-                  </div>
+                  <UserMarkdownEditor
+                    markdown={markdown}
+                    setMarkdown={setMarkdown}
+                    images={images}
+                    editorTextRef={editorTextRef}
+                    isEditorDragging={isEditorDragging}
+                    onEditorAreaDragOver={onEditorAreaDragOver}
+                    onEditorAreaDrop={onEditorAreaDrop}
+                    onEditorDragOver={onEditorDragOver}
+                    onEditorDragLeave={onEditorDragLeave}
+                    onEditorDrop={onEditorDrop}
+                    onEditorPaste={onEditorPaste}
+                  />
                 </div>
               </div>
             </div>

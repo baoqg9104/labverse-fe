@@ -9,20 +9,49 @@ const Signup = lazy(() =>
   import("../pages/Signup").then((m) => ({ default: m.Signup }))
 );
 import { NotFound } from "../pages/NotFound";
-import EmailSent from "../pages/EmailSent";
-import VerifyResult from "../pages/VerifyResult";
-import { Contact } from "../pages/Contact";
-import { Learn } from "../pages/Learn";
-import { Pricing } from "../pages/Pricing";
-import { Profile } from "../pages/Profile";
-import { Account } from "../pages/Account";
+const EmailSent = lazy(() =>
+  import("../pages/EmailSent").then((m) => ({ default: m.default }))
+);
+const VerifyResult = lazy(() =>
+  import("../pages/VerifyResult").then((m) => ({ default: m.default }))
+);
+const Contact = lazy(() =>
+  import("../pages/Contact").then((m) => ({ default: m.Contact }))
+);
+const Learn = lazy(() =>
+  import("../pages/Learn").then((m) => ({ default: m.Learn }))
+);
+const Pricing = lazy(() =>
+  import("../pages/Pricing").then((m) => ({ default: m.Pricing }))
+);
+const Profile = lazy(() =>
+  import("../pages/Profile").then((m) => ({ default: m.Profile }))
+);
+const Account = lazy(() =>
+  import("../pages/Account").then((m) => ({ default: m.Account }))
+);
 import { ProtectedRoute, GuestOnlyRoute, AdminRoute } from "./ProtectedRoute";
-import AdminConsole from "../pages/AdminConsole";
-import AdminReports from "../pages/AdminReports";
-import AdminRevenue from "../pages/AdminRevenue";
-import AdminUsers from "../pages/AdminUsers";
-import AdminLabs from "../pages/AdminLabs";
-import PaymentResult from "../pages/PaymentResult";
+const AdminConsole = lazy(() =>
+  import("../pages/AdminConsole").then((m) => ({ default: m.default }))
+);
+const AdminReports = lazy(() =>
+  import("../pages/AdminReports").then((m) => ({ default: m.default }))
+);
+const AdminRevenue = lazy(() =>
+  import("../pages/AdminRevenue").then((m) => ({ default: m.default }))
+);
+const AdminUsers = lazy(() =>
+  import("../pages/AdminUsers").then((m) => ({ default: m.default }))
+);
+const AdminLabs = lazy(() =>
+  import("../pages/AdminLabs").then((m) => ({ default: m.default }))
+);
+const PaymentResult = lazy(() =>
+  import("../pages/PaymentResult").then((m) => ({ default: m.default }))
+);
+const EditLab = lazy(() =>
+  import("../pages/EditLab").then((m) => ({ default: m.default }))
+);
 
 const LabDetail = lazy(() =>
   import("../pages/LabDetail").then((m) => ({ default: m.default }))
@@ -86,6 +115,7 @@ export const AppRoutes = () => {
       <Route element={<ProtectedRoute />}>
         <Route path="/account" element={<Account />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/labs/:id/edit" element={<EditLab />} />
         <Route
           path="/checkout"
           element={

@@ -5,12 +5,15 @@ export function getRoleMeta(role?: number): {
   name: RoleKey | "USER";
   label: string;
   badgeClass: string;
+  icon: string;
 } {
   switch (role) {
     case ROLE.AUTHOR:
       return {
         name: "AUTHOR",
         label: "Author",
+        // Use a pen/handwriting emoji which better represents an author
+        icon: "✍️",
         badgeClass:
           "bg-gradient-to-r from-indigo-500 to-purple-500 text-white border border-white/30",
       };
@@ -18,6 +21,7 @@ export function getRoleMeta(role?: number): {
       return {
         name: "ADMIN",
         label: "Admin",
+        icon: "👑",
         badgeClass:
           "bg-gradient-to-r from-rose-400 to-orange-400 text-white shadow",
       };
@@ -26,6 +30,7 @@ export function getRoleMeta(role?: number): {
       return {
         name: "USER",
         label: "User",
+        icon: "👤",
         badgeClass: "bg-slate-100 text-slate-700 border border-slate-300",
       };
   }

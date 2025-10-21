@@ -5,17 +5,24 @@ import {
   Tooltip,
   PolarAngleAxis,
 } from "recharts";
+import { useState } from "react";
+import { labsApi } from "../../libs/labsApi";
+import { toast } from "react-toastify";
 
 export function ResultScreen({
   total,
   correct,
   score,
+  labId,
   onRestart,
+  onRated,
 }: {
   total: number;
   correct: number;
   score: number; // xp or points
+  labId: number;
   onRestart?: () => void;
+  onRated?: (score: number) => void;
 }) {
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const data = [
@@ -65,6 +72,14 @@ export function ResultScreen({
         Score: <span className="font-semibold">{score}</span> • Accuracy:{" "}
         <span className="font-semibold">{pct}%</span>
       </div>
+      {/* Rating section */}
+      <RatingSection
+        labId={labId}
+        onRated={(s) => {
+          toast.success("Thanks for your feedback!");
+          onRated?.(s);
+        }}
+      />
       {onRestart && (
         <button
           onClick={onRestart}
@@ -73,6 +88,78 @@ export function ResultScreen({
           Try Again
         </button>
       )}
+    </div>
+  );
+}
+
+function RatingSection({
+  labId,
+  onRated,
+}: {
+  labId?: number;
+  onRated?: (score: number) => void;
+}) {
+  const [selected, setSelected] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const options: { score: number; emoji: string; label: string }[] = [
+    { score: 1, emoji: "😡", label: "Very dissatisfied" },
+    { score: 2, emoji: "😕", label: "Dissatisfied" },
+    { score: 3, emoji: "😐", label: "Neutral" },
+    { score: 4, emoji: "🙂", label: "Satisfied" },
+    { score: 5, emoji: "🤩", label: "Very satisfied" },
+  ];
+
+  const submit = async (score: number) => {
+    console.log(labId);
+    if (!labId) return toast.warn("Cannot submit rating: lab id missing");
+    setSubmitting(true);
+    try {
+      await labsApi.rate(labId, score);
+      setDone(true);
+      onRated?.(score);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to submit rating");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (done)
+    return (
+      <div className="mt-3 text-green-600 font-medium">
+        Thank you for rating!
+      </div>
+    );
+
+  return (
+    <div className="mt-4">
+      <div className="text-sm text-gray-600 mb-2">How was this lab?</div>
+      <div className="flex items-center justify-center gap-3">
+        {options.map((o) => (
+          <button
+            key={o.score}
+            onClick={() => {
+              setSelected(o.score);
+              void submit(o.score);
+            }}
+            disabled={submitting}
+            title={o.label}
+            className={`text-3xl p-2 rounded-lg transition-transform hover:scale-110 focus:outline-none ${{
+              true: "",
+            }}`}
+          >
+            <span
+              style={{ opacity: selected === o.score ? 1 : 0.85 }}
+              className="cursor-pointer"
+            >
+              {o.emoji}
+            </span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

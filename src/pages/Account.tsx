@@ -2,7 +2,6 @@ import { useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { DEFAULT_AVATAR_URL } from "../constants/config";
-import { LanguageDropdown } from "../components/LanguageDropdown";
 import { getRoleMeta } from "../components/profile/RoleUtils";
 
 export const Account = () => {
@@ -42,9 +41,6 @@ export const Account = () => {
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#1a144b] to-[#6a5acd]">
             Your Account
           </h1>
-          <div className="hidden sm:block">
-            <LanguageDropdown />
-          </div>
         </div>
 
         {/* Content Card */}

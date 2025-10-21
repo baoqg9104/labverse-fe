@@ -35,21 +35,35 @@ export default function ViewQuestions() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchLabs();
-  }, []);
-
-  const fetchLabs = async () => {
-    try {
-      const response = await api.get("/labs");
-      setLabs(response.data);
-      if (response.data.length > 0) {
-        setSelectedLabId(response.data[0].id);
-        fetchQuestions(response.data[0].id);
+    let cancelled = false;
+    const run = async () => {
+      try {
+        const response = await api.get("/labs");
+        if (cancelled) return;
+        setLabs(response.data);
+        if (response.data.length > 0) {
+          const firstId = response.data[0].id;
+          setSelectedLabId(firstId);
+          setIsLoading(true);
+          try {
+            const qres = await api.get(`/labs/${firstId}/questions`);
+            if (!cancelled) setQuestions(qres.data);
+          } catch (error) {
+            console.error("Failed to fetch questions:", error);
+            if (!cancelled) setQuestions([]);
+          } finally {
+            if (!cancelled) setIsLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch labs:", error);
       }
-    } catch (error) {
-      console.error("Failed to fetch labs:", error);
-    }
-  };
+    };
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const fetchQuestions = async (labId: number) => {
     setIsLoading(true);
@@ -101,7 +115,11 @@ export default function ViewQuestions() {
 
   const parseChoices = (choicesJson: string): string[] => {
     try {
-      return JSON.parse(choicesJson);
+      if (!choicesJson || choicesJson === "null") return [];
+      const parsed = JSON.parse(choicesJson);
+      return Array.isArray(parsed)
+        ? parsed.filter((c) => typeof c === "string")
+        : [];
     } catch {
       return [];
     }
@@ -128,14 +146,14 @@ export default function ViewQuestions() {
     setEditingQuestion(question);
     setQuestionText(question.questionText);
     setQuestionType(question.type as QuestionType);
-    
+
     const parsedChoices = parseChoices(question.choicesJson);
     if (parsedChoices.length > 0) {
       setChoices(parsedChoices);
     } else {
       setChoices([""]);
     }
-    
+
     setCorrectText("");
     setCorrectOptions([]);
     setCorrectBool(true);
@@ -161,13 +179,26 @@ export default function ViewQuestions() {
     const newChoices = choices.filter((_, i) => i !== index);
     setChoices(newChoices);
     const removedChoice = choices[index];
-    setCorrectOptions(correctOptions.filter(opt => opt !== removedChoice));
+    setCorrectOptions(correctOptions.filter((opt) => opt !== removedChoice));
   };
 
   const handleChoiceChange = (index: number, value: string) => {
+    const prevValue = choices[index];
     const newChoices = [...choices];
     newChoices[index] = value;
     setChoices(newChoices);
+
+    // If the previous value was selected as correct, update selection to new value
+    if (correctOptions.includes(prevValue)) {
+      if (value.trim().length === 0) {
+        // Remove selection if choice is now empty
+        setCorrectOptions(correctOptions.filter((opt) => opt !== prevValue));
+      } else {
+        setCorrectOptions(
+          correctOptions.map((opt) => (opt === prevValue ? value : opt))
+        );
+      }
+    }
   };
 
   const handleCorrectOptionToggle = (choice: string) => {
@@ -175,7 +206,7 @@ export default function ViewQuestions() {
       setCorrectOptions([choice]);
     } else if (questionType === 1) {
       if (correctOptions.includes(choice)) {
-        setCorrectOptions(correctOptions.filter(opt => opt !== choice));
+        setCorrectOptions(correctOptions.filter((opt) => opt !== choice));
       } else {
         setCorrectOptions([...correctOptions, choice]);
       }
@@ -194,7 +225,7 @@ export default function ViewQuestions() {
     }
 
     if (questionType === 0 || questionType === 1) {
-      const validChoices = choices.filter(c => c.trim());
+      const validChoices = choices.filter((c) => c.trim());
       if (validChoices.length < 2) {
         alert("Please provide at least 2 choices");
         return;
@@ -213,39 +244,80 @@ export default function ViewQuestions() {
     setIsSubmitting(true);
 
     try {
-      const payload: any = {
+      type BasePayload = { questionText: string; type: QuestionType };
+      type SingleChoicePayload = BasePayload & {
+        choices: string[];
+        correctText: string;
+        correctOptions: string[];
+      };
+      type MultipleChoicePayload = BasePayload & {
+        choices: string[];
+        correctText: string;
+        correctOptions: string[];
+      };
+      type TrueFalsePayload = BasePayload & {
+        choices: string[];
+        correctText: string;
+        correctOptions: string[];
+        correctBool: boolean;
+      };
+      type ShortTextPayload = BasePayload & {
+        choices: string[];
+        correctText: string;
+        correctOptions: string[];
+      };
+
+      const payload:
+        | SingleChoicePayload
+        | MultipleChoicePayload
+        | TrueFalsePayload
+        | ShortTextPayload = {
         questionText,
         type: questionType,
-        correctBool,
-      };
+        choices: [],
+        correctText: "",
+        correctOptions: [],
+        ...(questionType === 2 ? { correctBool } : {}),
+      } as
+        | TrueFalsePayload
+        | SingleChoicePayload
+        | MultipleChoicePayload
+        | ShortTextPayload;
 
       if (questionType === 0) {
         // Single choice
-        payload.choices = choices.filter(c => c.trim());
-        payload.correctText = correctOptions[0] || "";
-        payload.correctOptions = [];
+        (payload as SingleChoicePayload).choices = choices.filter((c) =>
+          c.trim()
+        );
+        (payload as SingleChoicePayload).correctText = correctOptions[0] || "";
+        (payload as SingleChoicePayload).correctOptions = [];
       } else if (questionType === 1) {
         // Multiple choice
-        payload.choices = choices.filter(c => c.trim());
-        payload.correctText = "";
-        payload.correctOptions = correctOptions;
+        (payload as MultipleChoicePayload).choices = choices.filter((c) =>
+          c.trim()
+        );
+        (payload as MultipleChoicePayload).correctText = "";
+        (payload as MultipleChoicePayload).correctOptions = correctOptions;
       } else if (questionType === 2) {
         // True/False
-        payload.choices = [];
-        payload.correctText = "";
-        payload.correctOptions = [];
-        payload.correctBool = correctBool;
+        (payload as TrueFalsePayload).choices = [];
+        (payload as TrueFalsePayload).correctText = "";
+        (payload as TrueFalsePayload).correctOptions = [];
+        (payload as TrueFalsePayload).correctBool = correctBool;
       } else if (questionType === 3) {
         // Short text
-        payload.correctText = correctText;
-        payload.choices = [];
-        payload.correctOptions = [];
+        (payload as ShortTextPayload).correctText = correctText;
+        (payload as ShortTextPayload).choices = [];
+        (payload as ShortTextPayload).correctOptions = [];
       }
 
       console.log("Update payload:", payload);
 
-      await api.patch(`/labs/${selectedLabId}/questions/${editingQuestion.id}`, payload);
-      
+      await api.patch(
+        `/labs/${selectedLabId}/questions/${editingQuestion.id}`,
+        payload
+      );
+
       alert("Question updated successfully!");
       handleCloseModal();
       fetchQuestions(selectedLabId);
@@ -306,7 +378,7 @@ export default function ViewQuestions() {
       ) : (
         <div className="space-y-4">
           {questions.map((question, index) => {
-            const choices = parseChoices(question.choicesJson);
+            const choiceList = parseChoices(question.choicesJson);
             return (
               <div
                 key={question.id}
@@ -347,13 +419,13 @@ export default function ViewQuestions() {
                   </div>
                 </div>
 
-                {choices.length > 0 && (
+                {choiceList.length > 0 && (
                   <div className="mt-4 pl-11">
                     <div className="text-sm font-semibold text-gray-700 mb-2">
                       Answer Choices:
                     </div>
                     <div className="space-y-2">
-                      {choices.map((choice, idx) => (
+                      {choiceList.map((choice, idx) => (
                         <div
                           key={idx}
                           className="flex items-center gap-2 text-gray-700"
@@ -406,13 +478,13 @@ export default function ViewQuestions() {
 
       {/* Edit Modal */}
       {isEditModalOpen && (
-        <div 
-          className="fixed inset-0 flex items-center justify-center z-50 p-4" 
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 p-4"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
           onClick={handleCloseModal}
         >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" 
+          <div
+            className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
@@ -449,7 +521,9 @@ export default function ViewQuestions() {
                       type="radio"
                       value={0}
                       checked={questionType === 0}
-                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      onChange={(e) =>
+                        setQuestionType(Number(e.target.value) as QuestionType)
+                      }
                       className="text-blue-600 focus:ring-blue-500"
                     />
                     <span>Single Choice</span>
@@ -459,7 +533,9 @@ export default function ViewQuestions() {
                       type="radio"
                       value={1}
                       checked={questionType === 1}
-                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      onChange={(e) =>
+                        setQuestionType(Number(e.target.value) as QuestionType)
+                      }
                       className="text-blue-600 focus:ring-blue-500"
                     />
                     <span>Multiple Choice</span>
@@ -469,7 +545,9 @@ export default function ViewQuestions() {
                       type="radio"
                       value={2}
                       checked={questionType === 2}
-                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      onChange={(e) =>
+                        setQuestionType(Number(e.target.value) as QuestionType)
+                      }
                       className="text-blue-600 focus:ring-blue-500"
                     />
                     <span>True/False</span>
@@ -479,7 +557,9 @@ export default function ViewQuestions() {
                       type="radio"
                       value={3}
                       checked={questionType === 3}
-                      onChange={(e) => setQuestionType(Number(e.target.value) as QuestionType)}
+                      onChange={(e) =>
+                        setQuestionType(Number(e.target.value) as QuestionType)
+                      }
                       className="text-blue-600 focus:ring-blue-500"
                     />
                     <span>Short Text</span>
@@ -506,7 +586,9 @@ export default function ViewQuestions() {
                         <input
                           type="text"
                           value={choice}
-                          onChange={(e) => handleChoiceChange(index, e.target.value)}
+                          onChange={(e) =>
+                            handleChoiceChange(index, e.target.value)
+                          }
                           className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           placeholder={`Choice ${index + 1}`}
                         />
@@ -530,8 +612,8 @@ export default function ViewQuestions() {
                     + Add Choice
                   </button>
                   <p className="mt-2 text-sm text-gray-500">
-                    {questionType === 0 
-                      ? "Select the radio button next to the correct answer" 
+                    {questionType === 0
+                      ? "Select the radio button next to the correct answer"
                       : "Check all correct answers"}
                   </p>
                 </div>
@@ -582,19 +664,7 @@ export default function ViewQuestions() {
                 </div>
               )}
 
-              <div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={correctBool}
-                    onChange={(e) => setCorrectBool(e.target.checked)}
-                    className="text-blue-600 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-semibold text-gray-700">
-                    Mark this question as graded
-                  </span>
-                </label>
-              </div>
+              {/* Removed incorrect 'graded' toggle to avoid clashing with True/False correct answer */}
             </div>
 
             <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end gap-4">

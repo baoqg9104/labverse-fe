@@ -2,86 +2,23 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../utils/axiosInstance";
 import { handleAxiosError } from "../utils/handleAxiosError";
 import type { Lab, LabLevel } from "../types/lab";
-// Removed edit modal and create features per request
+import {
+  BarChart3,
+  Eye,
+  Star,
+  Users,
+  Search,
+  ArrowUpDown,
+  Loader2,
+} from "lucide-react";
 
-function difficultyLabel(level: LabLevel): "Beginner" | "Intermediate" | "Advanced" {
-  return level === "Basic" ? "Beginner" : level;
-}
-
-function normalizeLabLevel(v: unknown): LabLevel {
-  if (typeof v === "string") {
-    const s = v.trim().toLowerCase();
-    if (!s) return "Basic";
-    if (s.startsWith("adv")) return "Advanced";
-    if (s.startsWith("inter")) return "Intermediate";
-    if (s === "advanced" || s === "intermediate" || s === "basic") {
-      return (s.charAt(0).toUpperCase() + s.slice(1)) as LabLevel;
-    }
-    return "Basic";
-  }
-  if (typeof v === "number") {
-    if (v === 2) return "Advanced";
-    if (v === 1) return "Intermediate";
-    return "Basic";
-  }
+// map difficulty levels to lab levels
+const mapDifficultyToLabLevel = (difficulty: number): LabLevel => {
+  if (difficulty === 0) return "Basic";
+  if (difficulty === 1) return "Intermediate";
+  if (difficulty === 2) return "Advanced";
   return "Basic";
-}
-
-function slugify(input: string): string {
-  return input
-    .toString()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
-
-function toNumber(val: unknown, fallback = 0): number {
-  if (typeof val === "number" && Number.isFinite(val)) return val;
-  if (typeof val === "string") {
-    const n = Number(val);
-    if (Number.isFinite(n)) return n;
-  }
-  return fallback;
-}
-
-function toBoolean(val: unknown, fallback = true): boolean {
-  if (typeof val === "boolean") return val;
-  if (typeof val === "number") return val !== 0;
-  if (typeof val === "string") {
-    const s = val.toLowerCase();
-    return ["true", "1", "active", "yes"].includes(s);
-  }
-  return fallback;
-}
-
-function mapRawLabToLab(item: unknown, idx: number): Lab {
-  const x = (item ?? {}) as Record<string, unknown>;
-  const title = (x["title"] ?? x["Title"] ?? x["Name"] ?? "Untitled") as string;
-  const id = toNumber(x["id"], toNumber(x["Id"], idx + 1));
-  const slugVal = (x["slug"] ?? x["Slug"]) as string | undefined;
-  const desc = (x["desc"] ?? x["description"] ?? x["Description"] ?? "") as string;
-  const levelRaw = x["level"] ?? x["difficultyLevel"] ?? x["DifficultyLevel"] ?? 0;
-  const mdPath = (x["mdPath"] ?? x["MdPath"] ?? x["markdownPath"] ?? x["MarkdownPath"] ?? "") as string;
-  const mdPublicUrl = (x["mdPublicUrl"] ?? x["MdPublicUrl"] ?? x["mdPublicURL"] ?? "") as string;
-  const authorId = toNumber(x["authorId"], toNumber(x["AuthorId"], 0));
-  const isActive = toBoolean(x["isActive"] ?? x["IsActive"], true);
-
-  return {
-    id,
-    title,
-    slug: slugVal && slugVal.length ? slugVal : slugify(title),
-    mdPath,
-    mdPublicUrl,
-    desc,
-    level: normalizeLabLevel(levelRaw),
-    authorId,
-    isActive,
-  };
-}
+};
 
 export default function AdminLabs() {
   const [query, setQuery] = useState("");
@@ -89,20 +26,31 @@ export default function AdminLabs() {
   const [status, setStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [sortBy, setSortBy] = useState<"none" | "rating" | "views" | "unique">(
+    "none"
+  );
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [labs, setLabs] = useState<Lab[]>([]);
   const [loading, setLoading] = useState(false);
   const [authorNames, setAuthorNames] = useState<Record<number, string>>({});
 
-  // Level badge color classes by level
+  const headerStats = useMemo(() => {
+    const total = labs.length;
+    const avgRating =
+      labs.reduce((s, l) => s + (l.ratingAverage ?? 0), 0) / (total || 1);
+    const totalViews = labs.reduce((s, l) => s + (l.views ?? 0), 0);
+    const totalUnique = labs.reduce((s, l) => s + (l.uniqueUserViews ?? 0), 0);
+    return { total, avgRating, totalViews, totalUnique };
+  }, [labs]);
+
   const levelBadgeClass = (level: LabLevel) => {
     switch (level) {
       case "Advanced":
         return "bg-rose-100 text-rose-700";
       case "Intermediate":
         return "bg-amber-100 text-amber-700";
-      case "Basic":
       default:
-        return "bg-green-100 text-green-700";
+        return "bg-emerald-100 text-emerald-700";
     }
   };
 
@@ -111,145 +59,337 @@ export default function AdminLabs() {
     (async () => {
       setLoading(true);
       try {
-        const res = await api.get<unknown>("/labs", { params: { includeInactive: true }});
-        if (!mounted) return;
-        const rawArr = Array.isArray(res.data) ? (res.data as unknown[]) : [];
-        setLabs(rawArr.map((it, i) => mapRawLabToLab(it, i)));
+        const res = await api.get("/labs", {
+          params: { includeInactive: true },
+        });
+        if (mounted) setLabs(res.data);
       } catch (err) {
         handleAxiosError(err, { fallbackMessage: "Failed to load labs" });
-        if (mounted) setLabs([]);
       } finally {
         if (mounted) setLoading(false);
       }
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Fetch author names for display
+  // fetch author names
   useEffect(() => {
-    const ids = Array.from(new Set(labs.map(l => l.authorId).filter((n): n is number => typeof n === 'number' && n > 0)));
-    const missing = ids.filter(id => authorNames[id] === undefined);
+    const ids = Array.from(
+      new Set(
+        labs
+          .map((l) => l.authorId)
+          .filter((n): n is number => typeof n === "number" && n > 0)
+      )
+    );
+
+    const missing = ids.filter((id) => authorNames[id] === undefined);
     if (missing.length === 0) return;
+
     let cancelled = false;
     (async () => {
-      try {
-        const pairs = await Promise.all(missing.map(async (id) => {
+      const pairs = await Promise.all(
+        missing.map(async (id) => {
           try {
             const res = await api.get(`/users/${id}`);
-            const u = res.data as { username?: string; fullName?: string; name?: string; email?: string };
-            const name: string = u?.username || u?.fullName || u?.name || u?.email || `User #${id}`;
+            const u = res.data as {
+              username?: string;
+              fullName?: string;
+              name?: string;
+              email?: string;
+            };
+            const name =
+              u?.username ||
+              u?.fullName ||
+              u?.name ||
+              u?.email ||
+              `User #${id}`;
             return [id, name] as const;
           } catch {
             return [id, `User #${id}`] as const;
           }
-        }));
-        if (cancelled) return;
-        setAuthorNames(prev => {
-          const next = { ...prev };
-          for (const [id, name] of pairs) next[id] = name;
-          return next;
-        });
-      } catch {
-        // ignore
-      }
+        })
+      );
+      if (cancelled) return;
+      setAuthorNames((prev) => {
+        const next = { ...prev };
+        for (const [id, name] of pairs) next[id] = name;
+        return next;
+      });
     })();
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, [labs, authorNames]);
 
-  const filtered = useMemo(() => labs.filter(r =>
-    (!query || `${r.title}`.toLowerCase().includes(query.toLowerCase())) &&
-    (difficulty === "all" || difficultyLabel(r.level).toLowerCase() === difficulty) &&
-    (status === "all" || (r.isActive ? "published" : "hidden") === status)
-  ), [labs, query, difficulty, status]);
+  const filtered = useMemo(
+    () =>
+      labs.filter(
+        (r) =>
+          (!query || r.title.toLowerCase().includes(query.toLowerCase())) &&
+          (difficulty === "all" ||
+            mapDifficultyToLabLevel(r.difficultyLevel).toLowerCase() ===
+              difficulty) &&
+          (status === "all" || (r.isActive ? "published" : "hidden") === status)
+      ),
+    [labs, query, difficulty, status]
+  );
 
-  const totalPages = Math.ceil(filtered.length / pageSize) || 1;
-  const pageRows = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const sorted = useMemo(() => {
+    if (sortBy === "none") return filtered;
+    return [...filtered].sort((a, b) => {
+      const va =
+        sortBy === "rating"
+          ? a.ratingAverage ?? 0
+          : sortBy === "views"
+          ? a.views ?? 0
+          : a.uniqueUserViews ?? 0;
+      const vb =
+        sortBy === "rating"
+          ? b.ratingAverage ?? 0
+          : sortBy === "views"
+          ? b.views ?? 0
+          : b.uniqueUserViews ?? 0;
+      return sortDir === "asc" ? va - vb : vb - va;
+    });
+  }, [filtered, sortBy, sortDir]);
+
+  const totalPages = Math.ceil(sorted.length / pageSize) || 1;
+  const pageRows = sorted.slice((page - 1) * pageSize, page * pageSize);
 
   const onToggleActive = async (lab: Lab) => {
     try {
       const id = lab.id;
-      if (lab.isActive) {
-        // Hide: DELETE /labs/{id}
-        await api.delete(`/labs/${id}`);
-      } else {
-        // Publish: POST /labs/{id}/restore
-        await api.post(`/labs/${id}/restore`);
-      }
-      setLabs(prev => prev.map(x => x.id === id ? { ...x, isActive: !lab.isActive } : x));
+      if (lab.isActive) await api.delete(`/labs/${id}`);
+      else await api.post(`/labs/${id}/restore`);
+      setLabs((prev) =>
+        prev.map((x) => (x.id === id ? { ...x, isActive: !lab.isActive } : x))
+      );
     } catch (err) {
       handleAxiosError(err, { fallbackMessage: "Failed to update lab status" });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 pt-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Labs</h1>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-blue-100 p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-3xl font-bold text-gray-900">
+            🧪 Labs Dashboard
+          </h1>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
+              <BarChart3 size={18} className="text-blue-500" />
+              <span className="text-sm text-gray-700">
+                Total: <strong>{headerStats.total}</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
+              <Star size={18} className="text-yellow-500" />
+              <span className="text-sm text-gray-700">
+                Avg: <strong>{headerStats.avgRating.toFixed(1)}★</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
+              <Eye size={18} className="text-emerald-500" />
+              <span className="text-sm text-gray-700">
+                Views: <strong>{headerStats.totalViews}</strong>
+              </span>
+            </div>
+            <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
+              <Users size={18} className="text-indigo-500" />
+              <span className="text-sm text-gray-700">
+                Unique: <strong>{headerStats.totalUnique}</strong>
+              </span>
+            </div>
           </div>
+        </header>
 
-          {loading ? (
-            <div className="p-6 text-gray-600">Loading labs…</div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
-                <input className="rounded-xl border border-gray-300 px-3 py-2" placeholder="Search title" value={query} onChange={(e)=>{ setQuery(e.target.value); setPage(1); }} />
-                <select className="rounded-xl border border-gray-300 px-3 py-2" value={difficulty} onChange={(e)=>{ setDifficulty(e.target.value); setPage(1);} }>
-                  <option value="all">Difficulty: All</option>
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-                <select className="rounded-xl border border-gray-300 px-3 py-2" value={status} onChange={(e)=>{ setStatus(e.target.value); setPage(1);} }>
-                  <option value="all">Status: All</option>
-                  <option value="published">Published</option>
-                  <option value="hidden">Hidden</option>
-                </select>
-                <div className="rounded-xl border px-3 py-2 bg-gray-50 text-gray-700 flex items-center">Total: {filtered.length}</div>
-                <select className="rounded-xl border border-gray-300 px-3 py-2" value={pageSize} onChange={(e)=> { setPageSize(Number(e.target.value)); setPage(1);} }>
-                  <option value={10}>10 / page</option>
-                  <option value={20}>20 / page</option>
-                  <option value={50}>50 / page</option>
-                </select>
-              </div>
+        {/* Filters */}
+        <div className="bg-white p-5 rounded-xl border shadow-sm flex flex-wrap items-center gap-4">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search
+              size={16}
+              className="absolute left-3 top-3 text-gray-400 pointer-events-none"
+            />
+            <input
+              className="pl-9 pr-3 py-2 w-full border rounded-lg focus:ring focus:ring-blue-200"
+              placeholder="Search labs..."
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+          <select
+            className="border rounded-lg px-3 py-2"
+            value={difficulty}
+            onChange={(e) => {
+              setDifficulty(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="all">All Difficulties</option>
+            <option value="basic">Basic</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <select
+            className="border rounded-lg px-3 py-2"
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="all">All Status</option>
+            <option value="published">Published</option>
+            <option value="hidden">Hidden</option>
+          </select>
+          <select
+            className="border rounded-lg px-3 py-2"
+            value={pageSize}
+            onChange={(e) => {
+              setPageSize(Number(e.target.value));
+              setPage(1);
+            }}
+          >
+            {[10, 20, 50].map((v) => (
+              <option key={v} value={v}>
+                {v} / page
+              </option>
+            ))}
+          </select>
+          <div className="flex items-center gap-2">
+            <ArrowUpDown
+              size={18}
+              className="text-gray-500 cursor-pointer"
+              onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+            />
+            <select
+              className="border rounded-lg px-3 py-2"
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(
+                  e.target.value as "none" | "rating" | "views" | "unique"
+                );
+                setPage(1);
+              }}
+            >
+              <option value="none">Default</option>
+              <option value="rating">Rating</option>
+              <option value="views">Views</option>
+              <option value="unique">Unique Views</option>
+            </select>
+          </div>
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {pageRows.map(r => (
-                  <div key={r.id} className="p-5 rounded-2xl bg-white border border-gray-200 hover:shadow transition">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="text-lg font-semibold text-gray-800">{r.title}</div>
-                        <div className="text-sm text-gray-500 mt-1">By {authorNames[r.authorId] ?? `User #${r.authorId}`}</div>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${r.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {r.isActive ? 'Published' : 'Hidden'}
-                      </span>
-                    </div>
-                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                      <div className="flex items-center gap-3">
-                        <span className={`px-2 py-1 rounded text-xs ${levelBadgeClass(r.level)}`}>{difficultyLabel(r.level)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button className="cursor-pointer px-3 py-1 rounded-lg bg-red-50 text-red-700 hover:bg-red-100" onClick={() => onToggleActive(r)}>
-                          {r.isActive ? 'Hide' : 'Publish'}
-                        </button>
-                      </div>
-                    </div>
+        {/* Labs List */}
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <Loader2 className="animate-spin text-blue-500" size={40} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {pageRows.map((r) => (
+              <div
+                key={r.id}
+                className="p-5 rounded-2xl bg-white border hover:shadow-lg transition relative group"
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="font-semibold text-lg text-gray-800">
+                      {r.title}
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      By {authorNames[r.authorId] ?? `User #${r.authorId}`}
+                    </p>
                   </div>
-                ))}
-              </div>
+                  <span
+                    className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                      r.isActive
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {r.isActive ? "Published" : "Hidden"}
+                  </span>
+                </div>
 
-              <div className="flex justify-end items-center gap-2 p-3 mt-4">
-                <button disabled={page===1} onClick={()=>setPage(1)} className="px-3 py-1 rounded bg-gray-100">First</button>
-                <button disabled={page===1} onClick={()=>setPage(page-1)} className="px-3 py-1 rounded bg-gray-100">Prev</button>
-                <span className="text-sm">Page {page} / {totalPages}</span>
-                <button disabled={page===totalPages} onClick={()=>setPage(page+1)} className="px-3 py-1 rounded bg-gray-100">Next</button>
-                <button disabled={page===totalPages} onClick={()=>setPage(totalPages)} className="px-3 py-1 rounded bg-gray-100">Last</button>
+                <div className="mt-4 flex justify-between items-center text-sm">
+                  <div className="flex flex-wrap gap-2">
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${levelBadgeClass(
+                        mapDifficultyToLabLevel(r.difficultyLevel)
+                      )}`}
+                    >
+                      {mapDifficultyToLabLevel(r.difficultyLevel)}
+                    </span>
+                    <span className="flex items-center gap-1 bg-gray-50 border rounded px-2 py-1">
+                      <Star size={12} className="text-yellow-500" />
+                      {r.ratingAverage?.toFixed(1) ?? "-"}
+                    </span>
+                    <span className="flex items-center gap-1 bg-gray-50 border rounded px-2 py-1">
+                      <Eye size={12} />
+                      {r.views ?? 0}
+                    </span>
+                    <span className="flex items-center gap-1 bg-gray-50 border rounded px-2 py-1">
+                      <Users size={12} />
+                      {r.uniqueUserViews ?? 0}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => onToggleActive(r)}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                      r.isActive
+                        ? "bg-red-50 text-red-700 hover:bg-red-100"
+                        : "bg-green-50 text-green-700 hover:bg-green-100"
+                    }`}
+                  >
+                    {r.isActive ? "Hide" : "Publish"}
+                  </button>
+                </div>
               </div>
-            </>
-          )}
+            ))}
+          </div>
+        )}
 
+        {/* Pagination */}
+        <div className="flex justify-end items-center gap-2 mt-6">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(1)}
+            className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
+          >
+            First
+          </button>
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
+          >
+            Prev
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {page} / {totalPages}
+          </span>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(page + 1)}
+            className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
+          >
+            Next
+          </button>
+          <button
+            disabled={page === totalPages}
+            onClick={() => setPage(totalPages)}
+            className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
+          >
+            Last
+          </button>
         </div>
       </div>
     </div>
