@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const baseURL = import.meta.env.VITE_BACKEND_URL as string;
+
 // Create axios instance
 const api = axios.create({
-  baseURL: "https://localhost:7106/api",
+  baseURL: `${baseURL}/api`,
   withCredentials: true,
 });
 
@@ -49,7 +51,10 @@ api.interceptors.response.use(
       originalRequest.url?.includes("/users/authenticate") ||
       originalRequest.url?.includes("/refresh-tokens/refresh")
     ) {
-      if (error.response?.status === 401 && originalRequest.url?.includes("/refresh-tokens/refresh")) {
+      if (
+        error.response?.status === 401 &&
+        originalRequest.url?.includes("/refresh-tokens/refresh")
+      ) {
         // Refresh token expired, logout
         setCurrentAccessToken(null);
         onLogoutCallback?.();
@@ -65,7 +70,11 @@ api.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
         refreshPromise = axios
-          .post("https://localhost:7106/api/refresh-tokens/refresh", {}, { withCredentials: true })
+          .post(
+            `${baseURL}/refresh-tokens/refresh`,
+            {},
+            { withCredentials: true }
+          )
           .then((response) => {
             const newToken = response.data.accessToken;
             setCurrentAccessToken(newToken);
