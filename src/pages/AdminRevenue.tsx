@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ResponsiveContainer,
   BarChart,
@@ -89,6 +90,7 @@ function formatShortVND(value: number) {
 }
 
 export default function AdminRevenue() {
+  const { t } = useTranslation();
   const [showExport, setShowExport] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fromDate, setFromDate] = useState("");
@@ -284,7 +286,7 @@ export default function AdminRevenue() {
         <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Revenue
+              {t("adminRevenue.title")}
             </h1>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -292,7 +294,7 @@ export default function AdminRevenue() {
                   className="cursor-pointer px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/70"
                   onClick={() => setShowExport(!showExport)}
                 >
-                  Export ▼
+                  {t("adminRevenue.export")}
                 </button>
                 {showExport && (
                   <div className="absolute right-0 mt-2 w-48 bg-white border rounded-xl shadow-lg z-10 overflow-hidden">
@@ -307,7 +309,7 @@ export default function AdminRevenue() {
                         setShowExport(false);
                       }}
                     >
-                      Export CSV
+                      {t("adminRevenue.exportCsv")}
                     </button>
                     <button
                       className="cursor-pointer w-full text-left px-4 py-2 hover:bg-gray-50 active:bg-gray-100 text-sm"
@@ -318,13 +320,13 @@ export default function AdminRevenue() {
                         }));
                         exportPdf(
                           `revenue_${exportKey}.pdf`,
-                          `Revenue (${exportKey})`,
+                          t("adminRevenue.exportTitle", { range: exportKey }),
                           rows
                         );
                         setShowExport(false);
                       }}
                     >
-                      Export PDF
+                      {t("adminRevenue.exportPdf")}
                     </button>
                     <button
                       className="cursor-pointer w-full text-left px-4 py-2 hover:bg-gray-50 active:bg-gray-100 text-sm"
@@ -337,7 +339,7 @@ export default function AdminRevenue() {
                         setShowExport(false);
                       }}
                     >
-                      Export Excel
+                      {t("adminRevenue.exportExcel")}
                     </button>
                   </div>
                 )}
@@ -351,10 +353,10 @@ export default function AdminRevenue() {
               value={period}
               onChange={(e) => setPeriod(e.target.value as typeof period)}
             >
-              <option value="">All time / Custom</option>
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
+              <option value="">{t("adminRevenue.period.all")}</option>
+              <option value="7d">{t("adminRevenue.period.7d")}</option>
+              <option value="30d">{t("adminRevenue.period.30d")}</option>
+              <option value="90d">{t("adminRevenue.period.90d")}</option>
             </select>
             <input
               type="date"
@@ -378,16 +380,16 @@ export default function AdminRevenue() {
                 setPeriod("");
               }}
             >
-              Reset Filters
+              {t("adminRevenue.resetFilters")}
             </button>
             <div className="rounded-xl border px-3 py-2 bg-gray-50 text-gray-700 flex items-center justify-center">
-              Currency: VND
+              {t("adminRevenue.currency", { currency: "VND" })}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200">
-              <div className="text-sm text-emerald-700">Subscriptions</div>
+              <div className="text-sm text-emerald-700">{t("adminRevenue.cards.subscriptions")}</div>
               <div className="text-2xl font-bold text-emerald-900">
                 {summary
                   ? formatVND(summary.subs)
@@ -397,7 +399,7 @@ export default function AdminRevenue() {
               </div>
             </div>
             <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200">
-              <div className="text-sm text-indigo-700">Avg. Order Value</div>
+              <div className="text-sm text-indigo-700">{t("adminRevenue.cards.aov")}</div>
               <div className="text-2xl font-bold text-indigo-900">
                 {summary
                   ? formatVND(summary.aov)
@@ -410,8 +412,8 @@ export default function AdminRevenue() {
 
           <div className="rounded-2xl border border-gray-200 p-4 mb-6">
             <div className="text-gray-700 font-semibold mb-2 flex items-center justify-between">
-              <span>Revenue trends</span>
-              <span className="text-xs text-gray-500">Subscriptions (VND)</span>
+              <span>{t("adminRevenue.trends.title")}</span>
+              <span className="text-xs text-gray-500">{t("adminRevenue.trends.subtitle", { currency: "VND" })}</span>
             </div>
             <div className="w-full h-64 bg-gray-50 rounded-xl border border-dashed">
               <ResponsiveContainer width="100%" height="100%">
@@ -453,10 +455,9 @@ export default function AdminRevenue() {
           <div className="rounded-2xl border border-gray-200 p-4 mb-6">
             <div className="mb-3 flex items-center justify-between">
               <div className="text-gray-700 font-semibold flex items-center gap-2">
-                <span>Revenue breakdown</span>
+                <span>{t("adminRevenue.breakdown.title")}</span>
                 <span className="text-xs text-gray-500">
-                  {filteredRows.length} result
-                  {filteredRows.length === 1 ? "" : "s"}
+                  {t("adminRevenue.breakdown.results", { count: filteredRows.length })}
                 </span>
               </div>
               <button
@@ -467,21 +468,21 @@ export default function AdminRevenue() {
                 }}
                 aria-pressed={hideZero}
               >
-                {hideZero ? "Show all" : "Hide zero days"}
+                {hideZero ? t("adminRevenue.actions.showAll") : t("adminRevenue.actions.hideZero")}
               </button>
             </div>
             <div className="overflow-x-auto rounded-xl border border-gray-100">
               {filteredRows.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">
-                  No matching data
+                  {t("adminRevenue.noData")}
                 </div>
               ) : (
                 <>
                   <table className="min-w-full bg-white">
                     <thead className="sticky top-0 bg-white z-10">
                       <tr className="text-left text-gray-600 border-b">
-                        <th className="px-4 py-3">Date</th>
-                        <th className="px-4 py-3">Subscriptions</th>
+                        <th className="px-4 py-3">{t("adminRevenue.table.date")}</th>
+                        <th className="px-4 py-3">{t("adminRevenue.table.subscriptions")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -502,7 +503,7 @@ export default function AdminRevenue() {
                   </table>
                   <div className="flex justify-between items-center gap-2 mt-4">
                     <span className="text-xs text-gray-500">
-                      Hiển thị {pagedRows.length} / {filteredRows.length}
+                      {t("adminRevenue.paging", { visible: pagedRows.length, total: filteredRows.length })}
                     </span>
                     <div className="flex items-center gap-2">
                       <button
@@ -510,17 +511,17 @@ export default function AdminRevenue() {
                         onClick={() => setPage(page - 1)}
                         className="px-3 py-1 rounded-lg border bg-white hover:bg-gray-50 disabled:opacity-50"
                       >
-                        Prev
+                        {t("adminRevenue.pagination.prev")}
                       </button>
                       <span className="text-sm">
-                        Page {page} / {totalPages}
+                        {t("adminRevenue.pagination.page", { page, total: totalPages })}
                       </span>
                       <button
                         disabled={page === totalPages}
                         onClick={() => setPage(page + 1)}
                         className="px-3 py-1 rounded-lg border bg-white hover:bg-gray-50 disabled:opacity-50"
                       >
-                        Next
+                        {t("adminRevenue.pagination.next")}
                       </button>
                     </div>
                   </div>

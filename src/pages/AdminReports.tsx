@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import api from "../utils/axiosInstance";
 import { handleAxiosError } from "../utils/handleAxiosError";
 import type { Report, ReportStatus } from "../types/report";
@@ -21,7 +22,9 @@ function exportCsv(filename: string, rows: CsvRow[]) {
     )
     .join("\n");
   const csv = [header, body].filter(Boolean).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  // Prepend UTF-8 BOM so Excel on Windows detects UTF-8 correctly and Vietnamese characters render properly
+  const csvWithBOM = "\uFEFF" + csv;
+  const blob = new Blob([csvWithBOM], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -31,6 +34,7 @@ function exportCsv(filename: string, rows: CsvRow[]) {
 }
 
 export default function AdminReports() {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [period, setPeriod] = useState("30d");
   const [type, setType] = useState("all");
@@ -40,6 +44,8 @@ export default function AdminReports() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewPaths, setPreviewPaths] = useState<string[]>([]);
   const [previewTitle, setPreviewTitle] = useState<string>("");
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsReport, setDetailsReport] = useState<Report | null>(null);
 
   // Track requests to avoid out-of-order updates
   const latestFetchId = useRef(0);
@@ -208,13 +214,13 @@ export default function AdminReports() {
         const items = rawItems.map(normalizeReport);
         setReports(items);
       } catch (err) {
-        handleAxiosError(err, { fallbackMessage: "Failed to load reports" });
+        handleAxiosError(err, { fallbackMessage: t("adminReports.failedLoad") });
       } finally {
         if (seq === latestFetchId.current) setLoading(false);
       }
     };
     fetchReports();
-  }, [type, status, period, query]);
+  }, [type, status, period, query, t]);
 
   const data = useMemo(() => reports, [reports]);
 
@@ -230,8 +236,13 @@ export default function AdminReports() {
       : [];
     if (paths.length === 0) return;
     setPreviewPaths(paths);
-    setPreviewTitle(`Report #${r.id} images`);
+    setPreviewTitle(t("adminReports.previewTitle", { id: r.id }));
     setPreviewOpen(true);
+  };
+
+  const openDetails = (r: Report) => {
+    setDetailsReport(r);
+    setDetailsOpen(true);
   };
 
   const updateStatus = async (id: number, newStatus: ReportStatus) => {
@@ -246,9 +257,9 @@ export default function AdminReports() {
       setReports((prev) =>
         prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
       );
-      toast.success("Status updated");
+      toast.success(t("adminReports.statusUpdated"));
     } catch (err) {
-      handleAxiosError(err, { fallbackMessage: "Failed to update status" });
+      handleAxiosError(err, { fallbackMessage: t("adminReports.updateFailed") });
     }
   };
 
@@ -257,9 +268,7 @@ export default function AdminReports() {
       <div className="max-w-6xl mx-auto">
         <div className="rounded-2xl overflow-hidden shadow-xl border border-gray-200 bg-white p-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Reports
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{t('adminReports.title')}</h1>
             <div className="flex items-center gap-2">
               <button
                 className="cursor-pointer px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold"
@@ -282,44 +291,44 @@ export default function AdminReports() {
                   )
                 }
               >
-                Export CSV
+                {t('adminReports.exportCsv')}
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <select
               className="rounded-xl border border-gray-300 px-3 py-2"
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
             >
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="all">All time</option>
+              <option value="7d">{t('adminReports.period.7d')}</option>
+              <option value="30d">{t('adminReports.period.30d')}</option>
+              <option value="all">{t('adminReports.period.all')}</option>
             </select>
             <select
               className="rounded-xl border border-gray-300 px-3 py-2"
               value={type}
               onChange={(e) => setType(e.target.value)}
             >
-              <option value="all">Type: All</option>
-              <option value="abuse">Abuse</option>
-              <option value="bug">Bug</option>
-              <option value="payment">Payment</option>
+              <option value="all">{t('adminReports.type.all')}</option>
+              <option value="abuse">{t('adminReports.type.abuse')}</option>
+              <option value="bug">{t('adminReports.type.bug')}</option>
+              <option value="payment">{t('adminReports.type.payment')}</option>
             </select>
             <select
               className="rounded-xl border border-gray-300 px-3 py-2"
               value={status}
               onChange={(e) => setStatus(e.target.value)}
             >
-              <option value="open">Status: Open</option>
-              <option value="inreview">In Review</option>
-              <option value="resolved">Resolved</option>
-              <option value="all">All</option>
+              <option value="open">{t('adminReports.status.open')}</option>
+              <option value="inreview">{t('adminReports.status.inreview')}</option>
+              <option value="resolved">{t('adminReports.status.resolved')}</option>
+              <option value="all">{t('adminReports.status.all')}</option>
             </select>
             <input
               className="rounded-xl border border-gray-300 px-3 py-2"
-              placeholder="Search..."
+              placeholder={t("adminReports.searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -327,19 +336,19 @@ export default function AdminReports() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="p-4 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200">
-              <div className="text-sm text-blue-700">Open</div>
+              <div className="text-sm text-blue-700">{t('adminReports.status.open')}</div>
               <div className="text-2xl font-bold text-blue-900">
                 {data.filter((d) => d.status === "Open").length}
               </div>
             </div>
             <div className="p-4 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200">
-              <div className="text-sm text-amber-700">In Review</div>
+              <div className="text-sm text-amber-700">{t('adminReports.status.inreview')}</div>
               <div className="text-2xl font-bold text-amber-900">
                 {data.filter((d) => d.status === "In Review").length}
               </div>
             </div>
             <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200">
-              <div className="text-sm text-emerald-700">Resolved</div>
+              <div className="text-sm text-emerald-700">{t('adminReports.status.resolved')}</div>
               <div className="text-2xl font-bold text-emerald-900">
                 {data.filter((d) => d.status === "Resolved").length}
               </div>
@@ -355,14 +364,15 @@ export default function AdminReports() {
             <table className="min-w-full bg-white">
               <thead>
                 <tr className="text-left text-gray-600">
-                  <th className="px-4 py-3">#</th>
-                  <th className="px-4 py-3">Type</th>
-                  <th className="px-4 py-3">Reporter</th>
-                  <th className="px-4 py-3">Lab</th>
-                  <th className="px-4 py-3">Images</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Created</th>
-                  <th className="px-4 py-3">Actions</th>
+                  <th className="px-4 py-3">{t('adminReports.table.id')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.type')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.reporter')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.lab')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.description')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.images')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.status')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.created')}</th>
+                  <th className="px-4 py-3">{t('adminReports.table.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -382,6 +392,9 @@ export default function AdminReports() {
                         <Skeleton width={120} />
                       </td>
                       <td className="px-4 py-3">
+                        <Skeleton width={160} />
+                      </td>
+                      <td className="px-4 py-3">
                         <Skeleton width={50} />
                       </td>
                       <td className="px-4 py-3">
@@ -399,9 +412,9 @@ export default function AdminReports() {
                   <tr>
                     <td
                       className="px-4 py-6 text-center text-gray-500"
-                      colSpan={8}
+                      colSpan={9}
                     >
-                      No reports
+                      {t('adminReports.noReports')}
                     </td>
                   </tr>
                 ) : (
@@ -417,6 +430,7 @@ export default function AdminReports() {
                       <td className="px-4 py-3 text-gray-700">
                         {r.labTitle || "-"}
                       </td>
+                      <td className="px-4 py-3 text-gray-700 max-w-[320px] truncate">{r.description || "-"}</td>
                       <td className="px-4 py-3">
                         {Array.isArray(r.imagePaths) &&
                         r.imagePaths.length > 0 ? (
@@ -424,7 +438,7 @@ export default function AdminReports() {
                             className="px-2 py-1 text-xs rounded-md border cursor-pointer"
                             onClick={() => openPreview(r)}
                           >
-                            View
+                            {t('adminReports.view')}
                           </button>
                         ) : (
                           <span className="text-gray-400 text-sm">—</span>
@@ -440,7 +454,11 @@ export default function AdminReports() {
                               : "bg-blue-100 text-blue-700"
                           }`}
                         >
-                          {r.status}
+                          {t(
+                            `adminReports.status.${
+                              r.status === "In Review" ? "inreview" : r.status.toLowerCase()
+                            }`
+                          )}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-gray-700">
@@ -453,7 +471,7 @@ export default function AdminReports() {
                               className="px-2 py-1 text-xs rounded-md border cursor-pointer"
                               onClick={() => updateStatus(r.id, "Open")}
                             >
-                              Mark Open
+                              {t('adminReports.actions.markOpen')}
                             </button>
                           )}
                           {r.status !== "In Review" && (
@@ -461,7 +479,7 @@ export default function AdminReports() {
                               className="px-2 py-1 text-xs rounded-md border cursor-pointer"
                               onClick={() => updateStatus(r.id, "In Review")}
                             >
-                              In Review
+                              {t('adminReports.actions.markInReview')}
                             </button>
                           )}
                           {r.status !== "Resolved" && (
@@ -469,9 +487,15 @@ export default function AdminReports() {
                               className="px-2 py-1 text-xs rounded-md border cursor-pointer"
                               onClick={() => updateStatus(r.id, "Resolved")}
                             >
-                              Resolve
+                              {t('adminReports.actions.resolve')}
                             </button>
                           )}
+                          <button
+                            className="px-2 py-1 text-xs rounded-md border cursor-pointer"
+                            onClick={() => openDetails(r)}
+                          >
+                            {t('adminReports.actions.showDetails')}
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -511,7 +535,64 @@ export default function AdminReports() {
               })}
             </div>
           ) : (
-            <div className="text-gray-500">No images</div>
+            <div className="text-gray-500">{t('adminReports.noImages')}</div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        title={detailsReport ? t('adminReports.details.title', { id: detailsReport.id }) : t('adminReports.details.titleGeneric')}
+      >
+        <div className="w-[900px] max-w-[95vw] space-y-4">
+          {detailsReport ? (
+            <div className="text-sm text-gray-800">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="font-medium">{t('adminReports.table.id')}</div>
+                <div>{detailsReport.id}</div>
+
+                <div className="font-medium">{t('adminReports.table.type')}</div>
+                <div>{detailsReport.type}</div>
+
+                <div className="font-medium">{t('adminReports.details.severity')}</div>
+                <div>{detailsReport.severity}</div>
+
+                <div className="font-medium">{t('adminReports.table.status')}</div>
+                <div>{t(`adminReports.status.${detailsReport.status === 'In Review' ? 'inreview' : detailsReport.status.toLowerCase()}`)}</div>
+
+                <div className="font-medium">{t('adminReports.table.reporter')}</div>
+                <div>{detailsReport.reporterEmail ?? '-'}</div>
+
+                <div className="font-medium">{t('adminReports.table.lab')}</div>
+                <div>{detailsReport.labTitle ?? '-'}</div>
+
+                <div className="font-medium">{t('adminReports.table.created')}</div>
+                <div>{formatLocalDisplay(detailsReport.createdAt)}</div>
+              </div>
+
+              <div className="mt-4">
+                <div className="font-medium mb-2">{t('adminReports.table.description')}</div>
+                <div className="whitespace-pre-wrap text-gray-700">{detailsReport.description || '-'}</div>
+              </div>
+
+              <div className="mt-4">
+                <div className="font-medium mb-2">{t('adminReports.table.images')}</div>
+                {Array.isArray(detailsReport.imagePaths) && detailsReport.imagePaths.length > 0 ? (
+                  <div className="flex gap-2 flex-wrap">
+                    {detailsReport.imagePaths.map((p, i) => (
+                      <a key={i} href={toPublicUrl(p)} target="_blank" rel="noreferrer" className="text-sm underline">
+                        {t('adminReports.view')} #{i + 1}
+                      </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-gray-500">{t('adminReports.noImages')}</div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500">{t('adminReports.noReports')}</div>
           )}
         </div>
       </Modal>

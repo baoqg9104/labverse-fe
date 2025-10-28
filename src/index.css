@@ -47,9 +47,15 @@
     @apply bg-lime-400;
 }
 
-* {
-  font-family: "Poppins", sans-serif !important;
+:root{
+  --font-primary: "Poppins", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
++
+/* Use a Vietnamese-capable font stack: Poppins (with latin-ext) first, fall back to Noto Sans then system UI fonts. Avoid forcing via !important so components can override if needed. */
+* {
+  font-family: var(--font-primary);
+}
+*** End Patch
 
 /* Premium highlight: blinking outer glow border */
 @keyframes premiumBlinkGlow {

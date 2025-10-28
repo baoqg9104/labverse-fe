@@ -1,10 +1,11 @@
-import React, { useContext, useRef, useEffect, useLayoutEffect } from "react";
+import React, { useContext, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LanguageDropdown } from "./LanguageDropdown";
 import { useState } from "react";
 import { FiMenu, FiX } from "react-icons/fi";
 import { AuthContext } from "../contexts/AuthContext";
 import { DEFAULT_AVATAR_URL } from "../constants/config";
+import Avatar from "./Avatar";
 import { ROLE } from "./profile/RoleUtils";
 import { useTranslation } from "react-i18next";
 import ReportIssueModal from "./ReportIssueModal";
@@ -15,6 +16,7 @@ const navLinks = [
   { nameKey: "nav.learn", path: "/learn" },
   { nameKey: "nav.ranking", path: "/ranking" },
   { nameKey: "nav.pricing", path: "/pricing" },
+  { nameKey: "nav.changelog", path: "/changelog" },
   { nameKey: "nav.contact", path: "/contact" },
 ];
 
@@ -64,57 +66,48 @@ export const Navbar: React.FC = () => {
   }, [avatarDropdown]);
 
   // --- Animated active border logic ---
-  // Update active border position/width on route change
-  useLayoutEffect(() => {
-    if (!navRef.current) return;
-    // Find the index of the active nav link
+  // Helper to compute active border position/width (memoized)
+  const computeActive = useCallback(() => {
+    if (!navRef.current) return setActiveStyle(null);
     const idx = navLinks.findIndex((l) => l.path === location.pathname);
-    if (idx === -1) {
-      setActiveStyle(null);
-      return;
-    }
-    // Get the DOM node for the active link
+    if (idx === -1) return setActiveStyle(null);
     const link = linkRefs.current[idx];
-    if (link) {
-      // Calculate position/width relative to nav container
+    if (link && navRef.current) {
       const navRect = navRef.current.getBoundingClientRect();
       const linkRect = link.getBoundingClientRect();
-      setActiveStyle({
-        left: linkRect.left - navRect.left,
-        width: linkRect.width,
-      });
+      setActiveStyle({ left: linkRect.left - navRect.left, width: linkRect.width });
     }
   }, [location.pathname]);
+
+  // Update active border position/width on route change
+  useLayoutEffect(() => {
+    computeActive();
+    // also schedule another frame to catch layout shifts
+    const id = requestAnimationFrame(() => computeActive());
+    return () => cancelAnimationFrame(id);
+  }, [computeActive]);
 
   // Recalculate active border on window resize
   useEffect(() => {
-    const handleResize = () => {
-      const idx = navLinks.findIndex((l) => l.path === location.pathname);
-      if (idx === -1) {
-        setActiveStyle(null);
-        return;
-      }
-      const link = linkRefs.current[idx];
-      if (link && navRef.current) {
-        const navRect = navRef.current.getBoundingClientRect();
-        const linkRect = link.getBoundingClientRect();
-        setActiveStyle({
-          left: linkRect.left - navRect.left,
-          width: linkRect.width,
-        });
-      }
-    };
+    const handleResize = () => computeActive();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [location.pathname]);
+  }, [computeActive]);
+
+  // Recompute active bar when language changes (translations alter link widths)
+  const { t, i18n } = useTranslation();
+  useEffect(() => {
+    // wait for DOM/text updates then recompute
+    const id = requestAnimationFrame(() => computeActive());
+    return () => cancelAnimationFrame(id);
+  }, [i18n.language, computeActive]);
 
   // --- Render Navbar UI ---
-  const { t } = useTranslation();
   return (
     <header className="flex items-center justify-between pt-5 pb-5 px-4 md:pr-12 md:pl-16 bg-transparent w-full relative">
       {/* Logo */}
       <div className="font-bold text-3xl md:text-4xl tracking-wide text-white">
-        Labverse
+        {t('nav.logo')}
       </div>
 
       {/* Mobile menu button (hamburger) */}
@@ -193,13 +186,14 @@ export const Navbar: React.FC = () => {
             )}
             <div className="relative mr-8" ref={avatarRef}>
               {/* Avatar button toggles dropdown */}
-              <button
+                <button
                 className="flex items-center gap-2 bg-white text-gray-900 rounded-full border-2 border-white hover:bg-gray-100 transition cursor-pointer focus:outline-none"
                 onClick={() => setAvatarDropdown((v) => !v)}
               >
-                <img
-                  src={user.avatarUrl || DEFAULT_AVATAR_URL}
-                  alt="avatar"
+                <Avatar
+                  src={user.avatarUrl ?? undefined}
+                  fallback={DEFAULT_AVATAR_URL}
+                  alt={t("nav.avatarAlt", { defaultValue: "avatar" })}
                   className="size-11 rounded-full object-cover border border-gray-300"
                 />
               </button>
@@ -314,7 +308,7 @@ export const Navbar: React.FC = () => {
                             d="M80 32C93.3 32 104 42.7 104 56L104 96 464 96c8.8 0 16 7.2 16 16c0 4.1-1.6 8.1-4.5 11.1L405.3 199.4l70.2 76.1c2.9 3.1 4.5 7.1 4.5 11.3c0 8.8-7.2 16-16 16L104 302.8 104 456c0 13.3-10.7 24-24 24s-24-10.7-24-24L56 56c0-13.3 10.7-24 24-24z"
                           ></path>
                         </svg>
-                        <span>Report an issue</span>
+                        <span>{t("nav.report")}</span>
                       </span>
                     </button>
                   )}
@@ -436,9 +430,10 @@ export const Navbar: React.FC = () => {
             {user ? (
               <div className="w-full px-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src={user.avatarUrl || DEFAULT_AVATAR_URL}
-                    alt="avatar"
+                  <Avatar
+                    src={user.avatarUrl ?? undefined}
+                    fallback={DEFAULT_AVATAR_URL}
+                    alt={t("nav.avatarAlt", { defaultValue: "avatar" })}
                     className="w-10 h-10 rounded-full object-cover border border-white/40"
                   />
                   <div className="text-white">

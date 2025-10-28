@@ -35,10 +35,10 @@ export default function BadgeList({ badges }: BadgeListProps) {
   if (!badges.length) {
     return (
       <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-5 text-sm backdrop-blur">
-        {t(
-          "profile.badges.empty",
-          "No badges yet. Start completing labs to earn your first badge!"
-        )}
+        {t("profile.badges.empty", {
+          defaultValue:
+            "No badges yet. Start completing labs to earn your first badge!",
+        })}
       </div>
     );
   }

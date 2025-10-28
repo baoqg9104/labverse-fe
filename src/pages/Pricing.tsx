@@ -4,18 +4,7 @@ import { AuthContext } from "../contexts/AuthContext";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 
-const freeFeatures = [
-  "Step-by-step tutorials",
-  "Practical experience sharing",
-  "Cybersecurity theory guides",
-];
-
-const premiumFeatures = [
-  "All Free tier content",
-  "Unlimited lab access",
-  "Downloadable resources",
-  "Priority support",
-];
+// Feature lists are provided via i18n resources (pricingPage.free.features and pricingPage.premium.features)
 
 export const Pricing = () => {
   const { t } = useTranslation();
@@ -59,6 +48,10 @@ export const Pricing = () => {
     navigate("/checkout");
   };
 
+  // get features from translations (arrays)
+  const freeFeaturesArr = t("pricingPage.free.features", { returnObjects: true }) as string[];
+  const premiumFeaturesArr = t("pricingPage.premium.features", { returnObjects: true }) as string[];
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-start bg-gradient-to-b from-[#f3f6fb] via-[#e7eaf7] to-[#e3c6e6] pb-20 pt-10">
       {/* Pricing Cards Container với relative positioning */}
@@ -77,7 +70,7 @@ export const Pricing = () => {
             <span>🎯</span> {t("pricingPage.free.audience")}
           </div>
           <ul className="flex flex-col gap-3 text-gray-700 text-base mt-2">
-            {freeFeatures.map((feature) => (
+            {freeFeaturesArr.map((feature) => (
               <li
                 key={feature}
                 className="flex items-center gap-2 text-[#848199] font-normal"
@@ -123,7 +116,7 @@ export const Pricing = () => {
             <span className="text-yellow-400">🚀</span> {t("pricingPage.premium.audience")}
           </div>
           <ul className="flex flex-col gap-2 text-base mt-2">
-            {premiumFeatures.map((feature) => (
+            {premiumFeaturesArr.map((feature) => (
               <li
                 key={feature}
                 className="flex items-center gap-2 text-gray-300 font-normal"
@@ -275,14 +268,14 @@ export const Pricing = () => {
                   />
                 </defs>
               </svg>
-              How do I view and manage my subscription?
+              {t("pricingPage.faqs.subscription.title")}
             </div>
             <div className="ml-8 mt-2 text-gray-700 text-base">
-              Your subscription can be managed from{" "}
+              {t("pricingPage.faqs.subscription.beforeLink")} {" "}
               <Link to="/account" className="text-violet-600 underline">
-                your account settings
+                {t("pricingPage.faqs.subscription.linkText")}
               </Link>
-              .
+              {t("pricingPage.faqs.subscription.afterLink")}
             </div>
           </div>
           {/* Local Currency */}
@@ -318,10 +311,10 @@ export const Pricing = () => {
                   />
                 </defs>
               </svg>
-              Can you charge me in my local currency?
+              {t("pricingPage.faqs.localCurrency.title")}
             </div>
             <div className="ml-8 mt-2 text-gray-700 text-base">
-              Currently, we only accept payments in Vietnamese dong (VND).
+              {t("pricingPage.faqs.localCurrency.answer")}
             </div>
           </div>
         </div>

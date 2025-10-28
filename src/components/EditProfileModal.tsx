@@ -20,6 +20,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
 import api from "../utils/axiosInstance";
 import { supabase } from "../libs/supabaseClient";
+import { useTranslation } from "react-i18next";
 
 interface EditProfileModalProps {
   open: boolean;
@@ -34,6 +35,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   profile,
   setProfile,
 }) => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState(profile?.username || "");
   const [bio, setBio] = useState(profile?.bio || "");
   const [avatarPreview, setAvatarPreview] = useState<string>(
@@ -74,19 +76,19 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   // Validate fields
   const validate = () => {
     const errs: typeof errors = {};
-    if (!username.trim()) errs.username = "Username is required.";
+    if (!username.trim()) errs.username = t("profile.edit.errors.usernameRequired", "Username is required.");
     if (newPassword) {
       if (newPassword.length < 8)
-        errs.newPassword = "Password must be at least 8 characters.";
+        errs.newPassword = t("profile.edit.errors.passwordLength", "Password must be at least 8 characters.");
       if (newPassword !== confirmPassword)
-        errs.confirmPassword = "Passwords do not match.";
+        errs.confirmPassword = t("profile.edit.errors.passwordMismatch", "Passwords do not match.");
       if (!currentPassword)
         errs.newPassword =
-          errs.newPassword || "Current password is required to set a new one.";
+          errs.newPassword || t("profile.edit.errors.currentPasswordRequired", "Current password is required to set a new one.");
     }
     const maxBytes = 5 * 1024 * 1024; // 5MB
     if (avatarFile && avatarFile.size > maxBytes) {
-      errs.avatar = "Avatar must be less than 5MB.";
+      errs.avatar = t("profile.edit.errors.avatarSize", "Avatar must be less than 5MB.");
     }
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -110,7 +112,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         userId = null;
       }
       if (!userId) {
-        toast.error("User not found");
+        toast.error(t("profile.edit.errors.userNotFound", "User not found"));
         setLoading(false);
         return;
       }
@@ -131,7 +133,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           });
 
         if (uploadErr) {
-          toast.error("Failed to upload avatar. Please try again.");
+          toast.error(t("profile.edit.errors.avatarUploadFailed", "Failed to upload avatar. Please try again."));
           setLoading(false);
           return;
         }
@@ -180,9 +182,9 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       );
 
       if (newPassword) {
-        toast.success("Password changed successfully");
+        toast.success(t("profile.edit.success.passwordChanged", "Password changed successfully"));
       }
-      toast.success("Profile updated successfully");
+      toast.success(t("profile.edit.success.profileUpdated", "Profile updated successfully"));
       onClose();
     } catch (err: unknown) {
       const axiosErr = err as {
@@ -198,13 +200,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       };
       const code = axiosErr?.response?.data?.error?.code || "";
       if (code === "INVALID_OLD_PASSWORD") {
-        toast.error("Current password is incorrect. Please try again.");
+        toast.error(t("profile.edit.errors.invalidOldPassword", "Current password is incorrect. Please try again."));
       } else {
         const msg =
           axiosErr?.response?.data?.error?.message ||
           axiosErr?.message ||
-          "Profile update failed";
-        toast.error(msg);
+          t("profile.edit.errors.updateFailed", "Profile update failed");
+        toast.error(msg as string);
       }
     } finally {
       setLoading(false);
@@ -226,7 +228,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   }, [open, profile]);
 
   return (
-    <Modal open={open} onClose={onClose} title={"✏️ Edit Your Profile"}>
+    <Modal open={open} onClose={onClose} title={t("profile.edit.dialogTitle", "✏️ Edit Your Profile")}>
       <Box
         component="form"
         onSubmit={handleSubmit}
@@ -249,10 +251,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               color: "transparent",
             }}
           >
-            Edit Profile
+            {t("profile.edit.header", "Edit Profile")}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Update your personal info and security settings.
+            {t(
+              "profile.edit.desc",
+              "Update your personal info and security settings."
+            )}
           </Typography>
         </Box>
 
@@ -262,8 +267,8 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
           variant="fullWidth"
           sx={{ px: { xs: 1, sm: 2 }, mt: 1 }}
         >
-          <Tab label="Profile" />
-          <Tab label="Security" />
+          <Tab label={t("profile.edit.tabs.profile", "Profile")} />
+          <Tab label={t("profile.edit.tabs.security", "Security")} />
         </Tabs>
 
         <Box
@@ -320,13 +325,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   variant="caption"
                   color={errors.avatar ? "error" : "text.secondary"}
                 >
-                  {errors.avatar || "Click to change avatar"}
+                  {errors.avatar || t("profile.edit.avatarHint", "Click to change avatar")}
                 </Typography>
               </Stack>
 
               <Box flex={1}>
                 <TextField
-                  label="Username"
+                  label={t("profile.edit.username", "Username")}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -336,7 +341,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
                   helperText={errors.username || " "}
                 />
                 <TextField
-                  label="Bio"
+                  label={t("profile.edit.bio", "Bio")}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   fullWidth
@@ -357,7 +362,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             >
               <TextField
                 type={showPassword.current ? "text" : "password"}
-                label="Current Password"
+                label={t("profile.edit.currentPassword", "Current Password")}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 className="w-[70%]"
@@ -387,7 +392,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               />
               <TextField
                 type={showPassword.new ? "text" : "password"}
-                label="New Password"
+                label={t("profile.edit.newPassword", "New Password")}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="w-[70%]"
@@ -411,7 +416,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
               />
               <TextField
                 type={showPassword.confirm ? "text" : "password"}
-                label="Confirm New Password"
+                label={t("profile.edit.confirmNewPassword", "Confirm New Password")}
                 onPaste={(e) => e.preventDefault()}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -469,7 +474,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
             }}
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? t("profile.edit.saving", "Saving...") : t("profile.edit.save", "Save Changes")}
           </Button>
         </Box>
       </Box>

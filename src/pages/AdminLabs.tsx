@@ -9,7 +9,9 @@ import {
   FiUsers,
   FiSearch,
   FiLoader,
+  FiShield,
 } from "react-icons/fi";
+import { useTranslation } from 'react-i18next';
 import { BiSortAlt2 } from "react-icons/bi";
 
 // map difficulty levels to lab levels
@@ -21,6 +23,7 @@ const mapDifficultyToLabLevel = (difficulty: number): LabLevel => {
 };
 
 export default function AdminLabs() {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [difficulty, setDifficulty] = useState("all");
   const [status, setStatus] = useState("all");
@@ -64,7 +67,7 @@ export default function AdminLabs() {
         });
         if (mounted) setLabs(res.data);
       } catch (err) {
-        handleAxiosError(err, { fallbackMessage: "Failed to load labs" });
+        handleAxiosError(err, { fallbackMessage: t("adminLabs.failedLoad") });
       } finally {
         if (mounted) setLoading(false);
       }
@@ -72,7 +75,7 @@ export default function AdminLabs() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
   // fetch author names
   useEffect(() => {
@@ -177,31 +180,31 @@ export default function AdminLabs() {
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h1 className="text-3xl font-bold text-gray-900">
-            🧪 Labs Dashboard
+            <FiShield className="inline-block mr-2" /> {t('adminLabs.title')}
           </h1>
           <div className="flex flex-wrap gap-3">
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
               <FiBarChart2 size={18} className="text-blue-500" />
               <span className="text-sm text-gray-700">
-                Total: <strong>{headerStats.total}</strong>
+                {t('adminLabs.stats.total')}: <strong>{headerStats.total}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
               <FiStar size={18} className="text-yellow-500" />
               <span className="text-sm text-gray-700">
-                Avg: <strong>{headerStats.avgRating.toFixed(1)}★</strong>
+                {t('adminLabs.stats.avg')}: <strong>{headerStats.avgRating.toFixed(1)}★</strong>
               </span>
             </div>
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
               <FiEye size={18} className="text-emerald-500" />
               <span className="text-sm text-gray-700">
-                Views: <strong>{headerStats.totalViews}</strong>
+                {t('adminLabs.stats.views')}: <strong>{headerStats.totalViews}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2 bg-white border rounded-lg px-4 py-2 shadow-sm">
               <FiUsers size={18} className="text-indigo-500" />
               <span className="text-sm text-gray-700">
-                Unique: <strong>{headerStats.totalUnique}</strong>
+                {t('adminLabs.stats.unique')}: <strong>{headerStats.totalUnique}</strong>
               </span>
             </div>
           </div>
@@ -216,7 +219,7 @@ export default function AdminLabs() {
             />
             <input
               className="pl-9 pr-3 py-2 w-full border rounded-lg focus:ring focus:ring-blue-200"
-              placeholder="Search labs..."
+              placeholder={t('adminLabs.searchPlaceholder')}
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -232,10 +235,10 @@ export default function AdminLabs() {
               setPage(1);
             }}
           >
-            <option value="all">All Difficulties</option>
-            <option value="basic">Basic</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="advanced">Advanced</option>
+            <option value="all">{t('adminLabs.filters.difficultyAll')}</option>
+            <option value="basic">{t('adminLabs.filters.basic')}</option>
+            <option value="intermediate">{t('adminLabs.filters.intermediate')}</option>
+            <option value="advanced">{t('adminLabs.filters.advanced')}</option>
           </select>
           <select
             className="border rounded-lg px-3 py-2"
@@ -245,9 +248,9 @@ export default function AdminLabs() {
               setPage(1);
             }}
           >
-            <option value="all">All Status</option>
-            <option value="published">Published</option>
-            <option value="hidden">Hidden</option>
+            <option value="all">{t('adminLabs.filters.statusAll')}</option>
+            <option value="published">{t('adminLabs.filters.published')}</option>
+            <option value="hidden">{t('adminLabs.filters.hidden')}</option>
           </select>
           <select
             className="border rounded-lg px-3 py-2"
@@ -259,7 +262,7 @@ export default function AdminLabs() {
           >
             {[10, 20, 50].map((v) => (
               <option key={v} value={v}>
-                {v} / page
+                {t("adminLabs.pagination.pages", { count: v })}
               </option>
             ))}
           </select>
@@ -279,10 +282,10 @@ export default function AdminLabs() {
                 setPage(1);
               }}
             >
-              <option value="none">Default</option>
-              <option value="rating">Rating</option>
-              <option value="views">Views</option>
-              <option value="unique">Unique Views</option>
+              <option value="none">{t("adminLabs.sort.default")}</option>
+              <option value="rating">{t("adminLabs.sort.rating")}</option>
+              <option value="views">{t("adminLabs.sort.views")}</option>
+              <option value="unique">{t("adminLabs.sort.unique")}</option>
             </select>
           </div>
         </div>
@@ -305,7 +308,7 @@ export default function AdminLabs() {
                       {r.title}
                     </h2>
                     <p className="text-sm text-gray-500">
-                      By {authorNames[r.authorId] ?? `User #${r.authorId}`}
+                      {t("adminLabs.by")} {authorNames[r.authorId] ?? `User #${r.authorId}`}
                     </p>
                   </div>
                   <span
@@ -315,7 +318,7 @@ export default function AdminLabs() {
                         : "bg-gray-100 text-gray-700"
                     }`}
                   >
-                    {r.isActive ? "Published" : "Hidden"}
+                    {r.isActive ? t("adminLabs.status.published") : t("adminLabs.status.hidden")}
                   </span>
                 </div>
 
@@ -326,7 +329,11 @@ export default function AdminLabs() {
                         mapDifficultyToLabLevel(r.difficultyLevel)
                       )}`}
                     >
-                      {mapDifficultyToLabLevel(r.difficultyLevel)}
+                      {t(
+                        `adminLabs.levels.${mapDifficultyToLabLevel(
+                          r.difficultyLevel
+                        ).toLowerCase()}`
+                      )}
                     </span>
                     <span className="flex items-center gap-1 bg-gray-50 border rounded px-2 py-1">
                       <FiStar size={12} className="text-yellow-500" />
@@ -348,8 +355,8 @@ export default function AdminLabs() {
                         ? "bg-red-50 text-red-700 hover:bg-red-100"
                         : "bg-green-50 text-green-700 hover:bg-green-100"
                     }`}
-                  >
-                    {r.isActive ? "Hide" : "Publish"}
+                    >
+                    {r.isActive ? t("adminLabs.actions.hide") : t("adminLabs.actions.publish")}
                   </button>
                 </div>
               </div>
@@ -364,31 +371,31 @@ export default function AdminLabs() {
             onClick={() => setPage(1)}
             className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
           >
-            First
+            {t("adminLabs.pagination.first")}
           </button>
           <button
             disabled={page === 1}
             onClick={() => setPage(page - 1)}
             className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
           >
-            Prev
+            {t("adminLabs.pagination.prev")}
           </button>
           <span className="text-sm text-gray-600">
-            Page {page} / {totalPages}
+            {t("adminLabs.pagination.page", { page, total: totalPages })}
           </span>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(page + 1)}
             className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
           >
-            Next
+            {t("adminLabs.pagination.next")}
           </button>
           <button
             disabled={page === totalPages}
             onClick={() => setPage(totalPages)}
             className="px-3 py-1 rounded bg-gray-100 disabled:opacity-50"
           >
-            Last
+            {t("adminLabs.pagination.last")}
           </button>
         </div>
       </div>

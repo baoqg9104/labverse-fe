@@ -1,4 +1,5 @@
 import { useContext, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { DEFAULT_AVATAR_URL } from "../constants/config";
@@ -34,12 +35,14 @@ export const Account = () => {
     navigate("/", { replace: true });
   };
 
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f7fb] via-[#ecf0fe] to-[#e3c6e6] py-10 px-4">
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[#1a144b] to-[#6a5acd]">
-            Your Account
+            {t("account.title")}
           </h1>
         </div>
 
@@ -102,23 +105,23 @@ export const Account = () => {
                 </div>
 
                 <div className="mt-6 space-y-3">
-                  <button
+                    <button
                     className="cursor-pointer w-full px-4 py-2 rounded-xl bg-[#221d4f] text-white font-semibold shadow hover:bg-[#2c2565]"
                     onClick={onGoProfile}
                   >
-                    View Profile
+                    {t("account.viewProfile")}
                   </button>
                   <button
                     className="cursor-pointer w-full px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-800 font-semibold shadow hover:bg-gray-50"
                     onClick={onManageSubscription}
-                  >
-                    {isPremium ? "Manage Subscription" : "Upgrade to Premium"}
+                    >
+                    {isPremium ? t("account.manageSubscription") : t("account.upgradeToPremium")}
                   </button>
                   <button
                     className="cursor-pointer w-full px-4 py-2 rounded-xl bg-red-50 text-red-600 font-semibold border border-red-200 hover:bg-red-100"
                     onClick={onLogout}
-                  >
-                    Log out
+                    >
+                    {t("account.logout")}
                   </button>
                 </div>
               </>
@@ -129,7 +132,7 @@ export const Account = () => {
           <section className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6">
               <h2 className="text-lg font-semibold text-[#1a144b]">
-                Account Details
+                {t("account.detailsTitle")}
               </h2>
               {isAuthLoading ? (
                 <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
@@ -157,7 +160,7 @@ export const Account = () => {
                       </svg>
                     </span>
                     <div>
-                      <div className="text-xs text-gray-500">Email</div>
+                      <div className="text-xs text-gray-500">{t("account.fields.email")}</div>
                       <div className="font-medium">{user?.email || "—"}</div>
                     </div>
                   </div>
@@ -178,7 +181,7 @@ export const Account = () => {
                       </svg>
                     </span>
                     <div>
-                      <div className="text-xs text-gray-500">Username</div>
+                      <div className="text-xs text-gray-500">{t("account.fields.username")}</div>
                       <div className="font-medium">{user?.username || "—"}</div>
                     </div>
                   </div>
@@ -201,7 +204,7 @@ export const Account = () => {
                       </svg>
                     </span>
                     <div>
-                      <div className="text-xs text-gray-500">Role</div>
+                      <div className="text-xs text-gray-500">{t("account.fields.role")}</div>
                       <div className="font-medium">
                         {getRoleMeta(user?.role).label}
                       </div>
@@ -225,7 +228,7 @@ export const Account = () => {
                       </svg>
                     </span>
                     <div>
-                      <div className="text-xs text-gray-500">Member Since</div>
+                      <div className="text-xs text-gray-500">{t("account.fields.memberSince")}</div>
                       <div className="font-medium">{createdDate || "—"}</div>
                     </div>
                   </div>
@@ -234,13 +237,13 @@ export const Account = () => {
             </div>
 
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6">
-              <h2 className="text-lg font-semibold text-[#1a144b]">Bio</h2>
+              <h2 className="text-lg font-semibold text-[#1a144b]">{t("account.bioTitle")}</h2>
               {isAuthLoading ? (
                 <div className="mt-3 h-20 rounded-xl bg-gray-100 animate-pulse" />
               ) : (
                 <p className="mt-3 text-gray-700 min-h-[80px]">
                   {user?.bio?.trim() || (
-                    <span className="text-gray-400">No bio yet.</span>
+                    <span className="text-gray-400">{t("account.noBio")}</span>
                   )}
                 </p>
               )}
@@ -249,18 +252,14 @@ export const Account = () => {
             {!isPremium && !isAuthLoading && (
               <div className="rounded-3xl p-6 border-2 border-[#b6aaff] bg-gradient-to-r from-[#f7f4ff] to-[#f0f7ff] flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                  <div className="text-lg font-bold text-[#1a144b]">
-                    Unlock Premium
-                  </div>
-                  <div className="text-gray-600">
-                    Get unlimited lab access, downloads and priority support.
-                  </div>
+                  <div className="text-lg font-bold text-[#1a144b]">{t("account.premiumTitle")}</div>
+                  <div className="text-gray-600">{t("account.premiumDesc")}</div>
                 </div>
                 <button
                   className="cursor-pointer px-5 py-2 rounded-xl bg-[#b6ff3c] text-[#201958] font-bold shadow hover:bg-[#a0e636]"
                   onClick={onManageSubscription}
-                >
-                  Upgrade now
+                  >
+                  {t("account.upgradeNow")}
                 </button>
               </div>
             )}

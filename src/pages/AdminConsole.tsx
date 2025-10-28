@@ -1,12 +1,17 @@
 import { useContext, useEffect, useMemo, useState } from "react";
+import type { TFunction } from 'i18next';
 import { AuthContext } from "../contexts/AuthContext";
 import { getRoleMeta, ROLE } from "../components/profile/RoleUtils";
 import api from "../utils/axiosInstance";
 import { toast } from "react-toastify";
+import { useTranslation } from "react-i18next";
 
 export default function AdminConsole() {
   const { user } = useContext(AuthContext);
   const roleMeta = getRoleMeta(user?.role);
+  const { t } = useTranslation();
+  // typed alias for the i18next function to avoid unsafe `any` usage
+  const translate = (t as unknown) as TFunction;
 
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
   const [totalLabs, setTotalLabs] = useState<number | null>(null);
@@ -164,7 +169,7 @@ export default function AdminConsole() {
         }
       } catch {
         if (mounted) {
-          toast.error("Failed to load admin metrics");
+          toast.error(t("adminConsole.failedLoad"));
           setUserCounts({ user: 0, author: 0, admin: 0 });
           setLabCounts({ Basic: 0, Intermediate: 0, Advanced: 0 });
           setTotalUsers(0);
@@ -180,17 +185,17 @@ export default function AdminConsole() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [t]);
 
   const formattedRevenue = useMemo(
     () =>
       revenue === null
         ? "N/A"
         : new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-          maximumFractionDigits: 0,
-        }).format(revenue ?? 0),
+            style: "currency",
+            currency: "VND",
+            maximumFractionDigits: 0,
+          }).format(revenue ?? 0),
     [revenue]
   );
 
@@ -237,11 +242,9 @@ export default function AdminConsole() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Admin Console
+                {t("adminConsole.title")}
               </h1>
-              <p className="text-gray-600">
-                Manage users, labs, reports, and revenue
-              </p>
+              <p className="text-gray-600">{t("adminConsole.lead")}</p>
             </div>
             <span
               className={`px-3 py-1 rounded-full text-sm font-semibold ${roleMeta.badgeClass}`}
@@ -258,7 +261,9 @@ export default function AdminConsole() {
               <div className="text-2xl font-bold text-gray-800">
                 {loading ? "…" : totalUsers ?? 0}
               </div>
-              <div className="text-gray-600">Total Users</div>
+              <div className="text-gray-600">
+                {t("adminConsole.totalUsers")}
+              </div>
 
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
                 {/* Donut chart */}
@@ -274,7 +279,10 @@ export default function AdminConsole() {
                       height={donut.size}
                       viewBox={`0 0 ${donut.size} ${donut.size}`}
                       role="img"
-                      aria-label={`Premium ${premiumPct}% và Free ${freePct}%`}
+                      aria-label={t("adminConsole.donutAriaLabel", {
+                        premium: premiumPct,
+                        free: freePct,
+                      })}
                     >
                       <g
                         transform={`translate(${donut.size / 2}, ${
@@ -287,7 +295,7 @@ export default function AdminConsole() {
                           cx={0}
                           cy={0}
                           fill="transparent"
-                          stroke="#E5E7EB" /* gray-200 */
+                          stroke="#E5E7EB"
                           strokeWidth={donut.stroke}
                         />
                         {/* Premium arc */}
@@ -296,7 +304,7 @@ export default function AdminConsole() {
                           cx={0}
                           cy={0}
                           fill="transparent"
-                          stroke="#10B981" /* emerald-500 */
+                          stroke="#10B981"
                           strokeLinecap="round"
                           strokeWidth={donut.stroke}
                           strokeDasharray={`${donut.c} ${donut.c}`}
@@ -332,7 +340,7 @@ export default function AdminConsole() {
                         aria-hidden="true"
                       />
                       <span className="text-gray-800 text-sm font-medium">
-                        Premium
+                        {t("adminConsole.premium")}
                       </span>
                     </div>
                     <div className="text-sm text-gray-700 font-semibold">
@@ -348,6 +356,7 @@ export default function AdminConsole() {
                         aria-hidden="true"
                       />
                       <span className="text-gray-800 text-sm font-medium">
+                        {/* {t("adminConsole.free")} */}
                         Free
                       </span>
                     </div>
@@ -355,7 +364,6 @@ export default function AdminConsole() {
                       {loading ? "…" : `${userSubCounts.free} (${freePct}%)`}
                     </div>
                   </div>
-                  {/* Explanatory caption removed as requested */}
                 </div>
               </div>
 
@@ -364,51 +372,61 @@ export default function AdminConsole() {
                 <span className="px-2 py-0.5 rounded-full bg-blue-100 border border-blue-300 text-blue-900 flex items-center gap-1">
                   <span role="img" aria-label="User">
                     🧑
-                  </span>{" "}
-                  User: {loading ? "…" : userCounts.user}
+                  </span>
+                  {t("adminConsole.roles.user")}:{" "}
+                  {loading ? "…" : userCounts.user}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-900 flex items-center gap-1">
                   <span role="img" aria-label="Author">
                     ✍️
-                  </span>{" "}
-                  Author: {loading ? "…" : userCounts.author}
+                  </span>
+                  {t("adminConsole.roles.author")}:{" "}
+                  {loading ? "…" : userCounts.author}
                 </span>
                 <span className="px-2 py-0.5 rounded-full bg-red-100 border border-red-300 text-red-900 flex items-center gap-1">
                   <span role="img" aria-label="Admin">
                     🛡️
-                  </span>{" "}
-                  Admin: {loading ? "…" : userCounts.admin}
+                  </span>
+                  {t("adminConsole.roles.admin")}:{" "}
+                  {loading ? "…" : userCounts.admin}
                 </span>
               </div>
             </div>
 
             <div className="p-6 rounded-2xl bg-white border border-gray-200 shadow">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 text-white flex items-center justify-center text-xl mb-3">
-                🗒️
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white flex items-center justify-center text-xl mb-3">
+                🔐
               </div>
               <div className="text-2xl font-bold text-gray-800">
                 {loading ? "…" : totalLabs ?? 0}
               </div>
-              <div className="text-gray-600">Total Labs</div>
-              <div className="mt-2 flex flex-wrap gap-2 text-sm">
-                <span className="px-2 py-0.5 rounded-full bg-green-100 border border-green-300 text-green-900 flex items-center gap-1">
-                  <span role="img" aria-label="Basic">
-                    🔰
-                  </span>{" "}
-                  Basic: {loading ? "…" : labCounts.Basic}
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-orange-100 border border-orange-300 text-orange-900 flex items-center gap-1">
-                  <span role="img" aria-label="Intermediate">
-                    ⚡
-                  </span>{" "}
-                  Intermediate: {loading ? "…" : labCounts.Intermediate}
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-pink-100 border border-pink-300 text-pink-900 flex items-center gap-1">
-                  <span role="img" aria-label="Advanced">
-                    🚀
-                  </span>{" "}
-                  Advanced: {loading ? "…" : labCounts.Advanced}
-                </span>
+              <div className="text-gray-600">{t("adminConsole.totalLabs")}</div>
+
+              <div className="mt-4 text-sm space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-gray-800">
+                    {t("adminConsole.labLevels.basic")}
+                  </div>
+                  <div className="font-semibold text-gray-700">
+                    {loading ? "…" : labCounts.Basic}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-gray-800">
+                    {t("adminConsole.labLevels.intermediate")}
+                  </div>
+                  <div className="font-semibold text-gray-700">
+                    {loading ? "…" : labCounts.Intermediate}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="text-gray-800">
+                    {t("adminConsole.labLevels.advanced")}
+                  </div>
+                  <div className="font-semibold text-gray-700">
+                    {loading ? "…" : labCounts.Advanced}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -419,20 +437,26 @@ export default function AdminConsole() {
               <div className="text-2xl font-bold text-gray-800">
                 {loading ? "…" : formattedRevenue}
               </div>
-              <div className="text-gray-600">Revenue (VND)</div>
+              <div className="text-gray-600">
+                {t("adminConsole.revenue.title", { currency: "VND" })}
+              </div>
               <div className="text-xs text-gray-500 mt-2">
                 {loading
                   ? ""
-                  : formattedAsOf
-                  ? `As of: ${formattedAsOf}`
-                  : "As of: N/A"}
+                  : translate("adminConsole.revenue.asOf", {
+                      date: formattedAsOf ?? "N/A",
+                    })}
               </div>
               <div className="text-xs text-gray-500">
-                {loading
-                  ? ""
-                  : revenueTransactions !== null
-                    ? `Transactions: ${revenueTransactions}`
-                    : "Transactions: N/A"}
+                {loading ? (
+                  ""
+                ) : revenueTransactions !== null ? (
+                  translate("adminConsole.revenue.transactions", {
+                    count: revenueTransactions,
+                  })
+                ) : (
+                  t("adminConsole.revenue.transactionsNA")
+                )}
               </div>
             </div>
           </div>

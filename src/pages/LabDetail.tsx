@@ -18,6 +18,7 @@ import { FiCheckCircle, FiClock, FiClipboard } from "react-icons/fi";
 import { QuestionContainer } from "../components/quiz/QuestionContainer";
 import type { Question as UiQuestion, QuestionType } from "../types/quiz";
 import AdvancedComponent from "../components/comments/AdvancedComponent";
+import { useTranslation } from "react-i18next";
 
 type LabDto = {
   id: number;
@@ -48,6 +49,7 @@ type QuestionDto = {
 };
 
 export default function LabDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [lab, setLab] = useState<LabDto | null>(null);
@@ -83,7 +85,7 @@ export default function LabDetail() {
   // Scroll to top on initial load and when slug changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
-  }, [slug]);
+  }, [slug, t]);
 
   useEffect(() => {
     const load = async () => {
@@ -104,7 +106,7 @@ export default function LabDetail() {
           const statusRes = await api.get(`/user-progresses/status/${dto.id}`);
           setProgressStatus(statusRes.data); // 0, 1, or 2
         } catch {
-          toast.error("Failed to fetch user progress status.");
+          toast.error(t("labDetail.fetchProgressFailed"));
           setProgressStatus(0); // NotStarted
         }
 
@@ -115,7 +117,9 @@ export default function LabDetail() {
           const text = await mdRes.text();
           setMd(text);
         } else {
-          setMd("# Missing content\nThis lab has no mdPublicUrl.");
+          setMd(`# ${t("labDetail.missingContentTitle")}\n${t(
+            "labDetail.missingContentBody"
+          )}`);
         }
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : "Failed to load lab";
@@ -299,7 +303,7 @@ export default function LabDetail() {
       return { isCorrect: data.isCorrect, awardedXp: data.awardedXp };
     } catch (e) {
       console.error(e);
-      toast.error("Failed to submit answer. Please try again.");
+      toast.error(t("labDetail.submitAnswerFailed"));
       return { isCorrect: false, awardedXp: 0 };
     }
   };
@@ -407,11 +411,11 @@ export default function LabDetail() {
                 <div className="sticky top-24">
                   <div className="rounded-xl border bg-white p-3">
                     <div className="text-sm font-semibold text-gray-700 mb-3">
-                      Contents
+                      {t("labDetail.contents")}
                     </div>
                     {toc.length === 0 ? (
                       <div className="text-xs text-gray-400">
-                        No headings found
+                        {t("labDetail.noHeadings")}
                       </div>
                     ) : (
                       <nav className="text-sm">
@@ -490,15 +494,14 @@ export default function LabDetail() {
                   >
                     <div className="text-center p-4">
                       <div className="text-amber-800 font-semibold text-lg mb-2">
-                        You are not allowed to take the quiz with your current
-                        account role.
+                        {t("labDetail.quizNotAllowedTitle")}
                       </div>
                       <div className="text-sm text-amber-700">
-                        Contact an administrator if you think this is a mistake.
+                        {t("labDetail.quizNotAllowedBody")}
                       </div>
                     </div>
                   </div>
-                )}s
+                )}
               </div>
             )}
 
@@ -520,6 +523,7 @@ function LabStatusChip({
   status: 0 | 1 | 2;
   variant?: "default" | "on-dark";
 }) {
+  const { t } = useTranslation();
   if (status === 0) {
     return (
       <span
@@ -528,10 +532,10 @@ function LabStatusChip({
             ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/20 text-white text-sm font-semibold"
             : "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-sm font-semibold"
         }
-        title="Not Started"
+        title={t("labDetail.statusNotStarted")}
       >
         <FiClipboard />
-        Not Started
+        {t("labDetail.statusNotStarted")}
       </span>
     );
   }
@@ -543,10 +547,10 @@ function LabStatusChip({
             ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-400/90 text-yellow-900 text-sm font-semibold"
             : "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 text-sm font-semibold"
         }
-        title="In Progress"
+        title={t("labDetail.statusInProgress")}
       >
         <FiClock />
-        In Progress
+        {t("labDetail.statusInProgress")}
       </span>
     );
   }
@@ -557,10 +561,10 @@ function LabStatusChip({
           ? "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-400/90 text-green-900 text-sm font-semibold"
           : "inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-700 border border-green-200 text-sm font-semibold"
       }
-      title="Completed"
+      title={t("labDetail.statusCompleted")}
     >
       <FiCheckCircle />
-      Completed
+      {t("labDetail.statusCompleted")}
     </span>
   );
 }

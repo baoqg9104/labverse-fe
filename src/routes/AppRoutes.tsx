@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import SuspenseFallback from "../components/SuspenseFallback";
 import { Home } from "../pages/Home";
+import { ProtectedRoute, GuestOnlyRoute, AdminRoute } from "./ProtectedRoute";
+
 const Login = lazy(() =>
   import("../pages/Login").then((m) => ({ default: m.Login }))
 );
@@ -24,13 +26,15 @@ const Learn = lazy(() =>
 const Pricing = lazy(() =>
   import("../pages/Pricing").then((m) => ({ default: m.Pricing }))
 );
+const Changelog = lazy(() =>
+  import("../pages/Changelog").then((m) => ({ default: m.Changelog }))
+);
 const Profile = lazy(() =>
   import("../pages/Profile").then((m) => ({ default: m.Profile }))
 );
 const Account = lazy(() =>
   import("../pages/Account").then((m) => ({ default: m.Account }))
 );
-import { ProtectedRoute, GuestOnlyRoute, AdminRoute } from "./ProtectedRoute";
 const AdminConsole = lazy(() =>
   import("../pages/AdminConsole").then((m) => ({ default: m.default }))
 );
@@ -62,6 +66,9 @@ const Checkout = lazy(() =>
 const Ranking = lazy(() =>
   import("../pages/Ranking").then((m) => ({ default: m.default }))
 );
+const Forum = lazy(() =>
+  import("../pages/Forum").then((m) => ({ default: m.default }))
+);
 
 export const AppRoutes = () => {
   return (
@@ -70,6 +77,7 @@ export const AppRoutes = () => {
       <Route path="/home" element={<Home />} />
       <Route path="/learn" element={<Learn />} />
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/forum" element={<Forum />} />
       <Route
         path="/ranking"
         element={
@@ -90,6 +98,14 @@ export const AppRoutes = () => {
         }
       />
       <Route path="/contact" element={<Contact />} />
+      <Route
+        path="/changelog"
+        element={
+          <Suspense fallback={<SuspenseFallback />}>
+            <Changelog />
+          </Suspense>
+        }
+      />
       <Route path="/email-sent" element={<EmailSent />} />
       <Route path="/verify-result" element={<VerifyResult />} />
 

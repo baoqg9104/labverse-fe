@@ -5,6 +5,7 @@ import { handleAxiosError } from "../utils/handleAxiosError";
 import type { ReportSeverity, ReportType } from "../types/report";
 import { toast } from "react-toastify";
 import { supabase } from "../libs/supabaseClient";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   open: boolean;
@@ -19,6 +20,7 @@ export default function ReportIssueModal({
   defaultType = "Bug",
   // currentRoute,
 }: Props) {
+  const { t } = useTranslation();
   const [type, setType] = useState<ReportType>(defaultType);
   const [severity, setSeverity] = useState<ReportSeverity>("Medium");
   const [title, setTitle] = useState("");
@@ -58,11 +60,11 @@ export default function ReportIssueModal({
     for (const f of incoming) {
       const isImage = f.type.startsWith("image/");
       if (!isImage) {
-        toast.error(`Unsupported file type: ${f.name}`);
+        toast.error(t("reportIssue.toasts.unsupportedFileType", { file: f.name }));
         continue;
       }
       if (f.size > MAX_SIZE_BYTES) {
-        toast.error(`${f.name} exceeds ${MAX_SIZE_MB}MB limit`);
+        toast.error(t("reportIssue.toasts.fileTooLarge", { file: f.name, size: MAX_SIZE_MB }));
         continue;
       }
       valid.push(f);
@@ -72,7 +74,7 @@ export default function ReportIssueModal({
     setFiles((prev) => {
       const merged = [...prev, ...valid].slice(0, MAX_FILES);
       if (prev.length + valid.length > MAX_FILES) {
-        toast.info(`Only the first ${MAX_FILES} images were added`);
+        toast.info(t("reportIssue.toasts.maxFilesAdded", { max: MAX_FILES }));
       }
       return merged;
     });
@@ -136,11 +138,11 @@ export default function ReportIssueModal({
         imagePaths, // array of Supabase storage paths
       };
       await api.post("/reports", payload);
-      toast.success("Report submitted. Thank you!");
+      toast.success(t("reportIssue.toasts.success"));
       setFiles([]);
       onClose();
     } catch (err) {
-      handleAxiosError(err, { fallbackMessage: "Failed to submit report" });
+      handleAxiosError(err, { fallbackMessage: t("reportIssue.toasts.failed") });
     } finally {
       setSubmitting(false);
       setUploading(false);
@@ -148,56 +150,56 @@ export default function ReportIssueModal({
   };
 
   return (
-    <Modal open={open} onClose={onClose} title="Report an issue">
+    <Modal open={open} onClose={onClose} title={t("reportIssue.title")}>
       <div className="w-[700px] max-w-[95vw] flex flex-col max-h-[70vh]">
         <div className="space-y-3 overflow-y-auto pr-1">
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Type</label>
+            <label className="block text-sm text-gray-700 mb-1">{t("reportIssue.labels.type")}</label>
             <select
               className="w-full rounded-lg border border-gray-300 px-3 py-2"
               value={type}
               onChange={(e) => setType(e.target.value as ReportType)}
             >
-              <option value="Bug">Bug</option>
-              <option value="Abuse">Abuse</option>
-              <option value="Payment">Payment</option>
-              <option value="Other">Other</option>
+              <option value="Bug">{t("reportIssue.options.type.Bug")}</option>
+              <option value="Abuse">{t("reportIssue.options.type.Abuse")}</option>
+              <option value="Payment">{t("reportIssue.options.type.Payment")}</option>
+              <option value="Other">{t("reportIssue.options.type.Other")}</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Severity</label>
+            <label className="block text-sm text-gray-700 mb-1">{t("reportIssue.labels.severity")}</label>
             <select
               className="w-full rounded-lg border border-gray-300 px-3 py-2"
               value={severity}
               onChange={(e) => setSeverity(e.target.value as ReportSeverity)}
             >
-              <option value="Low">Low</option>
-              <option value="Medium">Medium</option>
-              <option value="High">High</option>
+              <option value="Low">{t("reportIssue.options.severity.Low")}</option>
+              <option value="Medium">{t("reportIssue.options.severity.Medium")}</option>
+              <option value="High">{t("reportIssue.options.severity.High")}</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Title</label>
+            <label className="block text-sm text-gray-700 mb-1">{t("reportIssue.labels.title")}</label>
             <input
               className="w-full rounded-lg border border-gray-300 px-3 py-2"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Short summary"
+              placeholder={t("reportIssue.placeholders.title")}
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-700 mb-1">Description</label>
+            <label className="block text-sm text-gray-700 mb-1">{t("reportIssue.labels.description")}</label>
             <textarea
               className="w-full rounded-lg border border-gray-300 px-3 py-2 min-h-28"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Steps to reproduce, expected vs actual, screenshots links, etc."
+              placeholder={t("reportIssue.placeholders.description")}
             />
           </div>
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm text-gray-700">Images (optional)</label>
-              <span className="text-xs text-gray-500">Up to {MAX_FILES} images • ≤ {MAX_SIZE_MB}MB each</span>
+              <label className="block text-sm text-gray-700">{t("reportIssue.images.label")}</label>
+              <span className="text-xs text-gray-500">{t("reportIssue.images.hint", { max: MAX_FILES, size: MAX_SIZE_MB })}</span>
             </div>
             <input
               type="file"
@@ -211,14 +213,14 @@ export default function ReportIssueModal({
               <div className="mt-3 grid grid-cols-3 gap-3 max-h-56 overflow-y-auto pr-1">
                 {previews.map((p, idx) => (
                   <div key={idx} className="relative group border rounded-lg overflow-hidden">
-                    <img src={p.url} alt={`attachment-${idx + 1}`} className="w-full h-28 object-cover" />
+                    <img src={p.url} alt={t("reportIssue.imageAlt", { index: idx + 1 })} className="w-full h-28 object-cover" />
                     <button
                       type="button"
                       onClick={() => removeFileAt(idx)}
                       className="absolute top-1 right-1 bg-black/60 text-white text-xs rounded px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition cursor-pointer"
-                      aria-label="Remove image"
+                      aria-label={t("reportIssue.removeImage")}
                     >
-                      Remove
+                      {t("reportIssue.remove")}
                     </button>
                   </div>
                 ))}
@@ -232,14 +234,14 @@ export default function ReportIssueModal({
             onClick={onClose}
             disabled={submitting || uploading}
           >
-            Cancel
+            {t("reportIssue.buttons.cancel")}
           </button>
           <button
             className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-500 cursor-pointer disabled:opacity-70"
             onClick={onSubmit}
             disabled={submitting || uploading || !title.trim() || !description.trim()}
           >
-            {submitting || uploading ? "Submitting…" : "Submit report"}
+            {submitting || uploading ? t("reportIssue.buttons.submitting") : t("reportIssue.buttons.submit")}
           </button>
         </div>
       </div>

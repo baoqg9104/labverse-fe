@@ -13,10 +13,13 @@ import { RoleTabContent } from "../components/profile/RoleTabContent";
 import { ROLE, USER_TABS, AUTHOR_TABS } from "../components/profile/RoleUtils";
 import { Link } from "react-router-dom";
 import { useContext, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivitySection } from "../components/profile/ActivitySection";
+
 
 export function Profile() {
   const { user } = useContext(AuthContext);
+  
 
   const [profile, setProfile] = useState<User | null>(user);
   const [badges, setBadges] = useState<Badge[]>([]);
@@ -85,6 +88,15 @@ export function Profile() {
       }));
   }, [userList, user?.email]);
 
+  // translate tab labels before passing to TabsNav
+  const { t } = useTranslation();
+  const translatedTabs = useMemo(() => {
+    return (TABS || []).map((tab) => ({
+      ...tab,
+      label: t(`profile.tabs.${tab.key}`, tab.label),
+    }));
+  }, [TABS, t]);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-sky-50 text-slate-900">
       <div className="pointer-events-none absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-sky-100/70 blur-3xl" />
@@ -119,7 +131,7 @@ export function Profile() {
         />
 
         <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white pb-10 shadow-[0_30px_80px_-45px_rgba(79,124,255,0.25)]">
-          <TabsNav tabs={TABS} activeTab={activeTab} onChange={setActiveTab} />
+          <TabsNav tabs={translatedTabs} activeTab={activeTab} onChange={setActiveTab} />
           <RoleTabContent
             activeTab={activeTab}
             badges={badges}
@@ -138,18 +150,17 @@ export function Profile() {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <div className="text-sm uppercase tracking-[0.3em] text-amber-500">
-                  Looking for Admin tools?
+                  {t('profile.adminTools.title')}
                 </div>
                 <div className="text-lg font-semibold">
-                  Use the dedicated console to manage users, labs, reports, and
-                  revenue.
+                  {t('profile.adminTools.desc')}
                 </div>
               </div>
               <Link
                 to="/admin"
                 className="cursor-pointer rounded-2xl bg-amber-500 px-5 py-3 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-amber-400"
               >
-                Open Admin Console
+                {t('profile.adminTools.cta')}
               </Link>
             </div>
           </div>
@@ -159,11 +170,11 @@ export function Profile() {
           <div className="mb-6 mt-4 rounded-3xl border border-slate-200 bg-white px-6 py-8 text-slate-900 shadow-md">
             <div className="mb-6 text-center">
               <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                Discover
+                {t('profile.discover.title')}
               </div>
-              <h2 className="text-3xl font-semibold">Explore Other Learners</h2>
+              <h2 className="text-3xl font-semibold">{t('profile.discover.explore')}</h2>
               <p className="mt-2 text-sm text-slate-600">
-                Dive into community profiles and follow their learning path.
+                {t('profile.discover.desc')}
               </p>
             </div>
             <UserCarousel

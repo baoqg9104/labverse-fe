@@ -7,7 +7,7 @@
     "contact": "Liên hệ",
     "console": "Bảng điều khiển",
     "users": "Người dùng",
-    "labs": "Phòng lab",
+    "labs": "Bài lab",
     "reports": "Báo cáo",
     "revenue": "Doanh thu",
     "login": "Đăng nhập",
@@ -17,8 +17,11 @@
     "logout": "Đăng xuất",
     "admin": "Quản trị",
     "profile": "Hồ sơ",
+    "logo": "Labverse",
     "openMenu": "Mở menu",
-    "closeMenu": "Đóng menu"
+    "closeMenu": "Đóng menu",
+    "report": "Báo cáo sự cố",
+    "changelog": "Nhật ký thay đổi"
   },
   "footer": {
     "getInTouch": "Kết nối với chúng tôi",
@@ -26,12 +29,81 @@
     "forum": "Diễn đàn",
     "copyright": "Labverse @ 2025"
   },
+  "changelog": {
+    "title": "Nhật ký thay đổi",
+    "lead": "Dưới đây là ghi chép về tất cả những thay đổi quan trọng của Labverse.",
+    "versionPrefix": "Phiên bản",
+    "labels": {
+      "New": "Mới",
+      "Improved": "Cải tiến",
+      "Fixed": "Khắc phục",
+      "Removed": "Loại bỏ",
+      "Deprecated": "Không khuyến nghị",
+      "Upcoming": "Sắp ra mắt"
+    },
+    "entries": {
+      "v1_4_0": {
+        "title": "Phát hành: Trải nghiệm học tập phong phú hơn",
+        "details": "Cập nhật cải thiện trải nghiệm, tính năng nội dung mới và nhiều bản sửa lỗi.",
+        "changes": {
+          "0": "Thêm trang Changelog để theo dõi các bản phát hành.",
+          "1": "Thêm phân tích nâng cao cho quiz trên màn hình Kết quả.",
+          "2": "Tải lab nhanh hơn và chuyển đổi mượt hơn.",
+          "3": "Sửa lỗi avatar không hiển thị cho một số người dùng."
+        }
+      },
+      "v1_3_2": {
+        "title": "Cải thiện độ ổn định & trải nghiệm",
+        "changes": {
+          "0": "Luồng thử lại thanh toán xử lý tốt gián đoạn mạng.",
+          "1": "Cập nhật nội dung onboarding và hình minh họa.",
+          "2": "Thêm tooltip trên trang bảng xếp hạng mô tả quy tắc tính điểm."
+        }
+      },
+      "v1_3_0": {
+        "title": "Tính năng: Team Labs",
+        "details": "Tính năng cộng tác cho nhóm và giảng viên.",
+        "changes": {
+          "0": "Tạo và quản lý nhóm để chia sẻ lab.",
+          "1": "Tìm kiếm trên Forum giờ hỗ trợ bộ lọc và sắp xếp.",
+          "2": "Sửa lỗi sinh RSS cho lab mới."
+        }
+      },
+      "v1_1_0": {
+        "title": "Cải thiện giao diện & sửa font",
+        "details": "Tinh chỉnh giao diện, điều chỉnh khoảng cách và sửa lỗi font để trang hiển thị nhất quán hơn.",
+        "changes": {
+          "0": "Sửa lỗi hiển thị font không đồng nhất trên nhiều trình duyệt và nền tảng.",
+          "1": "Tinh chỉnh khoảng cách, kiểu chữ và căn chỉnh các thành phần để rõ ràng hơn.",
+          "2": "Cải thiện các CTA, giảm nhiễu thị giác và tăng tốc phản hồi tương tác.",
+          "3": "Thêm các micro-interaction nhẹ để tăng phản hồi khi người dùng thao tác."
+        }
+      },
+      "v1_0_0": {
+        "title": "Phát hành công khai đầu tiên",
+        "details": "Ra mắt Labverse: nội dung học cốt lõi, cộng đồng và gamification cơ bản.",
+        "changes": {
+          "0": "Ra mắt công khai Labverse với nội dung học cốt lõi và bài lab thực hành.",
+          "1": "Tài khoản người dùng, theo dõi tiến độ và gamification cơ bản (huy hiệu & chuỗi).",
+          "2": "Diễn đàn và tính năng cộng đồng để đặt câu hỏi và chia sẻ kiến thức."
+        }
+      },
+      "v1_5_0": {
+        "title": "Dự kiến: Hợp tác & AI",
+        "details": "Tính năng dự kiến mang đến lab hợp tác và trợ giúp hướng dẫn bằng AI.",
+        "changes": {
+          "0": "Gợi ý bằng AI và trợ giúp ngữ cảnh cho quiz và lab (dự kiến).",
+          "1": "Phiên hợp tác trực tiếp trong nền tảng cho Team Labs (dự kiến)."
+        }
+      }
+    }
+  },
   "home": {
     "heroTitle": "Học - Thực hành - Chinh phục",
     "heroSubtitle": "Ngôi nhà của bạn, phòng lab của bạn",
-    "heroDesc": "Nền tảng cung cấp kiến thức an toàn thông tin từ cơ bản đến nâng cao với bài học tương tác, phòng lab thực hành và cộng đồng hỗ trợ, đặc biệt phù hợp cho người mới bắt đầu.",
+    "heroDesc": "Nền tảng cung cấp kiến thức an toàn thông tin từ cơ bản đến nâng cao với bài học tương tác, bài lab thực hành và cộng đồng hỗ trợ, đặc biệt phù hợp cho người mới bắt đầu.",
     "ctaExplore": "Khám phá bài học miễn phí",
-    "sectionTitle": "Từ số 0 đến chuyên gia: Phòng lab an toàn thông tin cho mọi người",
+    "sectionTitle": "Từ số 0 đến chuyên gia: Bài lab an toàn thông tin cho mọi người",
     "sectionDesc": "Nâng cao kỹ năng an toàn thông tin qua các bài lab thực hành, lộ trình bài bản và tình huống thực tế. Nền tảng mang đến trải nghiệm học tập thú vị, chi phí hợp lý cho cả người mới và người đi làm.",
     "reasonsTitle": "\"Vì sao chọn Labverse?\"",
     "reasonsLead": "Labverse là nền tảng học an toàn thông tin thực hành do sinh viên xây dựng cho cộng đồng sinh viên. Chúng tôi tập trung vào:",
@@ -61,7 +133,6 @@
     "errors": {
       "emailRequired": "Vui lòng nhập email.",
       "emailInvalid": "Định dạng email không hợp lệ.",
-      "passwordRequired": "Vui lòng nhập mật khẩu.",
       "invalidCredentials": "Email hoặc mật khẩu không đúng.",
       "loginFailed": "Đăng nhập thất bại. Vui lòng thử lại.",
       "recaptchaNotReady": "Recaptcha chưa sẵn sàng.",
@@ -70,6 +141,16 @@
       "passwordAtLeast": "Mật khẩu phải có ít nhất 8 ký tự.",
       "passwordUpper": "Mật khẩu phải có ít nhất 1 chữ hoa.",
       "passwordLower": "Mật khẩu phải có ít nhất 1 chữ thường.",
+      "adminTools": {
+        "title": "Tìm công cụ quản trị?",
+        "desc": "Sử dụng bảng điều khiển để quản lý người dùng, bài lab, báo cáo và doanh thu.",
+        "cta": "Mở bảng điều khiển"
+      },
+      "discover": {
+        "title": "Khám phá",
+        "explore": "Khám phá người học khác",
+        "desc": "Xem hồ sơ cộng đồng và theo dõi lộ trình học tập của họ."
+      },
       "passwordNumber": "Mật khẩu phải có ít nhất 1 chữ số.",
       "passwordSpecial": "Mật khẩu phải có ít nhất 1 ký tự đặc biệt.",
       "confirmPasswordRequired": "Vui lòng xác nhận mật khẩu.",
@@ -148,30 +229,497 @@
       "priceSuffix": "luôn miễn phí",
       "title": "Free",
       "audience": "Phù hợp cho người mới, sinh viên hoặc người muốn khám phá an toàn thông tin.",
-      "join": "Tham gia ngay"
+      "join": "Tham gia ngay",
+      "features": [
+        "Hướng dẫn từng bước",
+        "Chia sẻ kinh nghiệm thực hành",
+        "Hướng dẫn lý thuyết an ninh mạng"
+      ]
     },
     "premium": {
       "badge": "PHỔ BIẾN NHẤT",
-      "price": "100.000đ",
+      "price": "100,000đ",
       "priceSuffix": "/tháng",
       "title": "Premium",
-      "audience": "Dành cho người định hướng chuyên nghiệp, đam mê lab và nghiêm túc học tập.",
+      "audience": "Phù hợp cho người muốn nâng cao kỹ năng, tác giả lab và người dùng chuyên sâu.",
       "getStarted": "Bắt đầu",
-      "alreadyPremium": "Bạn đã là Premium"
+      "alreadyPremium": "Bạn đã là Premium",
+      "features": [
+        "Toàn bộ nội dung Free",
+        "Truy cập không giới hạn lab",
+        "Tải xuống tài nguyên",
+        "Hỗ trợ ưu tiên"
+      ]
     },
     "faqs": {
       "title": "Câu hỏi thường gặp",
       "paymentMethods": {
         "title": "Bạn hỗ trợ phương thức thanh toán nào?",
-        "methods": ["MoMo", "VNPAY", "Chuyển khoản ngân hàng"]
+        "methods": ["Chuyển khoản ngân hàng"]
+      },
+      "localCurrency": {
+        "title": "Bạn có thể tính phí cho tôi bằng đồng tiền địa phương không?",
+        "answer": "Hiện tại, chúng tôi chỉ chấp nhận thanh toán bằng đồng Việt Nam (VND)."
+      },
+      "subscription": {
+        "title": "Làm thế nào để xem và quản lý đăng ký của tôi?",
+        "beforeLink": "Bạn có thể quản lý đăng ký từ",
+        "linkText": "cài đặt tài khoản của bạn",
+        "afterLink": "."
       }
+    }
+  },
+  "profile": {
+    "header": {
+      "avatarAlt": "Ảnh đại diện",
+      "unknown": "Người dùng không xác định",
+      "rolePrefix": "Vai trò"
+    },
+    "roles": {
+      "user": "Người dùng",
+      "author": "Tác giả",
+      "admin": "Quản trị"
+    },
+    "plan": {
+      "free": "Miễn phí",
+      "premium": "Premium"
+    },
+    "about": {
+      "title": "Giới thiệu",
+      "noBio": "Chưa có tiểu sử. Nhấn 'Chỉnh sửa hồ sơ' để thêm thông tin!"
+    },
+    "discover": {
+      "title": "Khám phá người học",
+      "explore": "Khám phá người học khác",
+      "desc": "Xem hồ sơ cộng đồng và theo dõi lộ trình học tập của họ."
+    },
+    "badges": {
+      "title": "Thành tích & Huy hiệu",
+      "desc": "Bộ sưu tập huy hiệu và thành tích bạn đã đạt được",
+      "modalTitle": "🏆 Bộ sưu tập huy hiệu của bạn",
+      "empty": "Chưa có huy hiệu. Hoàn thành bài lab để kiếm huy hiệu đầu tiên!"
+    },
+    "actions": {
+      "backToMe": "Về hồ sơ của tôi",
+      "edit": "Chỉnh sửa hồ sơ",
+      "viewBadges": "Xem huy hiệu",
+      "editProfile": "Chỉnh sửa hồ sơ"
+    },
+    "tabs": {
+      "info": "Thông tin",
+      "badges": "Huy hiệu",
+      "activity": "Hoạt động",
+      "myLabs": "Bài lab của tôi",
+      "createLab": "Tạo lab",
+      "viewQuestions": "Xem câu hỏi",
+      "createQuestion": "Tạo câu hỏi",
+      "overview": "Tổng quan",
+      "users": "Người dùng",
+      "labs": "Bài lab",
+      "reports": "Báo cáo",
+      "revenue": "Doanh thu"
+    },
+    "activity": {
+      "title": "Hoạt động gần đây",
+      "desc": "Hoạt động và thành tựu mới nhất của bạn",
+      "itemsPerPage": "Số mục trên trang",
+      "prev": "Trước",
+      "next": "Tiếp",
+      "noActivity": "Chưa có hoạt động gần đây.",
+      "actions": {
+        "login": "Đã đăng nhập",
+        "logout": "Đã đăng xuất",
+        "enrollLab": "Đã tham gia lab #{{id}}",
+        "completeLab": "Đã hoàn thành lab #{{id}}",
+        "createQuestion": "Đã tạo câu hỏi #{{id}}"
+      },
+      "tooltip": {
+        "activitiesOn": "{{count}} hoạt động vào {{date}}",
+        "level": "Cấp: {{level}}"
+      }
+    },
+    "edit": {
+      "dialogTitle": "✏️ Chỉnh sửa hồ sơ",
+      "header": "Chỉnh sửa hồ sơ",
+      "desc": "Cập nhật thông tin cá nhân và cài đặt bảo mật.",
+      "tabs": {
+        "profile": "Hồ sơ",
+        "security": "Bảo mật"
+      },
+      "avatarHint": "Nhấn để thay đổi ảnh đại diện",
+      "username": "Tên người dùng",
+      "bio": "Tiểu sử",
+      "currentPassword": "Mật khẩu hiện tại",
+      "newPassword": "Mật khẩu mới",
+      "confirmNewPassword": "Xác nhận mật khẩu mới",
+      "saving": "Đang lưu...",
+      "save": "Lưu thay đổi",
+      "errors": {
+        "usernameRequired": "Vui lòng nhập tên người dùng.",
+        "passwordLength": "Mật khẩu phải có ít nhất 8 ký tự.",
+        "passwordMismatch": "Mật khẩu không khớp.",
+        "currentPasswordRequired": "Cần mật khẩu hiện tại để đặt mật khẩu mới.",
+        "avatarSize": "Ảnh đại diện phải nhỏ hơn 5MB.",
+        "userNotFound": "Không tìm thấy người dùng",
+        "avatarUploadFailed": "Tải ảnh đại diện thất bại. Vui lòng thử lại.",
+        "invalidOldPassword": "Mật khẩu hiện tại không chính xác. Vui lòng thử lại.",
+        "updateFailed": "Cập nhật hồ sơ thất bại"
+      },
+      "success": {
+        "passwordChanged": "Đổi mật khẩu thành công",
+        "profileUpdated": "Cập nhật hồ sơ thành công"
+      }
+    },
+    "gamification": {
+      "points": "Điểm",
+      "pointsHint": "Kiếm XP bằng cách hoàn thành lab, duy trì chuỗi đăng nhập và đóng góp cho cộng đồng.",
+      "level": "Cấp",
+      "nextLevel": "Cấp tiếp theo ở {{xp}} XP",
+      "remaining": "Còn {{xp}} XP nữa",
+      "streak": "Chuỗi hiện tại",
+      "days": "ngày",
+      "best": "Chuỗi dài nhất: {{days}} ngày",
+      "streakHint": "Đăng nhập hàng ngày để giữ chuỗi và mở khóa phần thưởng chuỗi."
+    },
+    "info": {
+      "notAvailable": "Không có"
+    },
+    "stats": {
+      "labsWritten": "Số bài lab đã viết",
+      "labsCompleted": "Bài lab đã hoàn thành",
+      "labsWrittenHint": "Nội dung đã xuất bản cho sinh viên",
+      "labsCompletedHint": "Tiến trình học tập qua các lab",
+      "joined": "Tham gia",
+      "joinedHint": "Thành viên của Labverse",
+      "badges": "Số huy hiệu",
+      "badgesHint": "Nhấn để mở bộ sưu tập",
+      "viewAction": "Mở"
+    }
+  },
+  "reportIssue": {
+    "title": "Báo cáo sự cố",
+
+    "labels": {
+      "type": "Loại",
+      "severity": "Mức độ",
+      "title": "Tiêu đề",
+      "description": "Mô tả"
+    },
+    "placeholders": {
+      "title": "Tóm tắt ngắn",
+      "description": "Các bước tái hiện, mong đợi vs thực tế, đường dẫn ảnh chụp màn hình, v.v."
+    },
+    "images": {
+      "label": "Hình ảnh (tùy chọn)",
+      "hint": "Tối đa {{max}} ảnh • ≤ {{size}}MB mỗi ảnh"
+    },
+    "imageAlt": "đính kèm-{{index}}",
+    "remove": "Xóa",
+
+    "options": {
+      "type": {
+        "Bug": "Lỗi",
+        "Abuse": "Lạm dụng",
+        "Payment": "Thanh toán",
+        "Other": "Khác"
+      },
+      "severity": {
+        "Low": "Thấp",
+        "Medium": "Trung bình",
+        "High": "Cao"
+      }
+    },
+
+    "buttons": {
+      "cancel": "Hủy",
+      "submit": "Gửi báo cáo",
+      "submitting": "Đang gửi…"
+    },
+
+    "toasts": {
+      "unsupportedFileType": "Định dạng tệp không được hỗ trợ: {{file}}",
+      "fileTooLarge": "{{file}} vượt quá giới hạn {{size}}MB",
+      "maxFilesAdded": "Chỉ thêm {{max}} ảnh đầu tiên",
+      "success": "Đã gửi báo cáo. Cảm ơn!",
+      "failed": "Gửi báo cáo thất bại"
+    }
+  },
+
+  "account": {
+    "title": "Tài khoản của bạn",
+    "viewProfile": "Xem hồ sơ",
+    "manageSubscription": "Quản lý đăng ký",
+    "upgradeToPremium": "Nâng cấp lên Premium",
+    "logout": "Đăng xuất",
+    "detailsTitle": "Chi tiết tài khoản",
+    "fields": {
+      "email": "Email",
+      "username": "Tên người dùng",
+      "role": "Vai trò",
+      "memberSince": "Tham gia từ"
+    },
+    "bioTitle": "Tiểu sử",
+    "noBio": "Chưa có tiểu sử.",
+    "premiumTitle": "Mở khóa Premium",
+    "premiumDesc": "Truy cập không giới hạn lab, tải xuống và hỗ trợ ưu tiên.",
+    "upgradeNow": "Nâng cấp ngay"
+  },
+  "adminConsole": {
+    "title": "Bảng điều khiển Admin",
+    "lead": "Quản lý người dùng, bài lab, báo cáo và doanh thu",
+    "totalUsers": "Tổng số người dùng",
+    "totalLabs": "Tổng số lab",
+    "premium": "Premium",
+    "free": "Miễn phí",
+    "roles": {
+      "user": "Người dùng",
+      "author": "Tác giả",
+      "admin": "Quản trị"
+    },
+    "failedLoad": "Không thể tải số liệu admin",
+    "donutAriaLabel": "Premium {{premium}}% và Miễn phí {{free}}%",
+    "labLevels": {
+      "basic": "Cơ bản",
+      "intermediate": "Trung cấp",
+      "advanced": "Nâng cao"
+    },
+    "revenue": {
+      "title": "Doanh thu ({{currency}})",
+      "asOf": "Tính tới: {{date}}",
+      "transactions": "Giao dịch: {{count}}"
+    },
+    "transactionsNA": "Giao dịch: N/A"
+  },
+  "adminUsers": {
+    "title": "Người dùng",
+    "addUser": "Thêm người dùng",
+    "searchPlaceholder": "Tìm tên hoặc email",
+    "filters": {
+      "roleAll": "Vai trò: Tất cả",
+      "statusAll": "Trạng thái: Tất cả",
+      "verifiedAll": "Xác thực: Tất cả",
+      "subAll": "Đăng ký: Tất cả"
+    },
+    "pagination": {
+      "pages": "{{count}} / trang",
+      "first": "Đầu",
+      "prev": "Trước",
+      "next": "Tiếp",
+      "last": "Cuối",
+      "page": "Trang {{page}} / {{total}}"
+    },
+    "addUserComingSoon": "Thêm người dùng: sắp có",
+    "errors": {
+      "failedLoad": "Không tải được danh sách người dùng.",
+      "restoreFailed": "Không khôi phục được người dùng.",
+      "suspendFailed": "Không tạm ngưng được người dùng."
+    },
+    "toasts": {
+      "restored": "Đã khôi phục người dùng",
+      "suspended": "Đã tạm ngưng người dùng"
+    },
+    "roles": {
+      "user": "Người dùng",
+      "author": "Tác giả",
+      "admin": "Quản trị"
+    },
+    "status": {
+      "active": "Hoạt động",
+      "suspended": "Đã tạm ngưng",
+      "pending": "Đang chờ"
+    },
+    "avatarAlt": "Ảnh đại diện",
+    "noUserSelected": "Chưa chọn người dùng",
+    "joined": "Tham gia {{date}}",
+    "stats": {
+      "points": "Điểm",
+      "level": "Cấp",
+      "streakCurrent": "Chuỗi (hiện tại)",
+      "streakBest": "Chuỗi (cao nhất)"
+    },
+    "loading": "Đang tải người dùng…",
+    "table": {
+      "email": "Email",
+      "username": "Tên người dùng",
+      "role": "Vai trò",
+      "status": "Trạng thái",
+      "verified": "Đã xác thực",
+      "subscription": "Gói",
+      "actions": "Hành động"
+    },
+    "noUsers": "Không tìm thấy người dùng",
+    "verified": "Đã xác thực",
+    "unverified": "Chưa xác thực",
+    "subscription": {
+      "free": "Miễn phí",
+      "premium": "Premium"
+    },
+    "actions": {
+      "view": "Xem",
+      "restore": "Khôi phục",
+      "suspend": "Tạm ngưng"
+    },
+    "modal": {
+      "userDetailsPrefix": "",
+      "thisUser": "người dùng này",
+      "loadingBadges": "Đang tải huy hiệu…",
+      "userDetails": "Chi tiết người dùng",
+      "badges": "Huy hiệu",
+      "suspendTitle": "Tạm ngưng người dùng?",
+      "suspendConfirm": "Bạn có chắc muốn tạm ngưng {{email}}?",
+      "cancel": "Hủy",
+      "suspending": "Đang tạm ngưng…",
+      "suspend": "Tạm ngưng"
+    }
+  },
+  "adminLabs": {
+    "title": "Bài Lab",
+    "searchPlaceholder": "Tìm kiếm lab...",
+    "failedLoad": "Không tải được danh sách lab.",
+    "updateFailed": "Cập nhật trạng thái lab thất bại.",
+    "by": "Bởi",
+    "filters": {
+      "difficultyAll": "Tất cả độ khó",
+      "basic": "Cơ bản",
+      "intermediate": "Trung cấp",
+      "advanced": "Nâng cao",
+      "statusAll": "Tất cả trạng thái",
+      "published": "Đã xuất bản",
+      "hidden": "Ẩn"
+    },
+    "stats": {
+      "total": "Tổng",
+      "avg": "Trung bình",
+      "views": "Lượt xem",
+      "unique": "Lượt tiếp cận"
+    },
+    "levels": {
+      "basic": "Cơ bản",
+      "intermediate": "Trung cấp",
+      "advanced": "Nâng cao"
+    },
+    "status": {
+      "published": "Đã xuất bản",
+      "hidden": "Ẩn"
+    },
+    "actions": {
+      "hide": "Ẩn",
+      "publish": "Công khai"
+    },
+    "sort": {
+      "default": "Mặc định",
+      "rating": "Đánh giá",
+      "views": "Lượt xem",
+      "unique": "Lượt tiếp cận"
+    },
+    "pagination": {
+      "pages": "{{count}} / trang",
+      "first": "Đầu",
+      "prev": "Trước",
+      "next": "Tiếp",
+      "last": "Cuối",
+      "page": "Trang {{page}} / {{total}}"
+    }
+  },
+  "adminReports": {
+    "title": "Báo cáo",
+    "exportCsv": "Xuất CSV",
+    "failedLoad": "Không tải được báo cáo.",
+    "updateFailed": "Cập nhật trạng thái thất bại.",
+    "statusUpdated": "Đã cập nhật trạng thái",
+    "previewTitle": "Báo cáo #{{id}} hình ảnh",
+    "searchPlaceholder": "Tìm kiếm...",
+    "noReports": "Không có báo cáo",
+    "view": "Xem",
+    "noImages": "Không có hình ảnh",
+    "period": {
+      "7d": "7 ngày gần nhất",
+      "30d": "30 ngày gần nhất",
+      "all": "Tất cả thời gian"
+    },
+    "type": {
+      "all": "Loại: Tất cả",
+      "abuse": "Lạm dụng",
+      "bug": "Lỗi",
+      "payment": "Thanh toán"
+    },
+    "status": {
+      "open": "Mở",
+      "inreview": "Đang xem xét",
+      "resolved": "Đã giải quyết",
+      "all": "Tất cả"
+    },
+    "table": {
+      "id": "#",
+      "type": "Loại",
+      "reporter": "Người báo cáo",
+      "lab": "Lab",
+      "description": "Mô tả",
+      "images": "Hình ảnh",
+      "status": "Trạng thái",
+      "created": "Tạo lúc",
+      "actions": "Hành động"
+    },
+    "actions": {
+      "markOpen": "Đặt là Mở",
+      "markInReview": "Đang xem xét",
+      "resolve": "Giải quyết",
+      "showDetails": "Chi tiết"
+    },
+    "details": {
+      "title": "Báo cáo #{{id}} chi tiết",
+      "titleGeneric": "Chi tiết báo cáo",
+      "severity": "Độ nghiêm trọng"
+    }
+  },
+  "adminRevenue": {
+    "title": "Doanh thu",
+    "export": "Xuất",
+    "exportCsv": "Xuất CSV",
+    "exportPdf": "Xuất PDF",
+    "exportExcel": "Xuất Excel",
+    "exportTitle": "Doanh thu ({{range}})",
+    "period": {
+      "all": "Tất cả thời gian / Tùy chỉnh",
+      "7d": "7 ngày gần nhất",
+      "30d": "30 ngày gần nhất",
+      "90d": "90 ngày gần nhất"
+    },
+    "resetFilters": "Đặt lại bộ lọc",
+    "currency": "Tiền tệ: {{currency}}",
+    "cards": {
+      "subscriptions": "Đăng ký",
+      "aov": "Giá trị trung bình"
+    },
+    "trends": {
+      "title": "Xu hướng doanh thu",
+      "subtitle": "Đăng ký ({{currency}})"
+    },
+    "breakdown": {
+      "title": "Phân tích doanh thu",
+      "results": "{{count}} kết quả"
+    },
+    "actions": {
+      "showAll": "Hiện tất cả",
+      "hideZero": "Ẩn ngày không có giao dịch"
+    },
+    "noData": "Không có dữ liệu phù hợp",
+    "table": {
+      "date": "Ngày",
+      "subscriptions": "Đăng ký"
+    },
+    "paging": "Hiển thị {{visible}} / {{total}}",
+    "pagination": {
+      "prev": "Trước",
+      "next": "Tiếp",
+      "page": "Trang {{page}} / {{total}}"
     }
   },
   "learn": {
     "heroTitle": "Labverse Academy",
     "heroSubtitle": "Nâng tầm kỹ năng an toàn thông tin tại nhà",
-    "heroDesc": "Khám phá các phòng lab bảo mật thực tiễn ngay tại nhà. Tiến bộ từ cơ bản đến nâng cao với hướng dẫn tương tác, thử thách và tình huống thực tế. Không cần thiết bị đắt tiền!",
-    "stats": { "labs": "Phòng lab" },
+    "heroDesc": "Khám phá các bài lab bảo mật thực tiễn ngay tại nhà. Tiến bộ từ cơ bản đến nâng cao với hướng dẫn tương tác, thử thách và tình huống thực tế. Không cần thiết bị đắt tiền!",
+    "stats": { "labs": "Bài lab" },
     "difficulty": {
       "label": "Độ khó",
       "all": "Tất cả",
@@ -181,8 +729,48 @@
     },
     "searchPlaceholder": "Tìm kiếm lab...",
     "noLabs": "Không tìm thấy lab nào.",
-    "alt": { "hero": "Phòng lab an toàn thông tin" }
+    "alt": { "hero": "Bài lab an toàn thông tin" }
   },
+  "labDetail": {
+    "back": "Quay lại",
+    "fetchProgressFailed": "Không thể tải trạng thái tiến trình người dùng.",
+    "missingContentTitle": "Không có nội dung",
+    "missingContentBody": "Bài lab này không có đường dẫn nội dung công khai.",
+    "submitAnswerFailed": "Gửi câu trả lời thất bại. Vui lòng thử lại.",
+    "contents": "Mục lục",
+    "noHeadings": "Không tìm thấy tiêu đề",
+    "quizNotAllowedTitle": "Bạn không được phép làm bài trắc nghiệm với vai trò hiện tại.",
+    "quizNotAllowedBody": "Liên hệ quản trị viên nếu bạn cho rằng có nhầm lẫn.",
+    "statusNotStarted": "Chưa bắt đầu",
+    "statusInProgress": "Đang tiến hành",
+    "statusCompleted": "Hoàn thành"
+  },
+  "emailSent": {
+    "title": "Kiểm tra hộp thư",
+    "subtitle": "Chúng tôi vừa gửi một liên kết xác minh tới",
+    "fallbackEmail": "địa chỉ email của bạn",
+    "tips": {
+      "openInbox": "Mở hộp thư của bạn và tìm email từ chúng tôi.",
+      "checkSpam": "Kiểm tra thư mục Spam hoặc Quảng cáo nếu bạn không thấy.",
+      "clickToVerify": "Nhấp vào liên kết bên trong để xác minh tài khoản của bạn."
+    },
+    "sending": "Đang gửi...",
+    "resend": "Gửi lại email xác minh",
+    "resendAvailable": "Có thể gửi lại sau {{sec}}s",
+    "resentSuccess": "Đã gửi lại email xác minh thành công."
+  },
+  "verify": {
+    "successTitle": "Xác minh email thành công",
+    "failureTitle": "Xác minh thất bại",
+    "successDesc": "Email của bạn đã được xác minh thành công.",
+    "failureDesc": "Token không hợp lệ hoặc đã hết hạn.",
+    "success": {
+      "tipLogin": "Bạn có thể đăng nhập và bắt đầu sử dụng tài khoản.",
+      "tipSupport": "Nếu gặp vấn đề, vui lòng liên hệ hỗ trợ."
+    },
+    "goToLogin": "Đến trang đăng nhập"
+  },
+
   "notFound": {
     "title": "404 - Không tìm thấy trang",
     "desc": "Trang bạn tìm kiếm không tồn tại hoặc đã bị xóa. Vui lòng kiểm tra lại địa chỉ hoặc quay về trang chủ.",

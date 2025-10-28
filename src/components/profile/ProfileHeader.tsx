@@ -1,5 +1,6 @@
 import { DEFAULT_AVATAR_URL } from "../../constants/config";
 import type { User } from "../../types/user";
+import Avatar from "../Avatar";
 import { getRoleMeta } from "./RoleUtils";
 import { useTranslation } from "react-i18next";
 
@@ -56,9 +57,10 @@ export function ProfileHeader({
           <div className="absolute inset-0 h-full w-full rounded-full bg-sky-200/40 blur-3xl" />
           <div className="relative">
             <div className="absolute inset-0 rounded-full border border-white/70" />
-            <img
-              src={profile?.avatarUrl || DEFAULT_AVATAR_URL}
-              alt="avatar"
+            <Avatar
+              src={profile?.avatarUrl || undefined}
+              fallback={DEFAULT_AVATAR_URL}
+              alt={t("profile.header.avatarAlt", "Avatar")}
               className="relative h-40 w-40 rounded-full border-4 border-white object-cover shadow-[0_25px_45px_-20px_rgba(38,143,255,0.5)] transition-transform duration-300 hover:scale-[1.02]"
             />
             {isUserRole && plan === "Premium" && (
@@ -92,16 +94,22 @@ export function ProfileHeader({
                   }`}
                 >
                   {plan === "Premium" && <span>👑</span>}
-                  {plan}
+                  {t(`profile.plan.${String(plan).toLowerCase()}`, plan)}
                 </span>
               )}
               <span
                 className={`inline-flex items-center gap-2 rounded-2xl border border-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-800 backdrop-blur ${roleMeta.badgeClass}`}
-                title={`Role: ${roleMeta.label}`}
+                title={`${t("profile.header.rolePrefix", "Role")}: ${t(
+                  `profile.roles.${roleMeta.name.toLowerCase()}`,
+                  roleMeta.label
+                )}`}
               >
                 {roleMeta.name === "ADMIN" && <span>🛡️</span>}
                 {roleMeta.name === "AUTHOR" && <span>✍️</span>}
-                {roleMeta.label}
+                {t(
+                  `profile.roles.${roleMeta.name.toLowerCase()}`,
+                  roleMeta.label
+                )}
               </span>
             </div>
           </div>
@@ -131,7 +139,7 @@ export function ProfileHeader({
                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                   />
                 </svg>
-                {t("profile.actions.edit", "Edit Profile")}
+                {t("profile.actions.editProfile", "Edit Profile")}
               </button>
               <button
                 className="cursor-pointer group flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 px-6 py-3 text-sm font-semibold uppercase tracking-[0.1em] text-white transition hover:-translate-y-0.5 hover:shadow-[0_25px_45px_-25px_rgba(56,231,173,0.5)]"

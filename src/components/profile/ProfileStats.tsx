@@ -150,7 +150,7 @@ export function ProfileStats({
           >
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-xs uppercase tracking-[0.3em] text-slate-500">
+                <div className="text-xs uppercase tracking-[0.15em] text-slate-500">
                   {card.title}
                 </div>
                 <div className="mt-3 text-3xl font-semibold text-slate-900">

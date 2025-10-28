@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const getQueryParams = (search: string) => {
@@ -22,6 +23,7 @@ const VerifyResult: React.FC = () => {
   //   }, [fromEmailSent, navigate]);
 
   const isSuccess = status === "success";
+  const { t } = useTranslation();
 
   return (
     <div className="mt-5 relative min-h-screen overflow-hidden bg-slate-950">
@@ -51,10 +53,10 @@ const VerifyResult: React.FC = () => {
 
           {/* Title & subtitle */}
           <h1 className={`text-center text-3xl font-semibold tracking-tight ${isSuccess ? "text-lime-300" : "text-rose-300"}`}>
-            {isSuccess ? "Email Verified" : "Verification Failed"}
+            {isSuccess ? t('verify.successTitle') : t('verify.failureTitle')}
           </h1>
           <p className="mt-2 text-center text-slate-300">
-            {message || (isSuccess ? "Your email has been verified successfully." : "Invalid or expired token.")}
+            {message || (isSuccess ? t('verify.successDesc') : t('verify.failureDesc'))}
           </p>
 
           {/* Tips (only for success) */}
@@ -64,13 +66,13 @@ const VerifyResult: React.FC = () => {
                 <li className="flex items-start gap-2">
                   <div className="flex items-center gap-2">
                     <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                    You can now log in and start using your account.
+                        {t('verify.success.tipLogin')}
                   </div>
                 </li>
                 <li className="flex items-start gap-2">
                   <div className="flex items-center gap-2">
                     <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                    If you have any issues, please contact support.
+                        {t('verify.success.tipSupport')}
                   </div>
                 </li>
               </ul>
@@ -82,7 +84,7 @@ const VerifyResult: React.FC = () => {
             className={`mt-7 w-full rounded-xl bg-gradient-to-r from-lime-400 via-teal-400 to-blue-400 px-6 py-3 font-semibold text-slate-900 shadow-lg transition duration-200 hover:brightness-130 focus:outline-none focus:ring-2 focus:ring-lime-300 ${!isSuccess ? "border-2 border-rose-300" : ""}`}
             onClick={() => navigate("/login")}
           >
-            Go to Login
+            {t('verify.goToLogin')}
           </button>
         </div>
       </main>

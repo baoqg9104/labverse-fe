@@ -9,21 +9,32 @@ import {
   formatLocalDateTime,
   relativeTimeFromNow,
 } from "../../../utils/dateTime";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
-function titleForActivity(a: RecentActivity): string {
+function titleForActivity(a: RecentActivity, t: TFunction): string {
   if (a.description && a.description.trim().length > 0) return a.description;
   // Fallback mapping when description is not provided
   switch (a.action) {
     case "login":
-      return "Logged in";
+      return t("profile.activity.actions.login", "Logged in");
     case "logout":
-      return "Logged out";
+      return t("profile.activity.actions.logout", "Logged out");
     case "enroll_lab":
-      return `Enrolled lab #${a.labId ?? "?"}`;
+      return t("profile.activity.actions.enrollLab", {
+        defaultValue: "Enrolled lab #{{id}}",
+        id: a.labId ?? "?",
+      }) as unknown as string;
     case "complete_lab":
-      return `Completed lab #${a.labId ?? "?"}`;
+      return t("profile.activity.actions.completeLab", {
+        defaultValue: "Completed lab #{{id}}",
+        id: a.labId ?? "?",
+      }) as unknown as string;
     case "create_question":
-      return `Created a question #${a.questionId ?? "?"}`;
+      return t("profile.activity.actions.createQuestion", {
+        defaultValue: "Created a question #{{id}}",
+        id: a.questionId ?? "?",
+      }) as unknown as string;
     default:
       return a.action
         .split("_")
@@ -37,6 +48,7 @@ function formatDateTime(iso: string): string {
 }
 
 export default function ActivityTab() {
+  const { t } = useTranslation();
   const [activities, setActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,16 +92,16 @@ export default function ActivityTab() {
       <div className="mb-6">
         <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2 mb-2">
           <span className="text-2xl">📊</span>
-          Recent Activity
+          {t("profile.activity.title", "Recent Activity")}
         </h3>
         <div className="flex items-center justify-between gap-3">
           <p className="text-gray-600">
-            Your latest activities and accomplishments
+            {t("profile.activity.desc", "Your latest activities and accomplishments")}
           </p>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <label htmlFor="pageSize" className="text-sm text-gray-600">
-                Items per page
+                {t("profile.activity.itemsPerPage", "Items per page")}
               </label>
               <select
                 id="pageSize"
@@ -114,7 +126,7 @@ export default function ActivityTab() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={loading || page === 1}
               >
-                Prev
+                {t("profile.activity.prev", "Prev")}
               </button>
               <div className="text-sm text-gray-600">Page {page}</div>
               <button
@@ -123,7 +135,7 @@ export default function ActivityTab() {
                 onClick={() => setPage((p) => (hasNext ? p + 1 : p))}
                 disabled={loading || !hasNext}
               >
-                Next
+                {t("profile.activity.next", "Next")}
               </button>
             </div>
           </div>
@@ -150,7 +162,7 @@ export default function ActivityTab() {
         )}
         {!loading && !error && activities.length === 0 && (
           <div className="p-4 rounded-xl border border-gray-200 bg-white text-gray-600">
-            No recent activity yet.
+            {t("profile.activity.noActivity", "No recent activity yet.")}
           </div>
         )}
         {!loading && !error && activities.length > 0 && (
@@ -162,7 +174,7 @@ export default function ActivityTab() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="font-semibold text-gray-800 whitespace-pre-wrap break-words line-clamp-2 flex-1">
-                    {titleForActivity(a)}
+                    {titleForActivity(a, t)}
                   </div>
                   <div className="text-xs text-gray-500 shrink-0">
                     {relativeTimeFromNow(a.createdAt)}

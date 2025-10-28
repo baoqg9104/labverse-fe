@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../utils/axiosInstance";
 
@@ -14,6 +15,7 @@ const EmailSent: React.FC = () => {
     }
   }, [email, navigate]);
 
+  const { t } = useTranslation();
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [resendError, setResendError] = useState("");
@@ -106,10 +108,10 @@ const EmailSent: React.FC = () => {
 
           {/* Title & subtitle */}
           <h1 className="text-center text-3xl font-semibold tracking-tight text-white">
-            Check your inbox
+            {t('emailSent.title')}
           </h1>
           <p className="mt-2 text-center text-slate-300">
-            We just sent a verification link to
+            {t('emailSent.subtitle')}
           </p>
 
           {/* Email pill */}
@@ -131,7 +133,7 @@ const EmailSent: React.FC = () => {
                   d="M23 5.383l-11 7.77-11-7.77V19a2 2 0 002 2h18a2 2 0 002-2V5.383z"
                 />
               </svg>
-              <span className="truncate">{email || "your email address"}</span>
+              <span className="truncate">{email || t('emailSent.fallbackEmail')}</span>
             </div>
           </div>
 
@@ -141,19 +143,19 @@ const EmailSent: React.FC = () => {
               <li className="flex items-start gap-2">
                 <div className="flex items-center gap-2">
                   <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                  Open your inbox and look for our email.
+                  {t('emailSent.tips.openInbox')}
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="flex items-center gap-2">
                   <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                  Check the Spam or Promotions folder if you don’t see it.
+                  {t('emailSent.tips.checkSpam')}
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="flex items-center gap-2">
                   <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                  Click the link inside to verify your account.
+                  {t('emailSent.tips.clickToVerify')}
                 </div>
               </li>
             </ul>
@@ -177,19 +179,19 @@ const EmailSent: React.FC = () => {
                   <circle cx="12" cy="12" r="10" opacity=".25" />
                   <path d="M4 12a8 8 0 018-8" />
                 </svg>
-                Sending...
+                {t('emailSent.sending')}
               </span>
             ) : cooldown > 0 ? (
-              `Resend available in ${cooldown}s`
+              t('emailSent.resendAvailable', { sec: cooldown })
             ) : (
-              "Resend verification email"
+              t('emailSent.resend')
             )}
           </button>
 
           {/* Result messages */}
           {resendSuccess && (
             <p className="mt-3 text-center text-sm text-emerald-400">
-              Verification email resent successfully.
+              {t('emailSent.resentSuccess')}
             </p>
           )}
           {resendError && (

@@ -17,14 +17,86 @@
     "logout": "Log Out",
     "admin": "Admin",
     "profile": "Profile",
+    "logo": "Labverse",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "report": "Report an issue",
+    "changelog": "Changelog"
   },
   "footer": {
     "getInTouch": "Get in touch",
     "contactUs": "Contact us",
     "forum": "Forum",
     "copyright": "Labverse @ 2025"
+  },
+  "changelog": {
+    "title": "Changelog",
+    "lead": "Below you'll find a record of all significant changes to Labverse.",
+    "versionPrefix": "Version",
+    "labels": {
+      "New": "New",
+      "Improved": "Improved",
+      "Fixed": "Fixed",
+      "Removed": "Removed",
+      "Deprecated": "Deprecated",
+      "Upcoming": "Upcoming"
+    },
+    "entries": {
+      "v1_4_0": {
+        "title": "Release: Richer Learning Experience",
+        "details": "Major quality-of-life updates, new content features, and several bug fixes.",
+        "changes": {
+          "0": "Introduced the Changelog page to track releases.",
+          "1": "Added advanced quiz analytics on the Result screen.",
+          "2": "Faster lab loading and smoother transitions.",
+          "3": "Resolved an issue where avatars failed to load for some users."
+        }
+      },
+      "v1_3_2": {
+        "title": "Stability & UX fixes",
+        "changes": {
+          "0": "Payment retry flow now handles network interruptions.",
+          "1": "Updated onboarding copy and illustrations.",
+          "2": "Added a tooltip on the ranking page describing scoring rules."
+        }
+      },
+      "v1_3_0": {
+        "title": "Feature: Team Labs",
+        "details": "Collaboration features for teams and instructors.",
+        "changes": {
+          "0": "Team creation and management for lab sharing.",
+          "1": "Search in Forum now supports filters and sorting.",
+          "2": "Fixed RSS feed generation for new labs."
+        }
+      },
+      "v1_1_0": {
+        "title": "UI Improvements & Font Fixes",
+        "details": "Polished visuals and several UX fixes to make the site feel snappier and more consistent.",
+        "changes": {
+          "0": "Fixed inconsistent font rendering across multiple browsers and platforms.",
+          "1": "Refined spacing, typography, and component alignment for clearer hierarchy.",
+          "2": "Improved CTAs, reduced visual noise, and made key interactions faster.",
+          "3": "Added subtle micro-interactions for better feedback on actions."
+        }
+      },
+      "v1_0_0": {
+        "title": "Initial public launch",
+        "details": "Labverse public launch: core learning content, community features, and basic gamification.",
+        "changes": {
+          "0": "Public launch of Labverse with core learning content and hands-on labs.",
+          "1": "User accounts, progress tracking, and basic gamification (badges & streaks).",
+          "2": "Forum and community features to ask questions and share knowledge."
+        }
+      },
+      "v1_5_0": {
+        "title": "Planned: Collaboration & AI",
+        "details": "Planned features that will bring collaborative labs and AI-guided assistance.",
+        "changes": {
+          "0": "AI-powered hints and contextual assistance for quizzes and labs (planned).",
+          "1": "In-platform collaborative sessions for Team Labs (planned)."
+        }
+      }
+    }
   },
   "home": {
     "heroTitle": "Learn - Practice - Conquer",
@@ -61,7 +133,6 @@
     "errors": {
       "emailRequired": "Email is required.",
       "emailInvalid": "Invalid email format.",
-      "passwordRequired": "Password is required.",
       "invalidCredentials": "Invalid email or password.",
       "loginFailed": "Login failed. Please try again.",
       "recaptchaNotReady": "Recaptcha is not ready.",
@@ -70,6 +141,16 @@
       "passwordAtLeast": "Password must be at least 8 characters.",
       "passwordUpper": "Password must contain at least one uppercase letter.",
       "passwordLower": "Password must contain at least one lowercase letter.",
+      "adminTools": {
+        "title": "Looking for Admin tools?",
+        "desc": "Use the dedicated console to manage users, labs, reports, and revenue.",
+        "cta": "Open Admin Console"
+      },
+      "discover": {
+        "title": "Discover",
+        "explore": "Explore Other Learners",
+        "desc": "Dive into community profiles and follow their learning path."
+      },
       "passwordNumber": "Password must contain at least one number.",
       "passwordSpecial": "Password must contain at least one special character.",
       "confirmPasswordRequired": "Please confirm your password.",
@@ -148,7 +229,12 @@
       "priceSuffix": "always free",
       "title": "Free",
       "audience": "Beginners, students, or those exploring cybersecurity.",
-      "join": "Join now"
+      "join": "Join now",
+      "features": [
+        "Step-by-step tutorials",
+        "Practical experience sharing",
+        "Cybersecurity theory guides"
+      ]
     },
     "premium": {
       "badge": "MOST POPULAR",
@@ -157,14 +243,302 @@
       "title": "Premium",
       "audience": "Aspiring professionals, lab enthusiasts, and dedicated.",
       "getStarted": "Get started",
-      "alreadyPremium": "You already have Premium"
+      "alreadyPremium": "You already have Premium",
+      "features": [
+        "All Free tier content",
+        "Unlimited lab access",
+        "Downloadable resources",
+        "Priority support"
+      ]
     },
     "faqs": {
       "title": "FAQs",
       "paymentMethods": {
         "title": "What payment methods do you offer?",
         "methods": ["Bank Transfer"]
+      },
+      "localCurrency": {
+        "title": "Can you charge me in my local currency?",
+        "answer": "Currently, we only accept payments in Vietnamese dong (VND)."
+      },
+      "subscription": {
+        "title": "How do I view and manage my subscription?",
+        "beforeLink": "Your subscription can be managed from",
+        "linkText": "your account settings",
+        "afterLink": "."
       }
+    }
+  },
+  "account": {
+    "title": "Your Account",
+    "viewProfile": "View Profile",
+    "manageSubscription": "Manage Subscription",
+    "upgradeToPremium": "Upgrade to Premium",
+    "logout": "Log out",
+    "detailsTitle": "Account Details",
+    "fields": {
+      "email": "Email",
+      "username": "Username",
+      "role": "Role",
+      "memberSince": "Member Since"
+    },
+    "bioTitle": "Bio",
+    "noBio": "No bio yet.",
+    "premiumTitle": "Unlock Premium",
+    "premiumDesc": "Get unlimited lab access, downloads and priority support.",
+    "upgradeNow": "Upgrade now"
+  },
+  "adminConsole": {
+    "title": "Admin Console",
+    "lead": "Manage users, labs, reports, and revenue",
+    "totalUsers": "Total Users",
+    "totalLabs": "Total Labs",
+    "premium": "Premium",
+    "free": "Free",
+    "roles": {
+      "user": "User",
+      "author": "Author",
+      "admin": "Admin"
+    },
+    "failedLoad": "Failed to load admin metrics",
+    "donutAriaLabel": "Premium {{premium}}% and Free {{free}}%",
+    "labLevels": {
+      "basic": "Basic",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "revenue": {
+      "title": "Revenue ({{currency}})",
+      "asOf": "As of: {{date}}",
+      "transactions": "Transactions: {{count}}"
+    },
+    "transactionsNA": "Transactions: N/A"
+  },
+  "adminUsers": {
+    "title": "Users",
+    "addUser": "Add User",
+    "searchPlaceholder": "Search name or email",
+    "filters": {
+      "roleAll": "Role: All",
+      "statusAll": "Status: All",
+      "verifiedAll": "Verified: All",
+      "subAll": "Subscription: All"
+    },
+
+    "addUserComingSoon": "Add User: coming soon",
+    "errors": {
+      "failedLoad": "Failed to load users.",
+      "restoreFailed": "Failed to restore user.",
+      "suspendFailed": "Failed to suspend user."
+    },
+    "toasts": {
+      "restored": "User restored",
+      "suspended": "User suspended"
+    },
+    "roles": {
+      "user": "User",
+      "author": "Author",
+      "admin": "Admin"
+    },
+    "status": {
+      "active": "Active",
+      "suspended": "Suspended",
+      "pending": "Pending"
+    },
+    "avatarAlt": "Avatar",
+    "noUserSelected": "No user selected",
+    "joined": "Joined {{date}}",
+    "stats": {
+      "points": "Points",
+      "level": "Level",
+      "streakCurrent": "Streak (current)",
+      "streakBest": "Streak (best)"
+    },
+
+    "pagination": {
+      "pages": "{{count}} / page",
+      "first": "First",
+      "prev": "Prev",
+      "next": "Next",
+      "last": "Last",
+      "page": "Page {{page}} / {{total}}"
+    },
+    "loading": "Loading users…",
+    "table": {
+      "email": "Email",
+      "username": "Username",
+      "role": "Role",
+      "status": "Status",
+      "verified": "Verified",
+      "subscription": "Subscription",
+      "actions": "Actions"
+    },
+    "noUsers": "No users found",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "subscription": {
+      "free": "Free",
+      "premium": "Premium"
+    },
+    "actions": {
+      "view": "View",
+      "restore": "Restore",
+      "suspend": "Suspend"
+    },
+    "modal": {
+      "userDetailsPrefix": "",
+      "thisUser": "this user",
+      "loadingBadges": "Loading badges…",
+      "userDetails": "User details",
+      "badges": "Badges",
+      "suspendTitle": "Suspend user?",
+      "suspendConfirm": "Are you sure you want to suspend {{email}}?",
+      "cancel": "Cancel",
+      "suspending": "Suspending…",
+      "suspend": "Suspend"
+    }
+  },
+  "adminLabs": {
+    "title": "Labs Dashboard",
+    "searchPlaceholder": "Search labs...",
+    "failedLoad": "Failed to load labs.",
+    "updateFailed": "Failed to update lab status.",
+    "by": "By",
+    "filters": {
+      "difficultyAll": "All Difficulties",
+      "basic": "Basic",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "statusAll": "All Status",
+      "published": "Published",
+      "hidden": "Hidden"
+    },
+    "stats": {
+      "total": "Total",
+      "avg": "Avg",
+      "views": "Views",
+      "unique": "Unique"
+    },
+    "levels": {
+      "basic": "Basic",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "status": {
+      "published": "Published",
+      "hidden": "Hidden"
+    },
+    "actions": {
+      "hide": "Hide",
+      "publish": "Publish"
+    },
+    "sort": {
+      "default": "Default",
+      "rating": "Rating",
+      "views": "Views",
+      "unique": "Unique Views"
+    },
+    "pagination": {
+      "pages": "{{count}} / page",
+      "first": "First",
+      "prev": "Prev",
+      "next": "Next",
+      "last": "Last",
+      "page": "Page {{page}} / {{total}}"
+    }
+  },
+  "adminReports": {
+    "title": "Reports",
+    "exportCsv": "Export CSV",
+    "failedLoad": "Failed to load reports.",
+    "updateFailed": "Failed to update status.",
+    "statusUpdated": "Status updated",
+    "previewTitle": "Report #{{id}} images",
+    "searchPlaceholder": "Search...",
+    "noReports": "No reports",
+    "view": "View",
+    "noImages": "No images",
+    "period": {
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "all": "All time"
+    },
+    "type": {
+      "all": "Type: All",
+      "abuse": "Abuse",
+      "bug": "Bug",
+      "payment": "Payment"
+    },
+    "status": {
+      "open": "Open",
+      "inreview": "In Review",
+      "resolved": "Resolved",
+      "all": "All"
+    },
+    "table": {
+      "id": "#",
+      "type": "Type",
+      "reporter": "Reporter",
+      "lab": "Lab",
+      "description": "Description",
+      "images": "Images",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "markOpen": "Mark Open",
+      "markInReview": "In Review",
+      "resolve": "Resolve",
+      "showDetails": "Show details"
+    },
+    "details": {
+      "title": "Report #{{id}} details",
+      "titleGeneric": "Report details",
+      "severity": "Severity"
+    }
+  },
+  "adminRevenue": {
+    "title": "Revenue",
+    "export": "Export",
+    "exportCsv": "Export CSV",
+    "exportPdf": "Export PDF",
+    "exportExcel": "Export Excel",
+    "exportTitle": "Revenue ({{range}})",
+    "period": {
+      "all": "All time / Custom",
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days"
+    },
+    "resetFilters": "Reset Filters",
+    "currency": "Currency: {{currency}}",
+    "cards": {
+      "subscriptions": "Subscriptions",
+      "aov": "Avg. Order Value"
+    },
+    "trends": {
+      "title": "Revenue trends",
+      "subtitle": "Subscriptions ({{currency}})"
+    },
+    "breakdown": {
+      "title": "Revenue breakdown",
+      "results": "{{count}} result"
+    },
+    "actions": {
+      "showAll": "Show all",
+      "hideZero": "Hide zero days"
+    },
+    "noData": "No matching data",
+    "table": {
+      "date": "Date",
+      "subscriptions": "Subscriptions"
+    },
+    "paging": "Showing {{visible}} / {{total}}",
+    "pagination": {
+      "prev": "Prev",
+      "next": "Next",
+      "page": "Page {{page}} / {{total}}"
     }
   },
   "learn": {
@@ -182,6 +556,226 @@
     "searchPlaceholder": "Search labs...",
     "noLabs": "No labs found.",
     "alt": { "hero": "Cybersecurity Labs" }
+  },
+  "labDetail": {
+    "back": "Back",
+    "fetchProgressFailed": "Failed to fetch user progress status.",
+    "missingContentTitle": "Missing content",
+    "missingContentBody": "This lab has no public content URL.",
+    "submitAnswerFailed": "Failed to submit answer. Please try again.",
+    "contents": "Contents",
+    "noHeadings": "No headings found",
+    "quizNotAllowedTitle": "You are not allowed to take the quiz with your current account role.",
+    "quizNotAllowedBody": "Contact an administrator if you think this is a mistake.",
+    "statusNotStarted": "Not Started",
+    "statusInProgress": "In Progress",
+    "statusCompleted": "Completed"
+  },
+  "emailSent": {
+    "title": "Check your inbox",
+    "subtitle": "We just sent a verification link to",
+    "fallbackEmail": "your email address",
+    "tips": {
+      "openInbox": "Open your inbox and look for our email.",
+      "checkSpam": "Check the Spam or Promotions folder if you don't see it.",
+      "clickToVerify": "Click the link inside to verify your account."
+    },
+    "sending": "Sending...",
+    "resend": "Resend verification email",
+    "resendAvailable": "Resend available in {{sec}}s",
+    "resentSuccess": "Verification email resent successfully."
+  },
+  "verify": {
+    "successTitle": "Email Verified",
+    "failureTitle": "Verification Failed",
+    "successDesc": "Your email has been verified successfully.",
+    "failureDesc": "Invalid or expired token.",
+    "success": {
+      "tipLogin": "You can now log in and start using your account.",
+      "tipSupport": "If you have any issues, please contact support."
+    },
+    "goToLogin": "Go to Login"
+  },
+  "profile": {
+    "header": {
+      "avatarAlt": "Avatar",
+      "unknown": "Unknown user",
+      "rolePrefix": "Role"
+    },
+    "roles": {
+      "user": "User",
+      "author": "Author",
+      "admin": "Admin"
+    },
+    "plan": {
+      "free": "Free",
+      "premium": "Premium"
+    },
+    "about": {
+      "title": "About",
+      "noBio": "No bio available yet. Click 'Edit Profile' to add your story!"
+    },
+    "discover": {
+      "title": "Discover Learners",
+      "explore": "Explore Other Learners",
+      "desc": "Dive into community profiles and follow their learning path."
+    },
+    "badges": {
+      "title": "Achievements & Badges",
+      "desc": "Your collection of earned badges and achievements",
+      "modalTitle": "🏆 Your Badge Collection",
+      "empty": "No badges yet. Start completing labs to earn your first badge!"
+    },
+    "actions": {
+      "backToMe": "Back to My Profile",
+      "edit": "Edit Profile",
+      "viewBadges": "View Badges",
+      "editProfile": "Edit Profile"
+    },
+    "tabs": {
+      "info": "Profile Info",
+      "badges": "Achievements",
+      "activity": "Recent Activity",
+      "myLabs": "My Labs",
+      "createLab": "Create Lab",
+      "viewQuestions": "View Questions",
+      "createQuestion": "Create Question",
+      "overview": "Overview",
+      "users": "Users",
+      "labs": "Labs",
+      "reports": "Reports",
+      "revenue": "Revenue"
+    },
+    "activity": {
+      "title": "Recent Activity",
+      "desc": "Your latest activities and accomplishments",
+      "itemsPerPage": "Items per page",
+      "prev": "Prev",
+      "next": "Next",
+      "noActivity": "No recent activity yet.",
+      "actions": {
+        "login": "Logged in",
+        "logout": "Logged out",
+        "enrollLab": "Enrolled lab #{{id}}",
+        "completeLab": "Completed lab #{{id}}",
+        "createQuestion": "Created a question #{{id}}"
+      },
+      "tooltip": {
+        "activitiesOn": "{{count}} activities on {{date}}",
+        "level": "Level: {{level}}"
+      }
+    },
+    "edit": {
+      "dialogTitle": "✏️ Edit Your Profile",
+      "header": "Edit Profile",
+      "desc": "Update your personal info and security settings.",
+      "tabs": {
+        "profile": "Profile",
+        "security": "Security"
+      },
+      "avatarHint": "Click to change avatar",
+      "username": "Username",
+      "bio": "Bio",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmNewPassword": "Confirm New Password",
+      "saving": "Saving...",
+      "save": "Save Changes",
+      "errors": {
+        "usernameRequired": "Username is required.",
+        "passwordLength": "Password must be at least 8 characters.",
+        "passwordMismatch": "Passwords do not match.",
+        "currentPasswordRequired": "Current password is required to set a new one.",
+        "avatarSize": "Avatar must be less than 5MB.",
+        "userNotFound": "User not found",
+        "avatarUploadFailed": "Failed to upload avatar. Please try again.",
+        "invalidOldPassword": "Current password is incorrect. Please try again.",
+        "updateFailed": "Profile update failed"
+      },
+      "success": {
+        "passwordChanged": "Password changed successfully",
+        "profileUpdated": "Profile updated successfully"
+      }
+    },
+    "gamification": {
+      "points": "Points",
+      "pointsHint": "Earn XP by completing labs, maintaining streaks, and contributing back.",
+      "level": "Level",
+      "nextLevel": "Next level at {{xp}} XP",
+      "remaining": "{{xp}} XP to go",
+      "streak": "Current streak",
+      "days": "days",
+      "best": "Best streak: {{days}} days",
+      "streakHint": "Log in daily to keep the flame alive and unlock streak rewards."
+    },
+    "info": {
+      "notAvailable": "Not available"
+    },
+    "stats": {
+      "labsWritten": "Labs written",
+      "labsCompleted": "Labs completed",
+      "labsWrittenHint": "Content published for students",
+      "labsCompletedHint": "Learning progress across labs",
+      "joined": "Joined",
+      "joinedHint": "Part of Labverse",
+      "badges": "Badges earned",
+      "badgesHint": "Tap to open collection",
+      "viewAction": "Open"
+    }
+  },
+  "reportIssue": {
+    "title": "Report an issue",
+    "type": "Type",
+    "severity": "Severity",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Short summary",
+    "description": "Description",
+    "descriptionPlaceholder": "Steps to reproduce, expected vs actual, screenshots links, etc.",
+
+    "labels": {
+      "type": "Type",
+      "severity": "Severity",
+      "title": "Title",
+      "description": "Description"
+    },
+    "placeholders": {
+      "title": "Short summary",
+      "description": "Steps to reproduce, expected vs actual, screenshots links, etc."
+    },
+    "images": {
+      "label": "Images (optional)",
+      "hint": "Up to {{max}} images • ≤ {{size}}MB each"
+    },
+    "imageAlt": "attachment-{{index}}",
+    "remove": "Remove",
+
+    "options": {
+      "type": {
+        "Bug": "Bug",
+        "Abuse": "Abuse",
+        "Payment": "Payment",
+        "Other": "Other"
+      },
+      "severity": {
+        "Low": "Low",
+        "Medium": "Medium",
+        "High": "High"
+      }
+    },
+
+    "buttons": {
+      "cancel": "Cancel",
+      "submit": "Submit report",
+      "submitting": "Submitting…"
+    },
+
+    "toasts": {
+      "unsupportedFileType": "Unsupported file type: {{file}}",
+      "fileTooLarge": "{{file}} exceeds {{size}}MB limit",
+      "maxFilesAdded": "Only the first {{max}} images were added",
+      "success": "Report submitted. Thank you!",
+      "failed": "Failed to submit report"
+    }
   },
   "notFound": {
     "title": "404 - Page Not Found",

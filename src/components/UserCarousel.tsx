@@ -3,6 +3,7 @@ import { Navigation } from "swiper/modules";
 import { DEFAULT_AVATAR_URL } from "../constants/config";
 
 import "swiper/swiper-bundle.css";
+import Avatar from "./Avatar";
 
 export type UserCarouselItem = {
   email: string;
@@ -54,8 +55,9 @@ export default function UserCarousel({
                 user.onClick();
               }}
             >
-              <img
-                src={user.avatarUrl || DEFAULT_AVATAR_URL}
+              <Avatar
+                src={user.avatarUrl || undefined}
+                fallback={DEFAULT_AVATAR_URL}
                 alt={user.username}
                 className={`h-16 w-16 rounded-full border-2 border-white object-cover shadow-lg transition-transform duration-300 ${
                   isActive ? "scale-105" : "group-hover:scale-105"

@@ -18,6 +18,7 @@ import {
   getTierClass,
   getRankDecor,
 } from "../components/ranking/helpers";
+import Avatar from "../components/Avatar";
 
 export default function Ranking() {
   const { t } = useTranslation();
@@ -77,7 +78,7 @@ export default function Ranking() {
   return (
     <div className="relative min-h-screen bg-white">
       <div className="relative max-w-5xl mx-auto px-4 md:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl md:text-4xl font-extrabold mb-2 bg-gradient-to-r from-gray-900 via-blue-700 to-blue-500 bg-clip-text text-transparent">
+        <h1 className="pb-1 text-3xl md:text-4xl font-extrabold mb-2 bg-gradient-to-r from-gray-900 via-blue-700 to-blue-500 bg-clip-text text-transparent">
           {t("ranking.title")}
         </h1>
         <p className="text-sm text-gray-700 mb-6">
@@ -216,9 +217,9 @@ export default function Ranking() {
                         </span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <img
-                          src={avatarSrc}
-                          alt="avatar"
+                        <Avatar
+                          src={avatarSrc || undefined}
+                          fallback={DEFAULT_AVATAR_URL}
                           className={`size-12 rounded-full object-cover bg-gray-100 border ${avatarGlow}`}
                         />
                         <div>

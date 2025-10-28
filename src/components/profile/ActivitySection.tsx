@@ -6,6 +6,7 @@ import api from "../../utils/axiosInstance";
 import type { RecentActivity, RecentActivityPagedResponse } from "../../types/activity";
 import { handleAxiosError } from "../../utils/handleAxiosError";
 import { dateLabelFromYmd, parseApiDate } from "../../utils/dateTime";
+import { useTranslation } from "react-i18next";
 
 const generateFullYearFallback = (): Activity[] => {
   const start = new Date(new Date().getFullYear(), 0, 1);
@@ -26,6 +27,7 @@ type Props = {
 };
 
 export function ActivitySection({ data = [], className }: Props) {
+  const { t } = useTranslation();
   const [calendarData, setCalendarData] = useState<Activity[]>([]);
 
   // Compute items: prefer prop data, else fetched, else fallback full-year
@@ -114,12 +116,19 @@ export function ActivitySection({ data = [], className }: Props) {
         fontSize={14}
         blockRadius={2}
         renderBlock={(block, activity) => (
-          <MuiTooltip title={`${activity.count} activities on ${dateLabelFromYmd(activity.date)}`}>
+          <MuiTooltip
+            title={t("profile.activity.tooltip.activitiesOn", "{{count}} activities on {{date}}", {
+              count: activity.count,
+              date: dateLabelFromYmd(activity.date),
+            })}
+          >
             {block}
           </MuiTooltip>
         )}
         renderColorLegend={(block, level) => (
-          <MuiTooltip title={`Level: ${level}`}>{block}</MuiTooltip>
+          <MuiTooltip title={t("profile.activity.tooltip.level", "Level: {{level}}", { level })}>
+            {block}
+          </MuiTooltip>
         )}
       />
     </div>
