@@ -27,7 +27,7 @@ const EmailSent: React.FC = () => {
     setResendError("");
     setResendSuccess(false);
     try {
-      const res = await api.post("/users/resend-verification", email);
+      const res = await api.post("/users/resend-verification", { email });
       setResendSuccess(true);
       setResendError(res.data?.message || "");
       setCooldown(30);
@@ -108,10 +108,10 @@ const EmailSent: React.FC = () => {
 
           {/* Title & subtitle */}
           <h1 className="text-center text-3xl font-semibold tracking-tight text-white">
-            {t('emailSent.title')}
+            {t("emailSent.title")}
           </h1>
           <p className="mt-2 text-center text-slate-300">
-            {t('emailSent.subtitle')}
+            {t("emailSent.subtitle")}
           </p>
 
           {/* Email pill */}
@@ -133,7 +133,9 @@ const EmailSent: React.FC = () => {
                   d="M23 5.383l-11 7.77-11-7.77V19a2 2 0 002 2h18a2 2 0 002-2V5.383z"
                 />
               </svg>
-              <span className="truncate">{email || t('emailSent.fallbackEmail')}</span>
+              <span className="truncate">
+                {email || t("emailSent.fallbackEmail")}
+              </span>
             </div>
           </div>
 
@@ -143,19 +145,19 @@ const EmailSent: React.FC = () => {
               <li className="flex items-start gap-2">
                 <div className="flex items-center gap-2">
                   <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                  {t('emailSent.tips.openInbox')}
+                  {t("emailSent.tips.openInbox")}
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="flex items-center gap-2">
                   <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                  {t('emailSent.tips.checkSpam')}
+                  {t("emailSent.tips.checkSpam")}
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <div className="flex items-center gap-2">
                   <span className="mt-0.5 inline-block size-1.5 rounded-full bg-lime-400"></span>
-                  {t('emailSent.tips.clickToVerify')}
+                  {t("emailSent.tips.clickToVerify")}
                 </div>
               </li>
             </ul>
@@ -179,19 +181,19 @@ const EmailSent: React.FC = () => {
                   <circle cx="12" cy="12" r="10" opacity=".25" />
                   <path d="M4 12a8 8 0 018-8" />
                 </svg>
-                {t('emailSent.sending')}
+                {t("emailSent.sending")}
               </span>
             ) : cooldown > 0 ? (
-              t('emailSent.resendAvailable', { sec: cooldown })
+              t("emailSent.resendAvailable", { sec: cooldown })
             ) : (
-              t('emailSent.resend')
+              t("emailSent.resend")
             )}
           </button>
 
           {/* Result messages */}
           {resendSuccess && (
             <p className="mt-3 text-center text-sm text-emerald-400">
-              {t('emailSent.resentSuccess')}
+              {t("emailSent.resentSuccess")}
             </p>
           )}
           {resendError && (
